@@ -61,4 +61,3 @@ obj/
 *.user
 *.log
 *.suo
-/DataAccessObject/Tenant0Context.cs
