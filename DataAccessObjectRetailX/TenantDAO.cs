@@ -27,6 +27,7 @@ namespace DataAccessObjectRetailX
             var tenants = _context.Tenants.ToList();
             return tenants.FirstOrDefault(t => t.OwnerEmail == email);
         }
+       
 
         public bool DeleteTenant(int tenantId)
         {

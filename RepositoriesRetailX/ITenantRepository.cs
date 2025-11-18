@@ -15,6 +15,7 @@ namespace RepositoriesRetailX
 
         bool AddTenant(Tenant tenant);
         bool DeleteTenant(int id);
+        string BuildTenantConnectionString(Tenant tenant);
 
     }
 }

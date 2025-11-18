@@ -5,7 +5,7 @@
 <h2>Đăng nhập</h2>
 @if (ViewBag.Message != null)
 {
-    <div class="text-success">@ViewBag.Message</div>
+    <div class="text-danger">@ViewBag.Message</div>
 }
 <form asp-action="Login" method="post" class="card p-3" style="max-width:400px;">
     <div class="mb-3">
@@ -24,4 +24,7 @@
     }
 
     <button type="submit" class="btn btn-primary w-100">Login</button>
+    <div class="mt-2">
+        <a asp-action="SignUpAccount" asp-controller="Auth">Chưa có tài khoản? Đăng ký</a>
+    </div>
 </form>

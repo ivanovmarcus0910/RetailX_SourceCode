@@ -51,8 +51,44 @@ namespace DataAccessObjectRetailX
                 }
             
         }
+        public bool UpdateUser(User input)
+        {
+            var existing = _context.Users.FirstOrDefault(u => u.Id == input.Id);
+            if (existing == null) return false;
 
-        
+            existing.FullName = string.IsNullOrWhiteSpace(input.FullName)
+                ? existing.FullName
+                : input.FullName;
+
+            existing.Email = string.IsNullOrWhiteSpace(input.Email)
+                ? existing.Email
+                : input.Email;
+
+            existing.Phone = string.IsNullOrWhiteSpace(input.Phone)
+                ? existing.Phone
+                : input.Phone;
+
+            existing.GlobalRole = string.IsNullOrWhiteSpace(input.GlobalRole)
+                ? existing.GlobalRole
+                : input.GlobalRole;
+
+            // 🔹 TenantId: nếu null thì giữ cũ
+            existing.TenantId = input.TenantId ?? existing.TenantId;
+
+            // 🔹 IsActive: chỉ update khi có giá trị (true/false)
+            if (input.IsActive.HasValue)
+                existing.IsActive = input.IsActive;
+
+            // 🔹 PasswordHash: thường tách form riêng, nhưng nếu cho update:
+            if (!string.IsNullOrWhiteSpace(input.PasswordHash))
+                existing.PasswordHash = input.PasswordHash;
+
+            // ❌ Không đụng CreatedDate, Id
+            _context.SaveChanges();
+            return true;
+        }
+
+
 
     }
 }
