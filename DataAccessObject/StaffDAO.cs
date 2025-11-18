@@ -1,8 +1,9 @@
 ﻿using BusinessObject.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 
 namespace DataAccessObject
 {
@@ -15,18 +16,31 @@ namespace DataAccessObject
             _context = context;
         }
 
-        public async Task<List<Staff>> GetAllActiveStaffs()
+        public List<Staff> GetAll()
         {
-            return await _context.Staff
-                                 .Where(s => s.BaseSalary.HasValue)
-                                 .ToListAsync();
+            return _context.Staff.AsNoTracking().ToList();
         }
 
-        public async Task<Staff> GetStaffById(int staffId)
+        public Staff GetById(int staffId)
         {
-            // Lấy thông tin nhân viên theo ID
-            return await _context.Staff
-                                 .FirstOrDefaultAsync(s => s.StaffId == staffId);
+            return _context.Staff.Find(staffId);
+        }
+
+        public void Add(Staff staff)
+        {
+            _context.Staff.Add(staff);
+            _context.SaveChanges();
+        }
+
+        public void Update(Staff staff)
+        {
+            if (_context.Entry(staff).State == EntityState.Detached)
+            {
+                _context.Staff.Attach(staff);
+            }
+
+            _context.Entry(staff).State = EntityState.Modified;
+            _context.SaveChanges();
         }
     }
 }

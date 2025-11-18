@@ -9,10 +9,12 @@ namespace Repositories
 {
     public interface IOrderRepository
     {
+        List<Order> GetAll();
+        Order? GetById(int id);
+        void Insert(Order order);
+        void Delete(int id);
+
         Order CreateOrder(Order order, List<OrderDetail> details);
-
-        Order? GetOrderById(int id);
-
         List<Order> GetOrdersByStaff(int staffId);
     }
 

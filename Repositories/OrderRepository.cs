@@ -1,10 +1,5 @@
 ﻿using BusinessObject.Models;
 using DataAccessObject;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Repositories
 {
@@ -21,24 +16,49 @@ namespace Repositories
             _detailDao = new OrderDetailDAO(context);
         }
 
-        public Order CreateOrder(Order order, List<OrderDetail> details)
+        // Lấy tất cả đơn
+        public List<Order> GetAll() => _orderDao.GetAllOrders();
+
+        // Lấy 1 đơn theo id
+        public Order? GetById(int id) => _orderDao.GetOrderById(id);
+
+        // Insert đơn đơn giản (không truyền sẵn list details)
+        public void Insert(Order order)
         {
             _orderDao.AddOrder(order);
-            _context.SaveChanges(); // Sinh OrderId
+            _context.SaveChanges();
+        }
 
-            foreach (var detail in details)
+        // Xoá đơn
+        public void Delete(int id)
+        {
+            var o = _orderDao.GetOrderById(id);
+            if (o != null)
             {
-                detail.OrderId = order.OrderId;
-                _detailDao.AddOrderDetail(detail);
+                _context.Orders.Remove(o);
+                _context.SaveChanges();
+            }
+        }
+
+        // Tạo đơn + list OrderDetail (dùng khi bạn muốn truyền details riêng)
+        public Order CreateOrder(Order order, List<OrderDetail> details)
+        {
+            // thêm Order trước
+            _orderDao.AddOrder(order);
+            _context.SaveChanges();   // để có OrderId
+
+            // thêm OrderDetail
+            foreach (var d in details)
+            {
+                d.OrderId = order.OrderId;
+                _detailDao.AddOrderDetail(d);
             }
 
             _context.SaveChanges();
-
             return order;
         }
 
-        public Order? GetOrderById(int id) => _orderDao.GetOrderById(id);
-
+        // Lấy các đơn theo StaffId (nếu sau này Seller xem đơn của chính mình)
         public List<Order> GetOrdersByStaff(int staffId)
             => _orderDao.GetOrdersByStaff(staffId);
     }
