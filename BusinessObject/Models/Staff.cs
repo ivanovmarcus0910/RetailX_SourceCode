@@ -21,7 +21,9 @@ public partial class Staff
 
     public virtual ICollection<Log> Logs { get; set; } = new List<Log>();
 
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+
     public virtual ICollection<ReportRevenue> ReportRevenues { get; set; } = new List<ReportRevenue>();
 
-    public virtual Order StaffNavigation { get; set; } = null!;
+    public virtual Salary? Salary { get; set; }
 }
