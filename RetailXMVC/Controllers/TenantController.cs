@@ -51,6 +51,7 @@ namespace RetailXMVC.Controllers
                 tenantRepo.AddTenant(tempTenant);
                 CreateDatabaseForTenant(tempTenant);
                 user.TenantId = tempTenant.Id;
+                user.GlobalRole = "Owner";
                 userRepo.UpdateUser(user);
                 var claims = new List<Claim>
         {

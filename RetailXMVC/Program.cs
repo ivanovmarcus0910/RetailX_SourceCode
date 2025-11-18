@@ -59,7 +59,16 @@ namespace RetailXMVC
           
             builder.Services.AddScoped<LogDAO>();
             builder.Services.AddScoped<ILogRepository, LogRepository>();
-          
+
+            builder.Services.AddScoped<ProductDAO>();
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
+            builder.Services.AddScoped<CategoryDAO>();
+            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+            builder.Services.AddScoped<SupplierDAO>();
+            builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
+
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -90,7 +99,7 @@ namespace RetailXMVC
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
-            app.MapHub<SignalR.NotificationHub>("/notificationHub");
+            //app.MapHub<SignalR.NotificationHub>("/notificationHub");
             app.Run();
         }
     }
