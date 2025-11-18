@@ -1,3 +1,7 @@
+using DataAccessObjectRetailX;
+using Microsoft.EntityFrameworkCore;
+using RepositoriesRetailX;
+
 namespace RetailXMVC
 {
     public class Program
@@ -8,9 +12,14 @@ namespace RetailXMVC
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddDbContext<RetailXContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("RetailX")));
+            builder.Services.AddScoped<UserDAO>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
 
+
+            //Build
             var app = builder.Build();
-
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
