@@ -23,5 +23,5 @@ public partial class Salary
 
     public int? DayPayment { get; set; }
 
-    public virtual Staff SalaryNavigation { get; set; } = null!;
+    public virtual Staff Staff { get; set; } = null!;
 }

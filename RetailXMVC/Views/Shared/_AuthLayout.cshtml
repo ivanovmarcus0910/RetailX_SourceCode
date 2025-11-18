@@ -33,7 +33,7 @@
                     </ul>
 
                     <!-- Right menu: Login/Signup hoặc User + Logout -->
-                    <ul class="navbar-nav ms-auto mb-2 mb-sm-0">
+                    @* <ul class="navbar-nav ms-auto mb-2 mb-sm-0">
                         @if (User?.Identity != null && User.Identity.IsAuthenticated)
                         {
                             var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name ?? "User";
@@ -71,7 +71,7 @@
                                 </a>
                             </li>
                         }
-                    </ul>
+                    </ul> *@
                 </div>
             </div>
         </nav>

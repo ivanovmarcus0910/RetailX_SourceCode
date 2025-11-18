@@ -19,11 +19,13 @@ public partial class Staff
 
     public decimal? BaseSalary { get; set; }
 
+    public bool IsActive { get; set; }
+
     public virtual ICollection<Log> Logs { get; set; } = new List<Log>();
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual ICollection<ReportRevenue> ReportRevenues { get; set; } = new List<ReportRevenue>();
 
-    public virtual Salary? Salary { get; set; }
+    public virtual ICollection<Salary> Salaries { get; set; } = new List<Salary>();
 }

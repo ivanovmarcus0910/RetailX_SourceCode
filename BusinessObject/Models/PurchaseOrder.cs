@@ -13,6 +13,8 @@ public partial class PurchaseOrder
 
     public byte Status { get; set; }
 
+    public bool IsActive { get; set; }
+
     public virtual ICollection<PurchaseOrderDetail> PurchaseOrderDetails { get; set; } = new List<PurchaseOrderDetail>();
 
     public virtual Supplier Supplier { get; set; } = null!;
