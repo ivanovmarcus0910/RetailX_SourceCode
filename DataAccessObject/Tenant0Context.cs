@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using BusinessObject.Models;
-namespace DataAccessObject;
+
+namespace BusinessObject.Models;
 
 public partial class Tenant0Context : DbContext
 {
@@ -41,8 +41,6 @@ public partial class Tenant0Context : DbContext
 
     public virtual DbSet<Supplier> Suppliers { get; set; }
 
-    public virtual DbSet<Supply> Supplies { get; set; }
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=localhost;Database=Tenant_0;Trusted_Connection=True;TrustServerCertificate=True;");
@@ -53,9 +51,7 @@ public partial class Tenant0Context : DbContext
         {
             entity.ToTable("Category");
 
-            entity.Property(e => e.CategoryId)
-                .ValueGeneratedNever()
-                .HasColumnName("CategoryID");
+            entity.Property(e => e.CategoryId).HasColumnName("CategoryID");
             entity.Property(e => e.CategoryName).HasMaxLength(100);
             entity.Property(e => e.Decription).HasMaxLength(100);
         });
@@ -64,9 +60,7 @@ public partial class Tenant0Context : DbContext
         {
             entity.ToTable("Customer");
 
-            entity.Property(e => e.CustomerId)
-                .ValueGeneratedNever()
-                .HasColumnName("CustomerID");
+            entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
             entity.Property(e => e.Address).HasMaxLength(200);
             entity.Property(e => e.CustomerName).HasMaxLength(100);
             entity.Property(e => e.Email)
@@ -81,9 +75,7 @@ public partial class Tenant0Context : DbContext
         {
             entity.ToTable("Inventory");
 
-            entity.Property(e => e.InventoryId)
-                .ValueGeneratedNever()
-                .HasColumnName("InventoryID");
+            entity.Property(e => e.InventoryId).HasColumnName("InventoryID");
             entity.Property(e => e.ProductId).HasColumnName("ProductID");
 
             entity.HasOne(d => d.Product).WithMany(p => p.Inventories)
@@ -96,9 +88,7 @@ public partial class Tenant0Context : DbContext
         {
             entity.ToTable("Log");
 
-            entity.Property(e => e.LogId)
-                .ValueGeneratedNever()
-                .HasColumnName("LogID");
+            entity.Property(e => e.LogId).HasColumnName("LogID");
             entity.Property(e => e.CreateDate).HasColumnType("datetime");
             entity.Property(e => e.Decription).HasMaxLength(200);
             entity.Property(e => e.StaffId).HasColumnName("StaffID");
@@ -113,9 +103,7 @@ public partial class Tenant0Context : DbContext
         {
             entity.ToTable("Order");
 
-            entity.Property(e => e.OrderId)
-                .ValueGeneratedNever()
-                .HasColumnName("OrderID");
+            entity.Property(e => e.OrderId).HasColumnName("OrderID");
             entity.Property(e => e.CreateDate).HasColumnType("datetime");
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
             entity.Property(e => e.StaffId).HasColumnName("StaffID");
@@ -124,6 +112,11 @@ public partial class Tenant0Context : DbContext
                 .HasForeignKey(d => d.CustomerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Order_Customer");
+
+            entity.HasOne(d => d.Staff).WithMany(p => p.Orders)
+                .HasForeignKey(d => d.StaffId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Order_Staff");
         });
 
         modelBuilder.Entity<OrderDetail>(entity =>
@@ -131,10 +124,11 @@ public partial class Tenant0Context : DbContext
             entity.ToTable("OrderDetail");
 
             entity.Property(e => e.OrderDetailId)
-                .HasMaxLength(10)
-                .IsFixedLength()
+                .ValueGeneratedNever()
                 .HasColumnName("OrderDetailID");
-            entity.Property(e => e.OrderId).HasColumnName("OrderID");
+            entity.Property(e => e.OrderId)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("OrderID");
             entity.Property(e => e.ProductId).HasColumnName("ProductID");
 
             entity.HasOne(d => d.Order).WithMany(p => p.OrderDetails)
@@ -152,9 +146,7 @@ public partial class Tenant0Context : DbContext
         {
             entity.ToTable("Product");
 
-            entity.Property(e => e.ProductId)
-                .ValueGeneratedNever()
-                .HasColumnName("ProductID");
+            entity.Property(e => e.ProductId).HasColumnName("ProductID");
             entity.Property(e => e.CategoryId).HasColumnName("CategoryID");
             entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.ProductName).HasMaxLength(100);
@@ -175,9 +167,7 @@ public partial class Tenant0Context : DbContext
         {
             entity.ToTable("PurchaseOrder");
 
-            entity.Property(e => e.PurchaseOrderId)
-                .ValueGeneratedNever()
-                .HasColumnName("PurchaseOrderID");
+            entity.Property(e => e.PurchaseOrderId).HasColumnName("PurchaseOrderID");
             entity.Property(e => e.CreateDate).HasColumnType("datetime");
             entity.Property(e => e.SupplierId).HasColumnName("SupplierID");
 
@@ -191,9 +181,7 @@ public partial class Tenant0Context : DbContext
         {
             entity.ToTable("PurchaseOrderDetail");
 
-            entity.Property(e => e.PurchaseOrderDetailId)
-                .ValueGeneratedNever()
-                .HasColumnName("PurchaseOrderDetailID");
+            entity.Property(e => e.PurchaseOrderDetailId).HasColumnName("PurchaseOrderDetailID");
             entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.ProductId).HasColumnName("ProductID");
             entity.Property(e => e.PurchaseOrderId).HasColumnName("PurchaseOrderID");
@@ -213,9 +201,7 @@ public partial class Tenant0Context : DbContext
         {
             entity.ToTable("ReportRevenue");
 
-            entity.Property(e => e.ReportRevenueId)
-                .ValueGeneratedNever()
-                .HasColumnName("ReportRevenueID");
+            entity.Property(e => e.ReportRevenueId).HasColumnName("ReportRevenueID");
             entity.Property(e => e.AmountCost).HasColumnType("decimal(20, 0)");
             entity.Property(e => e.AmountRevenue).HasColumnType("decimal(20, 0)");
             entity.Property(e => e.AmountSalary).HasColumnType("decimal(20, 0)");
@@ -237,27 +223,25 @@ public partial class Tenant0Context : DbContext
 
         modelBuilder.Entity<Salary>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("Salary");
+            entity.ToTable("Salary");
 
+            entity.Property(e => e.SalaryId)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("SalaryID");
             entity.Property(e => e.Amount).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.Bonus).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.Deduction).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.SalaryId).HasColumnName("SalaryID");
             entity.Property(e => e.StaffId).HasColumnName("StaffID");
 
-            entity.HasOne(d => d.SalaryNavigation).WithMany()
-                .HasForeignKey(d => d.SalaryId)
+            entity.HasOne(d => d.SalaryNavigation).WithOne(p => p.Salary)
+                .HasForeignKey<Salary>(d => d.SalaryId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Salary_Staff");
         });
 
         modelBuilder.Entity<Staff>(entity =>
         {
-            entity.Property(e => e.StaffId)
-                .ValueGeneratedNever()
-                .HasColumnName("StaffID");
+            entity.Property(e => e.StaffId).HasColumnName("StaffID");
             entity.Property(e => e.Address).HasMaxLength(200);
             entity.Property(e => e.BaseSalary).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.Email)
@@ -267,20 +251,13 @@ public partial class Tenant0Context : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.StaffName).HasMaxLength(50);
-
-            entity.HasOne(d => d.StaffNavigation).WithOne(p => p.Staff)
-                .HasForeignKey<Staff>(d => d.StaffId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Staff_Order");
         });
 
         modelBuilder.Entity<Supplier>(entity =>
         {
             entity.ToTable("Supplier");
 
-            entity.Property(e => e.SupplierId)
-                .ValueGeneratedNever()
-                .HasColumnName("SupplierID");
+            entity.Property(e => e.SupplierId).HasColumnName("SupplierID");
             entity.Property(e => e.Address).HasMaxLength(200);
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
@@ -289,17 +266,6 @@ public partial class Tenant0Context : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.SupplierName).HasMaxLength(100);
-        });
-
-        modelBuilder.Entity<Supply>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("Supply");
-
-            entity.Property(e => e.Supplier)
-                .HasMaxLength(10)
-                .IsFixedLength();
         });
 
         OnModelCreatingPartial(modelBuilder);

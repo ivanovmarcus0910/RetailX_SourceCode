@@ -19,5 +19,5 @@ public partial class Order
 
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 
-    public virtual Staff? Staff { get; set; }
+    public virtual Staff Staff { get; set; } = null!;
 }
