@@ -42,5 +42,9 @@ namespace RepositoriesRetailX
             };
             return _userDao.AddUser(newUser);
         }
+        public bool UpdateUser(User user)
+        {
+            return _userDao.UpdateUser(user);
+        }
     }
 }

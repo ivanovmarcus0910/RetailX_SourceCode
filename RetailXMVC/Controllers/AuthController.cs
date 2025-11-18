@@ -20,6 +20,10 @@ namespace RetailXMVC.Controllers
         [HttpGet]
         public IActionResult Login()
         {
+            if (TempData["Message"] != null)
+            {
+                ViewBag.Message = TempData["Message"];
+            }
             return View();
         }
 
@@ -29,7 +33,7 @@ namespace RetailXMVC.Controllers
             Console.WriteLine($"Attempting login for email: {email} : {password}");
             if (!_userRepository.VerifyUser(email, password))
             {
-                ViewBag.ErrorMessage = "Invalid email or password.";
+                ViewBag.Error = "Invalid email or password.";
                 return View();
             }
             User user = _userRepository.GetUserByEmail(email);
@@ -74,7 +78,7 @@ namespace RetailXMVC.Controllers
             }
             if (_userRepository.SignUpUser(email, password, fullname))
             {
-                ViewBag.Message = "Sign up successful. Please re-login.";
+                TempData["Message"] = "Sign up successful. Please re-login.";
                 return RedirectToAction("Login");
             }
             else

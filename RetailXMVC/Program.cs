@@ -1,4 +1,4 @@
-using DataAccessObjectRetailX;
+﻿using DataAccessObjectRetailX;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using RepositoriesRetailX;
@@ -12,14 +12,36 @@ namespace RetailXMVC
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddHttpContextAccessor();
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddDbContext<RetailXContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("RetailX")));
-            builder.Services.AddDbContext<Tenant0Context>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("Tenant0")));
-          
+            builder.Services.AddDbContext<Tenant0Context>((sp, options) =>
+            {
+                var http = sp.GetRequiredService<IHttpContextAccessor>();
+                var tenantRepo = sp.GetRequiredService<ITenantRepository>();
+
+                var user = http.HttpContext?.User;
+                var tenantIdStr = user?.FindFirst("TenantId")?.Value;
+
+                if (string.IsNullOrEmpty(tenantIdStr) || !int.TryParse(tenantIdStr, out var tenantId))
+                {
+                    // chưa có tenant → tùy mi xử lý, có thể throw
+                    return;
+                }
+
+                var tenant = tenantRepo.GetTenantById(tenantId);
+                if (tenant == null) return;
+
+                // dùng helper của mi
+                var connStr = tenantRepo.BuildTenantConnectionString(tenant);
+                // ví dụ: $"Server=.;Database={tenant.DbName};Trusted_Connection=True;TrustServerCertificate=True;"
+                Console.WriteLine("CONNECTION STRING IS "+connStr);
+                options.UseSqlServer(connStr);
+            });
+
             builder.Services.AddScoped<UserDAO>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
           

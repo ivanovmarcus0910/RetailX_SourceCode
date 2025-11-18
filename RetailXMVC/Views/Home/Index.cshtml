@@ -1,5 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Trang chủ";
+    var tenantId = User?.FindFirst("TenantId")?.Value;
+    var isLoggedIn = User?.Identity?.IsAuthenticated == true;
 }
 
 <div class="py-5">
@@ -101,9 +103,29 @@
             <p class="text-muted mb-4">
                 Hướng tới một hệ thống đơn giản, trực quan nhưng đủ mạnh để đồng hành cùng cửa hàng trên hành trình phát triển lâu dài.
             </p>
-            <a asp-controller="Auth" asp-action="SignUp" class="btn btn-primary btn-lg">
-                Đăng ký ngay để trải nghiệm
+            @if (isLoggedIn) {
+                if ( string.IsNullOrEmpty(tenantId))
+                    {
+                    <a asp-controller="Tenant" asp-action="SignUpTenant" class="btn btn-primary btn-lg">
+                        Đăng ký cửa hàng ngay để trải nghiệm
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Tenant" asp-action="SignUpTenant" class="btn btn-primary btn-lg">
+                        Truy cập cửa hàng của bạn
+                    </a>
+                }
+            }
+            else
+            {
+            <a asp-controller="Auth" asp-action="SignUpAccount" class="btn btn-primary btn-lg">
+                Đăng ký tài khoản ngay để trải nghiệm
             </a>
+            }
+
+            
+            
         </div>
     </div>
 </div>

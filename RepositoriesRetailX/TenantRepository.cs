@@ -39,5 +39,10 @@ namespace RepositoriesRetailX
         {
             return tenantDAO.GetTenantByOwnerEmail(email);
         }
+        public string BuildTenantConnectionString(Tenant tenant)
+        {
+            return $"Server=.;Database={tenant.DbName};Trusted_Connection=True;TrustServerCertificate=True;";
+        }
+
     }
 }
