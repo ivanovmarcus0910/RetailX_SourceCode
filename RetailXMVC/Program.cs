@@ -17,6 +17,8 @@ namespace RetailXMVC
                 options.UseSqlServer(builder.Configuration.GetConnectionString("RetailX")));
             builder.Services.AddScoped<UserDAO>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<TenantDAO>();
+            builder.Services.AddScoped<ITenantRepository, TenantRepository>();
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
