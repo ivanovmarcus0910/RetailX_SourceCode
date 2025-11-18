@@ -1,0 +1,54 @@
+﻿@model BusinessObject.Models.Order
+
+@{
+    ViewData["Title"] = "Create Order";
+    var products = ViewBag.Products as List<BusinessObject.Models.Product>;
+}
+
+<h2>Create Order</h2>
+
+<form asp-action="Create" method="post">
+
+    <!-- Chọn CustomerId -->
+    <div class="form-group mb-3">
+        <label>Customer ID</label>
+        <input type="number" name="CustomerId" class="form-control" required />
+    </div>
+
+    <!-- Chọn StaffId -->
+    <div class="form-group mb-3">
+        <label>Staff ID</label>
+        <input type="number" name="StaffId" class="form-control" required />
+    </div>
+
+    <hr />
+
+    <h4>Chọn Sản Phẩm</h4>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Sản phẩm</th>
+                <th>Số lượng</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in products)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" name="productIds" value="@p.ProductId" />
+                        @p.ProductName
+                    </td>
+                    <td>
+                        <input type="number" name="quantities" class="form-control" value="1" min="1" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-primary">Tạo Hóa Đơn</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+
+</form>

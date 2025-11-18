@@ -1,0 +1,56 @@
+﻿@* @model IEnumerable<BusinessObject.Models.Staff> *@
+
+@{
+    ViewData["Title"] = "Quản lý Nhân viên";
+}
+
+<div class="container mt-4">
+    <h2>Danh sách Nhân viên</h2>
+    
+    @if(TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <div class="mb-3">
+        <a asp-action="PendingRequests" class="btn btn-warning">
+            <i class="fa fa-user-plus"></i> Duyệt yêu cầu mới
+        </a>
+    </div>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Họ tên</th>
+                <th>Email</th>
+                <th>Số điện thoại</th>
+                <th>Lương</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.StaffID</td>
+                    <td>@item.StaffName</td>
+                    <td>@item.Email</td>
+                    <td>@item.Phone</td>
+                    <td>@string.Format("{0:N0} VNĐ", item.BaseSalary)</td>
+                    <td>
+                        @if(item.IsActive) 
+                        { <span class="badge bg-success">Hoạt động</span> }
+                        else 
+                        { <span class="badge bg-secondary">Đã nghỉ</span> }
+                    </td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.StaffID" class="btn btn-sm btn-primary">Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@item.StaffID" class="btn btn-sm btn-danger">Xóa</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
