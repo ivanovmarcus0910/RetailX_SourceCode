@@ -15,5 +15,7 @@ public partial class Customer
 
     public string? Address { get; set; }
 
+    public bool IsActive { get; set; }
+
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 }

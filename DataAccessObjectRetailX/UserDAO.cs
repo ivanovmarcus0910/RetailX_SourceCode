@@ -17,19 +17,17 @@ namespace DataAccessObjectRetailX
 
         public User GetUserByEmail(string email)
         {
-            using (var context = new RetailXContext())
-            {
-                return context.Users.FirstOrDefault(u => u.Email == email);
-            }
+            
+                return _context.Users.FirstOrDefault(u => u.Email == email);
+            
         }
         public bool AddUser(User user)
         {
-            using (var context = new RetailXContext())
-            {
+           
                 try
                 {
-                    context.Users.Add(user);
-                    context.SaveChanges();
+                    _context.Users.Add(user);
+                    _context.SaveChanges();
                     return true;
                 }
                 catch (Exception)
@@ -37,22 +35,21 @@ namespace DataAccessObjectRetailX
                     return false;
                 }
 
-            }
+            
         }
         public bool DeleteUser(int id) {
-            using (var context = new RetailXContext())
-            {
-                var user = context.Users.Find(id);
+          
+                var user = _context.Users.Find(id);
                 try
                 {
                     user.IsActive = false;
-                    context.SaveChanges();
+                    _context.SaveChanges();
                     return true;
                 } catch (Exception)
                 {
                     return false;
                 }
-            }
+            
         }
 
         

@@ -28,9 +28,19 @@ namespace RepositoriesRetailX
             {
                 return false;
             }
-            // ⚠️ Tạm thời so sánh plain text cho dễ test
-            // nếu đại ca đã hash thì thay logic check ở đây
             return user.PasswordHash == password;
+        }
+        public bool SignUpUser(string email, string password, string fullname)
+        {
+            var newUser = new User
+            {
+                Email = email,
+                PasswordHash = password, 
+                FullName = fullname,
+                IsActive = true,
+                CreatedDate = DateTime.Now
+            };
+            return _userDao.AddUser(newUser);
         }
     }
 }

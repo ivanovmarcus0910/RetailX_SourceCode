@@ -15,13 +15,15 @@ public partial class Product
 
     public decimal? Price { get; set; }
 
-    public virtual Category Category { get; set; } = null!;
+    public bool IsActive { get; set; }
 
-    public virtual ICollection<Inventory> Inventories { get; set; } = new List<Inventory>();
+    public int Quantity { get; set; }
+
+    public virtual Category? Category { get; set; } = null!;
 
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 
     public virtual ICollection<PurchaseOrderDetail> PurchaseOrderDetails { get; set; } = new List<PurchaseOrderDetail>();
 
-    public virtual Supplier Supplier { get; set; } = null!;
+    public virtual Supplier? Supplier { get; set; } = null!;
 }

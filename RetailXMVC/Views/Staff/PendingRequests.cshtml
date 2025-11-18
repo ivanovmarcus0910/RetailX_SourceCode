@@ -1,0 +1,40 @@
+﻿@* @model IEnumerable<BusinessObjectRetailX.Models.User> *@
+
+@{
+	ViewData["Title"] = "Duyệt thành viên";
+}
+
+<div class="container mt-4">
+    <h3>Danh sách người dùng đang chờ gia nhập</h3>
+    <a asp-action="Index" class="btn btn-secondary mb-3">Quay lại</a>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>Họ tên</th>
+                <th>Email</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.FullName</td>
+                    <td>@user.Email</td>
+                    <td>
+                        <form asp-action="ApproveStaff" method="post">
+                            <input type="hidden" name="userId" value="@user.Id" />
+                            <button type="submit" class="btn btn-success btn-sm" 
+                                    onclick="return confirm('Bạn chắc chắn muốn duyệt người này?');">
+                                <i class="fa fa-check"></i> Chấp nhận
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

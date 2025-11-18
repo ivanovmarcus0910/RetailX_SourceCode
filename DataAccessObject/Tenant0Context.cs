@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-
-namespace BusinessObject.Models;
+using BusinessObject.Models;
+namespace DataAccessObject;
 
 public partial class Tenant0Context : DbContext
 {
@@ -18,8 +18,6 @@ public partial class Tenant0Context : DbContext
     public virtual DbSet<Category> Categories { get; set; }
 
     public virtual DbSet<Customer> Customers { get; set; }
-
-    public virtual DbSet<Inventory> Inventories { get; set; }
 
     public virtual DbSet<Log> Logs { get; set; }
 
@@ -41,10 +39,6 @@ public partial class Tenant0Context : DbContext
 
     public virtual DbSet<Supplier> Suppliers { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=localhost;Database=Tenant_0;Trusted_Connection=True;TrustServerCertificate=True;");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
@@ -54,6 +48,7 @@ public partial class Tenant0Context : DbContext
             entity.Property(e => e.CategoryId).HasColumnName("CategoryID");
             entity.Property(e => e.CategoryName).HasMaxLength(100);
             entity.Property(e => e.Decription).HasMaxLength(100);
+            entity.Property(e => e.IsActive).HasColumnName("isActive");
         });
 
         modelBuilder.Entity<Customer>(entity =>
@@ -66,22 +61,10 @@ public partial class Tenant0Context : DbContext
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .IsUnicode(false);
+            entity.Property(e => e.IsActive).HasColumnName("isActive");
             entity.Property(e => e.Phone)
                 .HasMaxLength(50)
                 .IsUnicode(false);
-        });
-
-        modelBuilder.Entity<Inventory>(entity =>
-        {
-            entity.ToTable("Inventory");
-
-            entity.Property(e => e.InventoryId).HasColumnName("InventoryID");
-            entity.Property(e => e.ProductId).HasColumnName("ProductID");
-
-            entity.HasOne(d => d.Product).WithMany(p => p.Inventories)
-                .HasForeignKey(d => d.ProductId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Inventory_Product");
         });
 
         modelBuilder.Entity<Log>(entity =>
@@ -148,6 +131,7 @@ public partial class Tenant0Context : DbContext
 
             entity.Property(e => e.ProductId).HasColumnName("ProductID");
             entity.Property(e => e.CategoryId).HasColumnName("CategoryID");
+            entity.Property(e => e.IsActive).HasColumnName("isActive");
             entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.ProductName).HasMaxLength(100);
             entity.Property(e => e.SupplierId).HasColumnName("SupplierID");
@@ -169,6 +153,7 @@ public partial class Tenant0Context : DbContext
 
             entity.Property(e => e.PurchaseOrderId).HasColumnName("PurchaseOrderID");
             entity.Property(e => e.CreateDate).HasColumnType("datetime");
+            entity.Property(e => e.IsActive).HasColumnName("isActive");
             entity.Property(e => e.SupplierId).HasColumnName("SupplierID");
 
             entity.HasOne(d => d.Supplier).WithMany(p => p.PurchaseOrders)
@@ -226,17 +211,19 @@ public partial class Tenant0Context : DbContext
             entity.ToTable("Salary");
 
             entity.Property(e => e.SalaryId)
-                .ValueGeneratedOnAdd()
+                .ValueGeneratedNever()
                 .HasColumnName("SalaryID");
             entity.Property(e => e.Amount).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.Bonus).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.Deduction).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.StaffId).HasColumnName("StaffID");
+            entity.Property(e => e.StaffId)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("StaffID");
 
-            entity.HasOne(d => d.SalaryNavigation).WithOne(p => p.Salary)
-                .HasForeignKey<Salary>(d => d.SalaryId)
+            entity.HasOne(d => d.Staff).WithMany(p => p.Salaries)
+                .HasForeignKey(d => d.StaffId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Salary_Staff");
+                .HasConstraintName("FK_Salary_Staff1");
         });
 
         modelBuilder.Entity<Staff>(entity =>
@@ -247,6 +234,7 @@ public partial class Tenant0Context : DbContext
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .IsUnicode(false);
+            entity.Property(e => e.IsActive).HasColumnName("isActive");
             entity.Property(e => e.Phone)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -262,6 +250,7 @@ public partial class Tenant0Context : DbContext
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .IsUnicode(false);
+            entity.Property(e => e.IsActive).HasColumnName("isActive");
             entity.Property(e => e.Phone)
                 .HasMaxLength(50)
                 .IsUnicode(false);
