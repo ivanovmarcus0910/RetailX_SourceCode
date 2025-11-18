@@ -1,70 +1,83 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using RepositoriesRetailX;
+﻿//using Microsoft.AspNetCore.Authorization;
+//using Microsoft.AspNetCore.Mvc;
+//using RepositoriesRetailX;
 
-namespace RetailXMVC.Controllers
-{
-    [Authorize(Roles = "Owner")]
-    public class StaffController : Controller
-    {
-        private readonly IStaffRepository _staffRepo;
-        private readonly IUserRepository _userRepo;
-        private readonly ITenantRepository _tenantRepo;
+//namespace RetailXMVC.Controllers
+//{
+//    [Authorize(Roles = "Owner")]
+//    public class StaffController : Controller
+//    {
+//        private readonly IStaffRepository _staffRepo;
+//        private readonly IUserRepository _userRepo;
 
-        // 1. Inject cả 2 luồng Repository
-        public StaffController(IStaffRepository staffRepo,
-                               IUserRepository userRepo,
-                               ITenantRepository tenantRepo)
-        {
-            _staffRepo = staffRepo;
-            _userRepo = userRepo;
-            _tenantRepo = tenantRepo;
-        }
+//        public StaffController(IStaffRepository staffRepo, IUserRepository userRepo)
+//        {
+//            _staffRepo = staffRepo;
+//            _userRepo = userRepo;
+//        }
 
-        // 2. Lấy danh sách staff từ DB Riêng
-        public async Task<IActionResult> Index()
-        {
-            // _staffRepo đã tự động kết nối đến ĐÚNG database của Owner
-            var staffList = await _staffRepo.GetStaffListForOwner();
-            return View(staffList);
-        }
+//        public Task<IActionResult> Index()
+//        {
+//            var staffList = _staffRepo.GetStaffListForOwner();
+//            return View(staffList);
+//        }
 
-        // 3. Ví dụ nghiệp vụ "Duyệt yêu cầu gia nhập"
-        // (Dùng cả 2 luồng DB)
-        [HttpPost]
-        public async Task<IActionResult> ApproveRequest(int userId)
-        {
-            // Lấy TenantId của Owner hiện tại (đang đăng nhập)
-            int currentOwnerTenantId = ...; // (Lấy từ User.Claims)
+//        public async Task<IActionResult> PendingRequests()
+//        {
+//            var ownerTenantIdString = User.FindFirst("TenantId")?.Value;
+//            int currentTenantId = string.IsNullOrEmpty(ownerTenantIdString) ? 1 : int.Parse(ownerTenantIdString);
+//            var pendingUsers = _userRepo.GetUsersRequestingToJoin(currentTenantId);
 
-            // --- (Luồng Master) ---
-            // Lấy user từ DB Chung
-            var user = await _userRepo.GetUserByIdAsync(userId);
-            if (user == null || user.TenantId != null)
-            {
-                return BadRequest("User không hợp lệ.");
-            }
+//            return View(pendingUsers);
+//        }
 
-            // Gán TenantId cho user này
-            user.TenantId = currentOwnerTenantId;
-            await _userRepo.UpdateUserAsync(user);
+//        [HttpPost]
+//        public async Task<IActionResult> ApproveStaff(int userId)
+//        {
+//            try
+//            {
+//                var ownerTenantIdString = User.FindFirst("TenantId")?.Value;
+//                int currentTenantId = string.IsNullOrEmpty(ownerTenantIdString) ? 1 : int.Parse(ownerTenantIdString);
 
-            // --- (Luồng Tenant) ---
-            // Tạo một record Staff mới trong DB Riêng của Owner
-            var newStaff = new Staff
-            {
-                StaffID = user.Id, // Quan trọng: Liên kết bằng ID
-                StaffName = user.FullName,
-                Email = user.Email,
-                Phone = user.Phone,
-                Role = 2, // 2 = Role "Staff" (ví dụ)
-                IsActive = true
-                // ... các trường khác
-            };
+//                var user = _userRepo.GetUserById(userId);
+//                if (user == null) return NotFound();
 
-            await _staffRepo.CreateStaffAsync(newStaff);
+//                user.TenantId = currentTenantId;
+//                user.RequestedTenantId = null;
+//                user.GlobalRole = "Staff";
 
-            return RedirectToAction(nameof(Index));
-        }
-    }
-}
+//                _userRepo.UpdateUser(user);
+
+//                var newStaff = new Staff
+//                {
+//                    StaffID = user.Id,
+//                    StaffName = user.FullName,
+//                    Email = user.Email,
+//                    Phone = user.Phone,
+//                    Role = 2,
+//                    IsActive = true,
+//                    BaseSalary = 5000000
+//                };
+
+//                _staffRepo.CreateStaff(newStaff);
+
+//                TempData["Success"] = $"Đã duyệt nhân viên {user.FullName} thành công!";
+//                return RedirectToAction(nameof(Index));
+//            }
+//            catch (Exception ex)
+//            {
+//                TempData["Error"] = "Có lỗi xảy ra: " + ex.Message;
+//                return RedirectToAction(nameof(PendingRequests));
+//            }
+//        }
+
+//        public async Task<IActionResult> Delete(int id)
+//        {
+//            // Logic
+//            // 1. Xóa (hoặc set Active=false) ở DB Riêng
+//            // 2. Set TenantId = null ở DB Chung (để họ free)
+
+//            return View();
+//        }
+//    }
+//}

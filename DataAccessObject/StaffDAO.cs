@@ -44,14 +44,14 @@ namespace DataAccessObject
             _context.SaveChanges();
         }
 
-        public void ToggleStatus(int staffId)
-        {
-            var staff = _context.Staff.Find(staffId);
-            if (staff != null)
-            {
-                staff.IsActive = !staff.IsActive;
-                _context.SaveChanges();
-            }
-        }
+        //public void ToggleStatus(int staffId)
+        //{
+        //    var staff = _context.Staff.Find(staffId);
+        //    if (staff != null)
+        //    {
+        //        staff.IsActive = !staff.IsActive;
+        //        _context.SaveChanges();
+        //    }
+        //}
     }
 }

@@ -19,7 +19,9 @@ namespace Repositories
 
         public List<Staff> GetStaffListForOwner()
         {
-            return _staffDAO.GetAll().OrderByDescending(s => s.IsActive).ToList();
+            return _staffDAO.GetAll()
+                //.OrderByDescending(s => s.IsActive).ToList()
+                ;
         }
 
         public Staff GetStaffDetail(int staffId)
@@ -39,7 +41,7 @@ namespace Repositories
 
         public void ToggleStaffStatus(int staffId)
         {
-            _staffDAO.ToggleStatus(staffId);
+            //_staffDAO.ToggleStatus(staffId);
         }
     }
 }
