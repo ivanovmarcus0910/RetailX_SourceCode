@@ -26,5 +26,7 @@ namespace Repositories
         public void Update(Product product) => _dao.UpdateProduct(product);
 
         public void Delete(int id) => _dao.DeleteProduct(id);
+
+        public List<Product> GetProductsBySupplier(int supplierId) => _dao.GetProductsBySupplier(supplierId);
     }
 }

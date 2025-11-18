@@ -17,5 +17,5 @@ public partial class PurchaseOrder
 
     public virtual ICollection<PurchaseOrderDetail> PurchaseOrderDetails { get; set; } = new List<PurchaseOrderDetail>();
 
-    public virtual Supplier Supplier { get; set; } = null!;
+    public virtual Supplier? Supplier { get; set; } = null!;
 }

@@ -14,5 +14,6 @@ namespace Repositories
         void Insert(Product product);
         void Update(Product product);
         void Delete(int id);
+        List<Product> GetProductsBySupplier(int supplierId);
     }
 }

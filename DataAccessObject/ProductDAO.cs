@@ -61,5 +61,13 @@ namespace DataAccessObject
                 _context.SaveChanges();
             }
         }
+        public List<Product> GetProductsBySupplier(int supplierId)
+        {
+            return _context.Products
+                .Where(p => p.SupplierId == supplierId && p.IsActive == true)
+                .Include(p => p.Category)
+                .Include(p => p.Supplier)
+                .ToList();
+        }
     }
 }
