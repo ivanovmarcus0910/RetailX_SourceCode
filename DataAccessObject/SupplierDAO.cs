@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BusinessObject.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAccessObject
 {
@@ -19,7 +20,7 @@ namespace DataAccessObject
         // Lấy tất cả Supplier
         public IEnumerable<Supplier> GetAll()
         {
-            return _context.Suppliers.ToList();
+            return _context.Suppliers.Where(p => p.IsActive == true).ToList();
         }
 
         // Lấy Supplier theo ID
@@ -48,7 +49,9 @@ namespace DataAccessObject
             var supplier = GetById(id);
             if (supplier != null)
             {
-                _context.Suppliers.Remove(supplier);
+                supplier.IsActive = false;
+                _context.Entry(supplier).State = EntityState.Modified;
+
                 _context.SaveChanges();
             }
         }
