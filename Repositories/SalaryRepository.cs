@@ -3,7 +3,6 @@ using DataAccessObject;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Repositories
 {
@@ -18,21 +17,25 @@ namespace Repositories
             _salaryDao = salaryDao;
         }
 
-        public async Task<bool> ProcessMonthlySalaries(int month, int year)
+        public bool ProcessMonthlySalaries(int month, int year)
         {
-            var staffs =  _staffDao.GetAll();
+            var allStaffs = _staffDao.GetAll();
+
+            var staffsToProcess = allStaffs.Where(s => s.BaseSalary.HasValue).ToList();
+
             bool success = true;
 
-            foreach (var staff in staffs)
+            foreach (var staff in staffsToProcess)
             {
-                var existingSalaries = await _salaryDao.GetSalariesByMonthAndYear(month, year);
+                // 1. Lấy bản ghi lương cũ (nếu có)
+                var existingSalaries = _salaryDao.GetSalariesByMonthAndYear(month, year);
                 var salaryRecord = existingSalaries.FirstOrDefault(s => s.StaffId == staff.StaffId);
 
+                // 2. Tính toán tổng lương
                 decimal bonus = salaryRecord?.Bonus ?? 0;
                 decimal deduction = salaryRecord?.Deduction ?? 0;
-
                 decimal baseSalary = staff.BaseSalary ?? 0;
-                decimal totalAmount = baseSalary + bonus - deduction; 
+                decimal totalAmount = baseSalary + bonus - deduction;
 
                 if (salaryRecord == null)
                 {
@@ -44,23 +47,23 @@ namespace Repositories
                         Amount = totalAmount,
                         Month = month,
                         Year = year,
-                        Status = 0
+                        Status = 0 
                     };
-                    await _salaryDao.InsertSalary(newSalary);
+                    _salaryDao.InsertSalary(newSalary);
                 }
                 else
                 {
                     salaryRecord.Amount = totalAmount;
-                    success &= await _salaryDao.UpdateSalary(salaryRecord);
+                    success &= _salaryDao.UpdateSalary(salaryRecord);
                 }
             }
 
             return success;
         }
 
-        public async Task<bool> UpdateBonusDeduction(int staffId, int month, int year, decimal bonus, decimal deduction)
+        public bool UpdateBonusDeduction(int staffId, int month, int year, decimal bonus, decimal deduction)
         {
-            var existingSalaries = await _salaryDao.GetSalariesByMonthAndYear(month, year);
+            var existingSalaries = _salaryDao.GetSalariesByMonthAndYear(month, year);
             var salaryRecord = existingSalaries.FirstOrDefault(s => s.StaffId == staffId);
 
             if (salaryRecord != null)
@@ -68,36 +71,36 @@ namespace Repositories
                 salaryRecord.Bonus = bonus;
                 salaryRecord.Deduction = deduction;
 
-                // Tính toán lại Amount sau khi điều chỉnh
-                var staff =  _staffDao.GetById(staffId);
+                // Lấy thông tin Staff để tính lại lương cơ bản
+                var staff = _staffDao.GetById(staffId);
                 decimal baseSalary = staff?.BaseSalary ?? 0;
                 salaryRecord.Amount = baseSalary + bonus - deduction;
 
-                return await _salaryDao.UpdateSalary(salaryRecord);
+                return _salaryDao.UpdateSalary(salaryRecord);
             }
             return false;
         }
 
-        public async Task<bool> UpdatePaymentStatus(int salaryId, byte status, int dayPayment)
+        public bool UpdatePaymentStatus(int salaryId, byte status, int dayPayment)
         {
-            var salaryRecord = await _salaryDao.GetSalaryById(salaryId);
+            var salaryRecord = _salaryDao.GetSalaryById(salaryId);
             if (salaryRecord != null && status == 1)
-            {   
+            {
                 salaryRecord.Status = 1;
                 salaryRecord.DayPayment = dayPayment;
-                return await _salaryDao.UpdateSalary(salaryRecord);
+                return _salaryDao.UpdateSalary(salaryRecord);
             }
             return false;
         }
 
-        public async Task<List<Salary>> GetSalaries(int month, int year)
+        public List<Salary> GetSalaries(int month, int year)
         {
-            return await _salaryDao.GetSalariesByMonthAndYear(month, year);
+            return _salaryDao.GetSalariesByMonthAndYear(month, year);
         }
 
-        public async Task<Salary> GetSalaryById(int salaryId)
+        public Salary GetSalaryById(int salaryId)
         {
-            return await _salaryDao.GetSalaryById(salaryId);
+            return _salaryDao.GetSalaryById(salaryId);
         }
     }
 }

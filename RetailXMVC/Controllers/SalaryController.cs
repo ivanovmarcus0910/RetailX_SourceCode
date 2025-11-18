@@ -13,12 +13,12 @@ namespace RetailXMVC.Controllers
         }
 
         // --- 1. Xem Danh sách Lương 
-        public async Task<IActionResult> Index(int? month, int? year)
+        public IActionResult Index(int? month, int? year)
         {
             int currentMonth = month ?? DateTime.Now.Month;
             int currentYear = year ?? DateTime.Now.Year;
 
-            var salaries = await _salaryRepository.GetSalaries(currentMonth, currentYear);
+            var salaries = _salaryRepository.GetSalaries(currentMonth, currentYear);
 
             ViewBag.Month = currentMonth;
             ViewBag.Year = currentYear;
@@ -26,14 +26,14 @@ namespace RetailXMVC.Controllers
             return View(salaries);
         }
 
-        // --- 2. Xử lý Tính toán Bảng lương
+        // --- 2. Xử lý Tính toán Bảng lương 
         [HttpPost]
-        [ValidateAntiForgeryToken] 
-        public async Task<IActionResult> Process(int month, int year)
+        [ValidateAntiForgeryToken]
+        public IActionResult Process(int month, int year) 
         {
             try
             {
-                await _salaryRepository.ProcessMonthlySalaries(month, year);
+                _salaryRepository.ProcessMonthlySalaries(month, year);
                 TempData["SuccessMessage"] = $"Đã xử lý và tạo/cập nhật bảng lương tháng {month}/{year} thành công.";
             }
             catch (Exception ex)
@@ -44,9 +44,9 @@ namespace RetailXMVC.Controllers
         }
 
         // --- 3. Điều chỉnh Thưởng/Khấu trừ 
-        public async Task<IActionResult> Adjust(int salaryId)
+        public IActionResult Adjust(int salaryId) 
         {
-            var salary = await _salaryRepository.GetSalaryById(salaryId);
+            var salary = _salaryRepository.GetSalaryById(salaryId);
             if (salary == null)
             {
                 return NotFound();
@@ -57,21 +57,19 @@ namespace RetailXMVC.Controllers
         // POST: /Salary/Adjust
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Adjust(Salary model, decimal bonus, decimal deduction)
+        public IActionResult Adjust(Salary model, decimal bonus, decimal deduction)
         {
-            // Lấy thông tin tháng/năm từ model
-            bool success = await _salaryRepository.UpdateBonusDeduction(
+            bool success = _salaryRepository.UpdateBonusDeduction(
                 model.StaffId,
                 model.Month,
                 model.Year,
-                bonus, 
-                deduction 
+                bonus,
+                deduction
             );
 
             if (success)
             {
-                // Cập nhật Amount sau khi điều chỉnh
-                await _salaryRepository.ProcessMonthlySalaries(model.Month, model.Year);
+                _salaryRepository.ProcessMonthlySalaries(model.Month, model.Year); 
                 TempData["SuccessMessage"] = $"Đã điều chỉnh lương cho nhân viên {model.StaffId} thành công.";
                 return RedirectToAction(nameof(Index), new { model.Month, model.Year });
             }
@@ -82,11 +80,11 @@ namespace RetailXMVC.Controllers
         // --- 4. Xác nhận Thanh toán 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Pay(int salaryId, int month, int year)
+        public IActionResult Pay(int salaryId, int month, int year) 
         {
             int dayPayment = DateTime.Now.Day;
 
-            bool success = await _salaryRepository.UpdatePaymentStatus(salaryId, 1, dayPayment);
+            bool success = _salaryRepository.UpdatePaymentStatus(salaryId, 1, dayPayment); 
 
             if (success)
             {
@@ -96,7 +94,6 @@ namespace RetailXMVC.Controllers
             {
                 TempData["ErrorMessage"] = $"Lỗi: Không thể xác nhận thanh toán cho ID {salaryId}.";
             }
-
 
             return RedirectToAction(nameof(Index), new { month, year });
         }

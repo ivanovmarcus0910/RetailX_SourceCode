@@ -2,6 +2,8 @@ using DataAccessObjectRetailX;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using RepositoriesRetailX;
+using Repositories;
+using DataAccessObject;
 
 namespace RetailXMVC
 {
@@ -15,8 +17,15 @@ namespace RetailXMVC
             builder.Services.AddControllersWithViews();
             builder.Services.AddDbContext<RetailXContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("RetailX")));
+            builder.Services.AddDbContext<Tenant0Context>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("Tenant0")));
             builder.Services.AddScoped<UserDAO>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<SalaryDAO>();
+            builder.Services.AddScoped<StaffDAO>();
+            builder.Services.AddScoped<ISalaryRepository, SalaryRepository>();
+            builder.Services.AddScoped<ReportRevenueDAO>();
+            builder.Services.AddScoped<IReportRepository, ReportRepository>();
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {

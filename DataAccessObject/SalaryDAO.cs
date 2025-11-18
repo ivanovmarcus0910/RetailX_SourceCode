@@ -15,31 +15,31 @@ namespace DataAccessObject
             _context = context;
         }
 
-        public async Task<List<Salary>> GetSalariesByMonthAndYear(int month, int year)
+        public List<Salary> GetSalariesByMonthAndYear(int month, int year)
         {
-            // Truy vấn lương theo tháng/năm, bao gồm thông tin Staff
-            return await _context.Salaries
-                                 .Where(s => s.Month == month && s.Year == year)
-                                 .Include(s => s.StaffId)
-                                 .ToListAsync();
+           
+            return _context.Salaries
+                           .Where(s => s.Month == month && s.Year == year)
+                           .Include(s => s.Staff)
+                           .ToList(); 
         }
 
-        public async Task<Salary> GetSalaryById(int salaryId)
+        public Salary GetSalaryById(int salaryId)
         {
-            return await _context.Salaries
-                         .Include(s => s.Staff) 
-                         .FirstOrDefaultAsync(s => s.SalaryId == salaryId);
+            return _context.Salaries
+                           .Include(s => s.Staff)
+                           .FirstOrDefault(s => s.SalaryId == salaryId);
         }
 
-        public async Task InsertSalary(Salary salary)
+        public void InsertSalary(Salary salary)
         {
             _context.Salaries.Add(salary);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
-        public async Task<bool> UpdateSalary(Salary salary)
+        public bool UpdateSalary(Salary salary)
         {
-            var existingSalary = await _context.Salaries.FirstOrDefaultAsync(s => s.SalaryId == salary.SalaryId);
+            var existingSalary = _context.Salaries.FirstOrDefault(s => s.SalaryId == salary.SalaryId);
 
             if (existingSalary == null) return false;
 
@@ -50,7 +50,7 @@ namespace DataAccessObject
             existingSalary.Status = salary.Status;
             existingSalary.DayPayment = salary.DayPayment;
 
-            int changes = await _context.SaveChangesAsync();
+            int changes = _context.SaveChanges();
             return changes > 0;
         }
     }

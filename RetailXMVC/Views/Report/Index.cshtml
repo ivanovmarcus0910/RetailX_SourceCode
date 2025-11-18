@@ -1,0 +1,109 @@
+﻿@model IEnumerable<BusinessObject.Models.ReportRevenue>
+@{
+    ViewData["Title"] = "Báo Cáo Doanh Thu & Lợi Nhuận";
+    DateTime startDate = DateTime.Parse(ViewBag.StartDate);
+    DateTime endDate = DateTime.Parse(ViewBag.EndDate);
+}
+
+<div class="card shadow-sm border-0 mt-4">
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0">
+            <i class="fas fa-chart-line me-2"></i> Báo Cáo Tài Chính
+        </h4>
+    </div>
+
+    <div class="card-body">
+
+        @* --- KHU VỰC CÔNG CỤ --- *@
+        <div class="p-3 mb-4 border rounded bg-light">
+            <h5 class="fw-bold mb-3"><i class="fas fa-cogs me-1"></i> Công cụ Báo cáo</h5>
+
+            <form asp-action="Generate" method="post" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="startDate" class="form-label">Ngày Bắt Đầu</label>
+                    <input type="date" id="startDate" name="startDate" value="@startDate.ToString("yyyy-MM-dd")" class="form-control" required />
+                </div>
+                <div class="col-md-3">
+                    <label for="endDate" class="form-label">Ngày Kết Thúc</label>
+                    <input type="date" id="endDate" name="endDate" value="@endDate.ToString("yyyy-MM-dd")" class="form-control" required />
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-file-invoice-dollar me-1"></i> Tạo Báo Cáo Mới
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <a asp-action="ExportSales" asp-route-startDateStr="@startDate.ToString("yyyy-MM-dd")" asp-route-endDateStr="@endDate.ToString("yyyy-MM-dd")" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-file-export me-1"></i> Xuất Dữ Liệu Bán Hàng
+                    </a>
+                </div>
+            </form>
+
+            <form asp-action="Index" method="get" class="row g-3 align-items-end mt-2 border-top pt-2">
+                <div class="col-md-6">
+                    <h6 class="text-muted fw-bold">Xem báo cáo đã tạo trong kỳ:</h6>
+                </div>
+                <div class="col-md-3">
+                    <input type="date" name="startDateStr" value="@startDate.ToString("yyyy-MM-dd")" class="form-control" required />
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        <i class="fas fa-search me-1"></i> Lọc
+                    </button>
+                </div>
+            </form>
+        </div>
+        @* --- HẾT KHU VỰC CÔNG CỤ --- *@
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success mt-3">@TempData["SuccessMessage"]</div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger mt-3">@TempData["ErrorMessage"]</div>
+        }
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="alert alert-info text-center mt-3 mb-0">
+                Chưa có báo cáo nào được tạo trong kỳ **@startDate.ToShortDateString() - @endDate.ToShortDateString()**.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive mt-4">
+                <h5 class="fw-bold mb-3">Lịch sử Báo cáo đã tạo</h5>
+                <table class="table table-bordered table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Kỳ Báo Cáo</th>
+                            <th class="text-end">Doanh Thu (A)</th>
+                            <th class="text-end">Giá Vốn/Chi phí (B)</th>
+                            <th class="text-end">Chi phí Lương (C)</th>
+                            <th class="text-end">Lợi Nhuận (A-B-C)</th>
+                            <th>Ngày Tạo</th>
+                            <th>Người Tạo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.OrderByDescending(r => r.CreateDate))
+                        {
+                            <tr>
+                                <td>@item.ReportRevenueId</td>
+                                <td>@item.DayStart - @item.DayEnd</td>
+                                <td class="text-end text-primary fw-bold">@item.AmountRevenue?.ToString("N0") VNĐ</td>
+                                <td class="text-end text-danger">@item.AmountCost?.ToString("N0") VNĐ</td>
+                                <td class="text-end text-danger">@item.AmountSalary?.ToString("N0") VNĐ</td>
+                                <td class="text-end fw-bold @(item.Profit >= 0 ? "text-success" : "text-danger")">@item.Profit?.ToString("N0") VNĐ</td>
+                                <td>@item.CreateDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@(item.Staff?.StaffName ?? "N/A")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
