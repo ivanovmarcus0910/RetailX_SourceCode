@@ -1,6 +1,10 @@
 ﻿using BusinessObject.Models;
 using DataAccessObject;
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 namespace Repositories
 {
     public class OrderRepository : IOrderRepository
@@ -59,6 +63,8 @@ namespace Repositories
         }
 
         // Lấy các đơn theo StaffId (nếu sau này Seller xem đơn của chính mình)
+        public Order? GetOrderById(int id) => _orderDao.GetOrderById(id);
+
         public List<Order> GetOrdersByStaff(int staffId)
             => _orderDao.GetOrdersByStaff(staffId);
     }

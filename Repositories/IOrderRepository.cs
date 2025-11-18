@@ -15,6 +15,7 @@ namespace Repositories
         void Delete(int id);
 
         Order CreateOrder(Order order, List<OrderDetail> details);
+        Order? GetOrderById(int id);
         List<Order> GetOrdersByStaff(int staffId);
     }
 
