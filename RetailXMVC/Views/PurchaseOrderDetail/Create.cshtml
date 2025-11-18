@@ -1,0 +1,34 @@
+﻿@{
+    Layout = "_Layout";
+    var products = ViewBag.Products as IEnumerable<BusinessObject.Models.Product>;
+}
+
+<h2>Add Product to Order</h2>
+
+<form method="post">
+    <input type="hidden" name="orderId" value="@ViewBag.OrderId" />
+
+    <div class="form-group">
+        <label>Product</label>
+        <select name="productId" class="form-control">
+            @foreach (var p in products)
+            {
+                <option value="@p.ProductId">@p.ProductName</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Quantity</label>
+        <input name="quantity" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Price</label>
+        <input name="price" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add</button>
+    <a asp-controller="PurchaseOrders" asp-action="Details"
+       asp-route-id="@ViewBag.OrderId" class="btn btn-secondary">Back</a>
+</form>

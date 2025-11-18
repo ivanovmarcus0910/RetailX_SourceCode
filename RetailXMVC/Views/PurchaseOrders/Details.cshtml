@@ -1,0 +1,63 @@
+﻿@model BusinessObject.Models.PurchaseOrder
+@{
+    var details = ViewBag.Details as List<BusinessObject.Models.PurchaseOrderDetail>;
+}
+
+<h2>PO Details #@Model.PurchaseOrderId</h2>
+
+<p>Supplier: @Model.Supplier?.SupplierName</p>
+<p>Date: @Model.CreateDate.ToShortDateString()</p>
+<p>Status: @(Model.Status == 2 ? "Pending" : Model.Status == 3 ? "Confirmed" : "Unknown")</p>
+
+<hr />
+
+<h3>Order Items</h3>
+
+@if (Model.Status != 3)
+{
+    <a asp-controller="PurchaseOrderDetail" asp-action="Create"
+       asp-route-orderId="@Model.PurchaseOrderId" asp-route-supplierId="@Model.SupplierId" class="btn btn-primary">Add Product</a>
+}
+
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Total</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var d in details)
+{
+    <tr>
+        <td>@d.Product?.ProductName</td>
+        <td>@(d.Quantity ?? 0)</td>
+        <td>@(d.Price ?? 0)</td>
+        <td>@((d.Quantity ?? 0) * (d.Price ?? 0))</td>
+        <td>
+            @if (Model.Status != 3)
+            {
+                <a asp-controller="PurchaseOrderDetail"
+                   asp-action="Delete"
+                   asp-route-id="@d.PurchaseOrderDetailId"
+                   asp-route-orderId="@Model.PurchaseOrderId"
+                   class="btn btn-danger btn-sm">Delete</a>
+            }
+        </td>
+    </tr>
+}
+    </tbody>
+</table>
+
+@if (Model.Status != 3)
+{
+    <form asp-action="Approve" method="post" class="mt-3">
+        <input type="hidden" name="id" value="@Model.PurchaseOrderId" />
+        <button class="btn btn-success">Confirm</button>
+    </form>
+}
+
+<a asp-controller="PurchaseOrders" asp-action="Index" class="btn btn-secondary mt-3">Back to List</a>
