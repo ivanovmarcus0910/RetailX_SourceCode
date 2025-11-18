@@ -43,9 +43,9 @@
             <tr>
                 <td>@item.SalaryId</td>
                 @* ĐÃ SỬA LỖI: Dùng item.Staff để truy cập Navigation Property *@
-                <td>@(item.SalaryNavigation?.StaffName ?? "N/A")</td>
+                <td>@(item.Staff?.StaffName ?? "N/A")</td>
                 @{
-                    var baseSalary = item.SalaryNavigation?.BaseSalary ?? 0;
+                    var baseSalary = item.Staff?.BaseSalary ?? 0;
                 }
                 <td>@baseSalary.ToString("N0")</td>
                 <td>@item.Bonus?.ToString("N0")</td>

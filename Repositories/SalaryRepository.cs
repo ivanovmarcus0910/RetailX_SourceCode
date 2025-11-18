@@ -20,7 +20,7 @@ namespace Repositories
 
         public async Task<bool> ProcessMonthlySalaries(int month, int year)
         {
-            var staffs = await _staffDao.GetAllActiveStaffs();
+            var staffs =  _staffDao.GetAll();
             bool success = true;
 
             foreach (var staff in staffs)
@@ -69,7 +69,7 @@ namespace Repositories
                 salaryRecord.Deduction = deduction;
 
                 // Tính toán lại Amount sau khi điều chỉnh
-                var staff = await _staffDao.GetStaffById(staffId);
+                var staff =  _staffDao.GetById(staffId);
                 decimal baseSalary = staff?.BaseSalary ?? 0;
                 salaryRecord.Amount = baseSalary + bonus - deduction;
 

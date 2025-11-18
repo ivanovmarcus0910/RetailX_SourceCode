@@ -27,7 +27,7 @@ namespace DataAccessObject
         public async Task<Salary> GetSalaryById(int salaryId)
         {
             return await _context.Salaries
-                         .Include(s => s.SalaryNavigation) 
+                         .Include(s => s.Staff) 
                          .FirstOrDefaultAsync(s => s.SalaryId == salaryId);
         }
 
