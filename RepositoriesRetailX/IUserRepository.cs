@@ -11,6 +11,6 @@ namespace RepositoriesRetailX
     {
         User GetUserByEmail(string email);
         bool VerifyUser(string email, string password);
-
+        bool SignUpUser(string email, string password, string fullname);
     }
 }

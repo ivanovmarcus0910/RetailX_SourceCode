@@ -8,8 +8,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BusinessObjectRetailX\BusinessObjectRetailX.csproj" />
+    <ProjectReference Include="..\BusinessObject\BusinessObject.csproj" />
     <ProjectReference Include="..\DataAccessObjectRetailX\DataAccessObjectRetailX.csproj" />
+    <ProjectReference Include="..\DataAccessObject\DataAccessObject.csproj" />
     <ProjectReference Include="..\RepositoriesRetailX\RepositoriesRetailX.csproj" />
+    <ProjectReference Include="..\Repositories\Repositories.csproj" />
   </ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">

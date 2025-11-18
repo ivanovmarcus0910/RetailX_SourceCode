@@ -1,0 +1,86 @@
+﻿@model IEnumerable<BusinessObject.Models.Salary>
+@{
+    ViewData["Title"] = "Quản Lý Lương";
+}
+
+<h1>Bảng Lương Tháng @ViewBag.Month/@ViewBag.Year</h1>
+
+@* Hiển thị thông báo thành công/lỗi *@
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@* Nút Xử lý/Tạo bảng lương *@
+<form asp-action="Process" method="post" class="mb-3">
+    <input type="hidden" name="month" value="@ViewBag.Month" />
+    <input type="hidden" name="year" value="@ViewBag.Year" />
+    <button type="submit" class="btn btn-primary">
+        <i class="fas fa-calculator"></i> Xử lý Bảng Lương
+    </button>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nhân viên</th>
+            <th>Lương cơ bản</th>
+            <th>Thưởng</th>
+            <th>Khấu trừ</th>
+            <th>Tổng lương</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.SalaryId</td>
+                @* ĐÃ SỬA LỖI: Dùng item.Staff để truy cập Navigation Property *@
+                <td>@(item.SalaryNavigation?.StaffName ?? "N/A")</td>
+                @{
+                    var baseSalary = item.SalaryNavigation?.BaseSalary ?? 0;
+                }
+                <td>@baseSalary.ToString("N0")</td>
+                <td>@item.Bonus?.ToString("N0")</td>
+                <td>@item.Deduction?.ToString("N0")</td>
+                <td>@item.Amount?.ToString("N0")</td>
+                <td>
+                    @if (item.Status == 1)
+                    {
+                        <span class="badge bg-success">Đã TT (@item.DayPayment)</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">Chưa TT</span>
+                    }
+                </td>
+                <td>
+                    @if (item.Status == 0)
+                    {
+                        @* Nút Điều chỉnh *@
+                        <a asp-action="Adjust" asp-route-salaryId="@item.SalaryId" class="btn btn-sm btn-info me-2">Điều chỉnh</a>
+
+                        @* Nút Thanh toán *@
+                        <form asp-action="Pay" method="post" style="display:inline;">
+                            <input type="hidden" name="salaryId" value="@item.SalaryId" />
+                            <input type="hidden" name="month" value="@item.Month" />
+                            <input type="hidden" name="year" value="@item.Year" />
+                            <button type="submit" class="btn btn-sm btn-success"
+                                    onclick="return confirm('Xác nhận đã thanh toán lương cho nhân viên này?');">
+                                Thanh toán
+                            </button>
+                        </form>
+                    }
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
