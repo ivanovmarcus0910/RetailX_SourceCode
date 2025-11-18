@@ -1,109 +1,548 @@
 ﻿@model IEnumerable<BusinessObject.Models.ReportRevenue>
 @{
-    ViewData["Title"] = "Báo Cáo Doanh Thu & Lợi Nhuận";
+    ViewData["Title"] = "Báo Cáo Tài Chính";
     DateTime startDate = DateTime.Parse(ViewBag.StartDate);
     DateTime endDate = DateTime.Parse(ViewBag.EndDate);
+    int currentPage = ViewBag.CurrentPage;
+    int totalPages = ViewBag.TotalPages;
+    int totalReports = ViewBag.TotalReports;
+    var allReports = (List<BusinessObject.Models.ReportRevenue>)ViewBag.AllReports;
+
+    // Tính tổng cho summary cards (dựa trên TẤT CẢ báo cáo, không chỉ trang hiện tại)
+    var totalRevenue = allReports?.Sum(r => r.AmountRevenue ?? 0) ?? 0;
+    var totalCost = allReports?.Sum(r => r.AmountCost ?? 0) ?? 0;
+    var totalSalary = allReports?.Sum(r => r.AmountSalary ?? 0) ?? 0;
+    var totalProfit = allReports?.Sum(r => r.Profit ?? 0) ?? 0;
 }
 
-<div class="card shadow-sm border-0 mt-4">
-    <div class="card-header bg-success text-white">
-        <h4 class="mb-0">
-            <i class="fas fa-chart-line me-2"></i> Báo Cáo Tài Chính
-        </h4>
+<style>
+    .summary-card {
+        border-left: 4px solid;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+    .quick-filter-btn {
+        transition: all 0.2s;
+    }
+
+        .quick-filter-btn:hover {
+            transform: scale(1.05);
+        }
+
+    .pagination .page-link {
+        transition: all 0.2s;
+    }
+
+        .pagination .page-link:hover {
+            transform: translateY(-2px);
+        }
+</style>
+
+<!-- HEADER -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">
+            <i class="fas fa-chart-line text-success me-2"></i>
+            Báo Cáo Tài Chính
+        </h2>
+        <p class="text-muted mb-0">
+            <i class="far fa-calendar-alt me-1"></i>
+            Từ <strong>@startDate.ToString("dd/MM/yyyy")</strong> đến <strong>@endDate.ToString("dd/MM/yyyy")</strong>
+            <span class="badge bg-secondary ms-2">@totalReports báo cáo</span>
+        </p>
     </div>
+</div>
 
+<!-- THÔNG BÁO -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- SUMMARY CARDS -->
+@if (allReports != null && allReports.Any())
+{
+    <div class="row g-3 mb-4">
+        <!-- Card 1: Doanh Thu -->
+        <div class="col-md-3">
+            <div class="card summary-card border-0 shadow-sm h-100" style="border-left-color: #0d6efd !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Tổng Doanh Thu</p>
+                            <h4 class="mb-0 text-primary fw-bold">@totalRevenue.ToString("N0")</h4>
+                            <small class="text-muted">VNĐ</small>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-dollar-sign fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Chi Phí Nhập -->
+        <div class="col-md-3">
+            <div class="card summary-card border-0 shadow-sm h-100" style="border-left-color: #dc3545 !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Chi Phí Nhập Hàng</p>
+                            <h4 class="mb-0 text-danger fw-bold">@totalCost.ToString("N0")</h4>
+                            <small class="text-muted">VNĐ</small>
+                        </div>
+                        <div class="bg-danger bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-shopping-cart fa-2x text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Chi Phí Lương -->
+        <div class="col-md-3">
+            <div class="card summary-card border-0 shadow-sm h-100" style="border-left-color: #fd7e14 !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Chi Phí Lương</p>
+                            <h4 class="mb-0 text-warning fw-bold">@totalSalary.ToString("N0")</h4>
+                            <small class="text-muted">VNĐ</small>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-users fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Lợi Nhuận -->
+        <div class="col-md-3">
+            <div class="card summary-card border-0 shadow-sm h-100" style="border-left-color: @(totalProfit >= 0 ? "#198754" : "#dc3545") !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Lợi Nhuận Ròng</p>
+                            <h4 class="mb-0 fw-bold" style="color: @(totalProfit >= 0 ? "#198754" : "#dc3545")">
+                                @totalProfit.ToString("N0")
+                            </h4>
+                            <small class="text-muted">VNĐ</small>
+                        </div>
+                        <div class="p-3 rounded" style="background-color: @(totalProfit >= 0 ? "rgba(25, 135, 84, 0.1)" : "rgba(220, 53, 69, 0.1)")">
+                            <i class="fas @(totalProfit >= 0 ? "fa-arrow-trend-up" : "fa-arrow-trend-down") fa-2x" style="color: @(totalProfit >= 0 ? "#198754" : "#dc3545")"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- TOOLBAR: FILTER & ACTIONS -->
+<div class="card border-0 shadow-sm mb-4">
     <div class="card-body">
-
-        @* --- KHU VỰC CÔNG CỤ --- *@
-        <div class="p-3 mb-4 border rounded bg-light">
-            <h5 class="fw-bold mb-3"><i class="fas fa-cogs me-1"></i> Công cụ Báo cáo</h5>
-
-            <form asp-action="Generate" method="post" class="row g-3 align-items-end">
+        <form asp-action="Index" method="get" id="filterForm">
+            <input type="hidden" name="page" id="pageInput" value="1" />
+            <div class="row g-3">
+                <!-- Date Range -->
                 <div class="col-md-3">
-                    <label for="startDate" class="form-label">Ngày Bắt Đầu</label>
-                    <input type="date" id="startDate" name="startDate" value="@startDate.ToString("yyyy-MM-dd")" class="form-control" required />
+                    <label class="form-label fw-semibold">
+                        <i class="far fa-calendar me-1"></i> Từ ngày
+                    </label>
+                    <input type="date"
+                           name="startDateStr"
+                           id="startDateInput"
+                           value="@startDate.ToString("yyyy-MM-dd")"
+                           class="form-control"
+                           required />
                 </div>
                 <div class="col-md-3">
-                    <label for="endDate" class="form-label">Ngày Kết Thúc</label>
-                    <input type="date" id="endDate" name="endDate" value="@endDate.ToString("yyyy-MM-dd")" class="form-control" required />
+                    <label class="form-label fw-semibold">
+                        <i class="far fa-calendar me-1"></i> Đến ngày
+                    </label>
+                    <input type="date"
+                           name="endDateStr"
+                           id="endDateInput"
+                           value="@endDate.ToString("yyyy-MM-dd")"
+                           class="form-control"
+                           required />
                 </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-success w-100">
+
+                <!-- Actions -->
+                <div class="col-md-6 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter me-1"></i> Lọc
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="resetToday()">
+                        <i class="fas fa-rotate me-1"></i> Hôm nay
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Filters -->
+            <div class="d-flex gap-2 mt-3 flex-wrap">
+                <span class="text-muted small me-2 align-self-center">
+                    <i class="fas fa-bolt me-1"></i> Nhanh:
+                </span>
+                <button type="button" class="btn btn-sm btn-outline-secondary quick-filter-btn" onclick="setDateRange(0)">
+                    Hôm nay
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary quick-filter-btn" onclick="setDateRange(7)">
+                    7 ngày qua
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary quick-filter-btn" onclick="setDateRange(30)">
+                    30 ngày qua
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary quick-filter-btn" onclick="setThisMonth()">
+                    Tháng này
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary quick-filter-btn" onclick="setLastMonth()">
+                    Tháng trước
+                </button>
+            </div>
+        </form>
+
+        <!-- Action Buttons -->
+        <div class="border-top mt-3 pt-3">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <button type="button"
+                            class="btn btn-success w-100"
+                            onclick="generateReport()"
+                            id="btnGenerate">
                         <i class="fas fa-file-invoice-dollar me-1"></i> Tạo Báo Cáo Mới
                     </button>
                 </div>
-                <div class="col-md-3">
-                    <a asp-action="ExportSales" asp-route-startDateStr="@startDate.ToString("yyyy-MM-dd")" asp-route-endDateStr="@endDate.ToString("yyyy-MM-dd")" class="btn btn-outline-primary w-100">
-                        <i class="fas fa-file-export me-1"></i> Xuất Dữ Liệu Bán Hàng
+                <div class="col-md-4">
+                    <a asp-action="ExportSales"
+                       asp-route-startDateStr="@startDate.ToString("yyyy-MM-dd")"
+                       asp-route-endDateStr="@endDate.ToString("yyyy-MM-dd")"
+                       class="btn btn-outline-primary w-100"
+                       id="exportSalesLink">
+                        <i class="fas fa-file-csv me-1"></i> Xuất Dữ Liệu Bán Hàng
                     </a>
                 </div>
-            </form>
-
-            <form asp-action="Index" method="get" class="row g-3 align-items-end mt-2 border-top pt-2">
-                <div class="col-md-6">
-                    <h6 class="text-muted fw-bold">Xem báo cáo đã tạo trong kỳ:</h6>
+                <div class="col-md-4">
+                    <a asp-action="ExportReportSummary"
+                       asp-route-startDateStr="@startDate.ToString("yyyy-MM-dd")"
+                       asp-route-endDateStr="@endDate.ToString("yyyy-MM-dd")"
+                       class="btn btn-outline-success w-100"
+                       id="exportSummaryLink">
+                        <i class="fas fa-file-excel me-1"></i> Xuất Báo Cáo Tổng Hợp
+                    </a>
                 </div>
-                <div class="col-md-3">
-                    <input type="date" name="startDateStr" value="@startDate.ToString("yyyy-MM-dd")" class="form-control" required />
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-secondary w-100">
-                        <i class="fas fa-search me-1"></i> Lọc
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
-        @* --- HẾT KHU VỰC CÔNG CỤ --- *@
+    </div>
+</div>
 
-        @if (TempData["SuccessMessage"] != null)
-        {
-            <div class="alert alert-success mt-3">@TempData["SuccessMessage"]</div>
-        }
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="alert alert-danger mt-3">@TempData["ErrorMessage"]</div>
-        }
-
+<!-- REPORT TABLE -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">
+                <i class="fas fa-list me-2"></i>
+                Lịch Sử Báo Cáo
+                @if (totalReports > 0)
+                {
+                    <span class="badge bg-primary">@totalReports</span>
+                }
+            </h5>
+            @if (totalReports > 0)
+            {
+                <span class="text-muted small">
+                    Trang @currentPage / @totalPages
+                </span>
+            }
+        </div>
+    </div>
+    <div class="card-body p-0">
         @if (Model == null || !Model.Any())
         {
-            <div class="alert alert-info text-center mt-3 mb-0">
-                Chưa có báo cáo nào được tạo trong kỳ **@startDate.ToShortDateString() - @endDate.ToShortDateString()**.
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                <p class="text-muted mb-0">
+                    Chưa có báo cáo nào trong kỳ <strong>@startDate.ToString("dd/MM/yyyy")</strong> đến <strong>@endDate.ToString("dd/MM/yyyy")</strong>
+                </p>
+                <button type="button" class="btn btn-primary mt-3" onclick="generateReport()">
+                    <i class="fas fa-plus me-1"></i> Tạo Báo Cáo Đầu Tiên
+                </button>
             </div>
         }
         else
         {
-            <div class="table-responsive mt-4">
-                <h5 class="fw-bold mb-3">Lịch sử Báo cáo đã tạo</h5>
-                <table class="table table-bordered table-striped table-hover align-middle">
-                    <thead class="table-dark">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <th>ID</th>
+                            <th class="ps-4">ID</th>
                             <th>Kỳ Báo Cáo</th>
-                            <th class="text-end">Doanh Thu (A)</th>
-                            <th class="text-end">Giá Vốn/Chi phí (B)</th>
-                            <th class="text-end">Chi phí Lương (C)</th>
-                            <th class="text-end">Lợi Nhuận (A-B-C)</th>
+                            <th class="text-end">Doanh Thu</th>
+                            <th class="text-end">Chi Phí Nhập</th>
+                            <th class="text-end">Chi Phí Lương</th>
+                            <th class="text-end">Lợi Nhuận</th>
                             <th>Ngày Tạo</th>
-                            <th>Người Tạo</th>
+                            <th class="pe-4">Người Tạo</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model.OrderByDescending(r => r.CreateDate))
+                        @foreach (var item in Model)
                         {
                             <tr>
-                                <td>@item.ReportRevenueId</td>
-                                <td>@item.DayStart - @item.DayEnd</td>
-                                <td class="text-end text-primary fw-bold">@item.AmountRevenue?.ToString("N0") VNĐ</td>
-                                <td class="text-end text-danger">@item.AmountCost?.ToString("N0") VNĐ</td>
-                                <td class="text-end text-danger">@item.AmountSalary?.ToString("N0") VNĐ</td>
-                                <td class="text-end fw-bold @(item.Profit >= 0 ? "text-success" : "text-danger")">@item.Profit?.ToString("N0") VNĐ</td>
-                                <td>@item.CreateDate?.ToString("dd/MM/yyyy HH:mm")</td>
-                                <td>@(item.Staff?.StaffName ?? "N/A")</td>
+                                <td class="ps-4">
+                                    <span class="badge bg-secondary">#@item.ReportRevenueId</span>
+                                </td>
+                                <td>
+                                    <i class="far fa-calendar-alt text-muted me-1"></i>
+                                    <small>@item.DayStart - @item.DayEnd</small>
+                                </td>
+                                <td class="text-end">
+                                    <span class="text-primary fw-semibold">@item.AmountRevenue?.ToString("N0")</span>
+                                    <small class="text-muted"> VNĐ</small>
+                                </td>
+                                <td class="text-end">
+                                    <span class="text-danger">@item.AmountCost?.ToString("N0")</span>
+                                    <small class="text-muted"> VNĐ</small>
+                                </td>
+                                <td class="text-end">
+                                    <span class="text-warning">@item.AmountSalary?.ToString("N0")</span>
+                                    <small class="text-muted"> VNĐ</small>
+                                </td>
+                                <td class="text-end">
+                                    <span class="fw-bold @(item.Profit >= 0 ? "text-success" : "text-danger")">
+                                        @if (item.Profit >= 0)
+                                        {
+                                            <i class="fas fa-arrow-up me-1"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-arrow-down me-1"></i>
+                                        }
+                                        @item.Profit?.ToString("N0")
+                                    </span>
+                                    <small class="text-muted"> VNĐ</small>
+                                </td>
+                                <td>
+                                    <small class="text-muted">@item.CreateDate?.ToString("dd/MM/yyyy HH:mm")</small>
+                                </td>
+                                <td class="pe-4">
+                                    <i class="fas fa-user-circle text-muted me-1"></i>
+                                    <small>@(item.Staff?.StaffName ?? "N/A")</small>
+                                </td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
+
+            <!-- PAGINATION -->
+            @if (totalPages > 1)
+            {
+                <div class="card-footer bg-white border-top">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">
+                            Hiển thị <strong>@((currentPage - 1) * 10 + 1)</strong> - <strong>@Math.Min(currentPage * 10, totalReports)</strong>
+                            trong tổng số <strong>@totalReports</strong> báo cáo
+                        </div>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination mb-0">
+                                <!-- First Page -->
+                                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { startDateStr = startDate.ToString("yyyy-MM-dd"), endDateStr = endDate.ToString("yyyy-MM-dd"), page = 1 })" aria-label="First">
+                                        <i class="fas fa-angles-left"></i>
+                                    </a>
+                                </li>
+
+                                <!-- Previous Page -->
+                                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { startDateStr = startDate.ToString("yyyy-MM-dd"), endDateStr = endDate.ToString("yyyy-MM-dd"), page = currentPage - 1 })" aria-label="Previous">
+                                        <i class="fas fa-angle-left"></i>
+                                    </a>
+                                </li>
+
+                                @* Page Numbers *@
+                                @{
+                                    int startPage = Math.Max(1, currentPage - 2);
+                                    int endPage = Math.Min(totalPages, currentPage + 2);
+                                }
+
+                                @if (startPage > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Index", new { startDateStr = startDate.ToString("yyyy-MM-dd"), endDateStr = endDate.ToString("yyyy-MM-dd"), page = 1 })">1</a>
+                                    </li>
+                                    @if (startPage > 2)
+                                    {
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    }
+                                }
+
+                                @for (int i = startPage; i <= endPage; i++)
+                                {
+                                    <li class="page-item @(i == currentPage ? "active" : "")">
+                                        <a class="page-link" href="@Url.Action("Index", new { startDateStr = startDate.ToString("yyyy-MM-dd"), endDateStr = endDate.ToString("yyyy-MM-dd"), page = i })">@i</a>
+                                    </li>
+                                }
+
+                                @if (endPage < totalPages)
+                                {
+                                    @if (endPage < totalPages - 1)
+                                    {
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    }
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Index", new { startDateStr = startDate.ToString("yyyy-MM-dd"), endDateStr = endDate.ToString("yyyy-MM-dd"), page = totalPages })">@totalPages</a>
+                                    </li>
+                                }
+
+                                <!-- Next Page -->
+                                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { startDateStr = startDate.ToString("yyyy-MM-dd"), endDateStr = endDate.ToString("yyyy-MM-dd"), page = currentPage + 1 })" aria-label="Next">
+                                        <i class="fas fa-angle-right"></i>
+                                    </a>
+                                </li>
+
+                                <!-- Last Page -->
+                                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { startDateStr = startDate.ToString("yyyy-MM-dd"), endDateStr = endDate.ToString("yyyy-MM-dd"), page = totalPages })" aria-label="Last">
+                                        <i class="fas fa-angles-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            }
         }
     </div>
 </div>
+
+<!-- JAVASCRIPT -->
+<script>
+    function setDateRange(days) {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+
+        document.getElementById('startDateInput').value = formatDate(startDate);
+        document.getElementById('endDateInput').value = formatDate(endDate);
+        document.getElementById('pageInput').value = 1; // Reset về trang 1
+
+        document.getElementById('filterForm').submit();
+    }
+
+    function setThisMonth() {
+        const now = new Date();
+        const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+        document.getElementById('startDateInput').value = formatDate(startDate);
+        document.getElementById('endDateInput').value = formatDate(endDate);
+        document.getElementById('pageInput').value = 1;
+
+        document.getElementById('filterForm').submit();
+    }
+
+    function setLastMonth() {
+        const now = new Date();
+        const startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+
+        document.getElementById('startDateInput').value = formatDate(startDate);
+        document.getElementById('endDateInput').value = formatDate(endDate);
+        document.getElementById('pageInput').value = 1;
+
+        document.getElementById('filterForm').submit();
+    }
+
+    function resetToday() {
+        const today = new Date();
+        document.getElementById('startDateInput').value = formatDate(today);
+        document.getElementById('endDateInput').value = formatDate(today);
+        document.getElementById('pageInput').value = 1;
+        document.getElementById('filterForm').submit();
+    }
+
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function generateReport() {
+        const startDate = document.getElementById('startDateInput').value;
+        const endDate = document.getElementById('endDateInput').value;
+
+        if (!startDate || !endDate) {
+            alert('Vui lòng chọn khoảng thời gian!');
+            return;
+        }
+
+        const btn = document.getElementById('btnGenerate');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang tạo báo cáo...';
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '@Url.Action("Generate", "Report")';
+
+        const inputStart = document.createElement('input');
+        inputStart.type = 'hidden';
+        inputStart.name = 'startDate';
+        inputStart.value = startDate;
+
+        const inputEnd = document.createElement('input');
+        inputEnd.type = 'hidden';
+        inputEnd.name = 'endDate';
+        inputEnd.value = endDate;
+
+        form.appendChild(inputStart);
+        form.appendChild(inputEnd);
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    document.getElementById('startDateInput').addEventListener('change', updateExportLinks);
+    document.getElementById('endDateInput').addEventListener('change', updateExportLinks);
+
+    function updateExportLinks() {
+        const startDate = document.getElementById('startDateInput').value;
+        const endDate = document.getElementById('endDateInput').value;
+
+        const salesLink = document.getElementById('exportSalesLink');
+        if (salesLink) {
+            const salesUrl = new URL(salesLink.href);
+            salesUrl.searchParams.set('startDateStr', startDate);
+            salesUrl.searchParams.set('endDateStr', endDate);
+            salesLink.href = salesUrl.toString();
+        }
+
+        const summaryLink = document.getElementById('exportSummaryLink');
+        if (summaryLink) {
+            const summaryUrl = new URL(summaryLink.href);
+            summaryUrl.searchParams.set('startDateStr', startDate);
+            summaryUrl.searchParams.set('endDateStr', endDate);
+            summaryLink.href = summaryUrl.toString();
+        }
+    }
+</script>

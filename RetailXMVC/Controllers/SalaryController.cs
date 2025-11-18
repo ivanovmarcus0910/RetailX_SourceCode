@@ -1,35 +1,58 @@
 ﻿using BusinessObject.Models;
 using Microsoft.AspNetCore.Mvc;
 using Repositories;
+
 namespace RetailXMVC.Controllers
 {
     public class SalaryController : Controller
     {
         private readonly ISalaryRepository _salaryRepository;
+        private const int PageSize = 10; // Số bản ghi mỗi trang
 
         public SalaryController(ISalaryRepository salaryRepository)
         {
             _salaryRepository = salaryRepository;
         }
 
-        // --- 1. Xem Danh sách Lương 
-        public IActionResult Index(int? month, int? year)
+        // --- 1. Xem Danh sách Lương với Phân trang
+        public IActionResult Index(int? month, int? year, int page = 1)
         {
             int currentMonth = month ?? DateTime.Now.Month;
             int currentYear = year ?? DateTime.Now.Year;
 
-            var salaries = _salaryRepository.GetSalaries(currentMonth, currentYear);
+            // Lấy tất cả lương trong tháng
+            var allSalaries = _salaryRepository.GetSalaries(currentMonth, currentYear);
 
+            // Tính toán phân trang
+            var totalSalaries = allSalaries.Count;
+            var totalPages = (int)Math.Ceiling(totalSalaries / (double)PageSize);
+
+            // Đảm bảo page hợp lệ
+            if (page < 1) page = 1;
+            if (page > totalPages && totalPages > 0) page = totalPages;
+
+            // Lấy dữ liệu cho trang hiện tại
+            var pagedSalaries = allSalaries
+                .OrderBy(s => s.Staff.StaffName)
+                .Skip((page - 1) * PageSize)
+                .Take(PageSize)
+                .ToList();
+
+            // Truyền dữ liệu
             ViewBag.Month = currentMonth;
             ViewBag.Year = currentYear;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalSalaries = totalSalaries;
+            ViewBag.AllSalaries = allSalaries; // Để tính summary
 
-            return View(salaries);
+            return View(pagedSalaries);
         }
 
         // --- 2. Xử lý Tính toán Bảng lương 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Process(int month, int year) 
+        public IActionResult Process(int month, int year)
         {
             try
             {
@@ -40,16 +63,17 @@ namespace RetailXMVC.Controllers
             {
                 TempData["ErrorMessage"] = "Lỗi khi xử lý bảng lương: " + ex.Message;
             }
-            return RedirectToAction(nameof(Index), new { month, year });
+            return RedirectToAction(nameof(Index), new { month, year, page = 1 });
         }
 
         // --- 3. Điều chỉnh Thưởng/Khấu trừ 
-        public IActionResult Adjust(int salaryId) 
+        public IActionResult Adjust(int salaryId)
         {
             var salary = _salaryRepository.GetSalaryById(salaryId);
             if (salary == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Không tìm thấy bản ghi lương.";
+                return RedirectToAction(nameof(Index));
             }
             return View(salary);
         }
@@ -69,10 +93,11 @@ namespace RetailXMVC.Controllers
 
             if (success)
             {
-                _salaryRepository.ProcessMonthlySalaries(model.Month, model.Year); 
-                TempData["SuccessMessage"] = $"Đã điều chỉnh lương cho nhân viên {model.StaffId} thành công.";
-                return RedirectToAction(nameof(Index), new { model.Month, model.Year });
+                _salaryRepository.ProcessMonthlySalaries(model.Month, model.Year);
+                TempData["SuccessMessage"] = $"Đã điều chỉnh lương thành công.";
+                return RedirectToAction(nameof(Index), new { month = model.Month, year = model.Year });
             }
+
             TempData["ErrorMessage"] = "Lỗi khi điều chỉnh lương.";
             return View(model);
         }
@@ -80,19 +105,19 @@ namespace RetailXMVC.Controllers
         // --- 4. Xác nhận Thanh toán 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Pay(int salaryId, int month, int year) 
+        public IActionResult Pay(int salaryId, int month, int year)
         {
             int dayPayment = DateTime.Now.Day;
 
-            bool success = _salaryRepository.UpdatePaymentStatus(salaryId, 1, dayPayment); 
+            bool success = _salaryRepository.UpdatePaymentStatus(salaryId, 1, dayPayment);
 
             if (success)
             {
-                TempData["SuccessMessage"] = $"Đã xác nhận thanh toán (ID: {salaryId}).";
+                TempData["SuccessMessage"] = $"Đã xác nhận thanh toán lương thành công.";
             }
             else
             {
-                TempData["ErrorMessage"] = $"Lỗi: Không thể xác nhận thanh toán cho ID {salaryId}.";
+                TempData["ErrorMessage"] = $"Lỗi: Không thể xác nhận thanh toán.";
             }
 
             return RedirectToAction(nameof(Index), new { month, year });
