@@ -17,6 +17,8 @@ public partial class RetailXContext : DbContext
 
     public virtual DbSet<Package> Packages { get; set; }
 
+    public virtual DbSet<Request> Requests { get; set; }
+
     public virtual DbSet<SystemLog> SystemLogs { get; set; }
 
     public virtual DbSet<Tenant> Tenants { get; set; }
@@ -27,6 +29,7 @@ public partial class RetailXContext : DbContext
 
     public virtual DbSet<UserLoginHistory> UserLoginHistories { get; set; }
 
+   
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Package>(entity =>
@@ -36,6 +39,21 @@ public partial class RetailXContext : DbContext
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.MonthlyPrice).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Name).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<Request>(entity =>
+        {
+            entity.ToTable("Request");
+
+            entity.HasOne(d => d.Tenant).WithMany(p => p.Requests)
+                .HasForeignKey(d => d.TenantId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Request_Tenants");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Requests)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Request_Users");
         });
 
         modelBuilder.Entity<SystemLog>(entity =>
