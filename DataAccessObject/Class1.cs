@@ -9,7 +9,7 @@ namespace DataAccessObject
     internal class Class1
     {
         //Test new branch
-        //Test new branch 2 Huan
-        int a = 11;
+        //Test new branch 2 Hai
+        int a = 10;
     }
 }
