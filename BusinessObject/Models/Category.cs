@@ -11,5 +11,7 @@ public partial class Category
 
     public string? Decription { get; set; }
 
+    public bool IsActive { get; set; }
+
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }

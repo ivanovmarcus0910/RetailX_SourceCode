@@ -1,8 +1,109 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Trang chủ";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="py-5">
+    <div class="row align-items-center mb-5">
+        <div class="col-md-7">
+            <h1 class="display-4 fw-bold mb-3">RetailX – Hệ thống quản lý bán hàng cho thời đại mới</h1>
+            <p class="lead mb-4">
+                RetailX là nền tảng quản lý bán hàng <strong>tương tự KiotViet</strong>, được thiết kế cho các cửa hàng bán lẻ,
+                chuỗi cửa hàng và doanh nghiệp vừa & nhỏ. Từ <strong>nhập – xuất – tồn kho</strong>,
+                <strong>bán hàng tại quầy</strong> cho đến <strong>thống kê doanh thu và quản lý nhân sự</strong> – tất cả gói gọn trong một hệ thống duy nhất.
+            </p>
+            <p class="mb-4">
+                Mục tiêu của RetailX là giúp chủ shop nắm được tình hình kinh doanh <strong>theo thời gian thực</strong>,
+                giảm thất thoát, tối ưu tồn kho và kiểm soát hiệu quả làm việc của nhân viên –
+                mà không cần phải giỏi công nghệ.
+            </p>
+            <a asp-controller="Auth" asp-action="SignUp" class="btn btn-primary btn-lg me-2">
+                Bắt đầu dùng thử RetailX
+            </a>
+            <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-secondary btn-lg">
+                Đăng nhập hệ thống
+            </a>
+        </div>
+        <div class="col-md-5 mt-4 mt-md-0">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold mb-3">RetailX phù hợp với ai?</h5>
+                    <ul class="mb-0">
+                        <li>Cửa hàng thời trang, mỹ phẩm, phụ kiện, tạp hóa…</li>
+                        <li>Chuỗi cửa hàng cần đồng bộ dữ liệu bán hàng & tồn kho</li>
+                        <li>Doanh nghiệp muốn số hóa quy trình bán hàng & quản lý nhân sự</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5" />
+
+    <div class="row text-center mb-4">
+        <div class="col">
+            <h2 class="fw-bold">Tính năng nổi bật của RetailX</h2>
+            <p class="text-muted">
+                Tập trung vào 4 trụ cột chính: <strong>Kho – Bán hàng – Thống kê – Nhân sự</strong>.
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">Nhập – xuất – tồn kho</h5>
+                    <p class="card-text">
+                        Quản lý nhập hàng, trả hàng nhà cung cấp, điều chuyển giữa các kho.
+                        Tự động cập nhật tồn kho sau mỗi giao dịch, hạn chế thất thoát và sai lệch số liệu.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">Bán hàng tại quầy</h5>
+                    <p class="card-text">
+                        Giao diện bán hàng đơn giản, hỗ trợ tìm kiếm sản phẩm nhanh, áp dụng khuyến mãi,
+                        in hóa đơn, hỗ trợ nhiều hình thức thanh toán (tiền mặt, chuyển khoản, ví điện tử…).
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">Thống kê & báo cáo</h5>
+                    <p class="card-text">
+                        Báo cáo doanh thu theo ngày/tháng, mặt hàng bán chạy, lợi nhuận, tồn kho chậm luân chuyển…
+                        Giúp chủ shop ra quyết định dựa trên dữ liệu, không phải cảm tính.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">Quản lý nhân sự</h5>
+                    <p class="card-text">
+                        Quản lý tài khoản nhân viên, phân quyền theo vai trò, theo dõi lịch làm việc, năng suất bán hàng.
+                        Hạn chế truy cập trái phép và bảo vệ dữ liệu kinh doanh quan trọng.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col text-center">
+            <h3 class="fw-bold mb-3">RetailX – Nền tảng quản lý bán hàng dành cho Retailer Việt Nam</h3>
+            <p class="text-muted mb-4">
+                Hướng tới một hệ thống đơn giản, trực quan nhưng đủ mạnh để đồng hành cùng cửa hàng trên hành trình phát triển lâu dài.
+            </p>
+            <a asp-controller="Auth" asp-action="SignUp" class="btn btn-primary btn-lg">
+                Đăng ký ngay để trải nghiệm
+            </a>
+        </div>
+    </div>
 </div>

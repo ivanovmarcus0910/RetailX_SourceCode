@@ -1,12 +1,22 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BusinessObjectRetailX.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 using RepositoriesRetailX;
-
+using System.Security.Claims;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 namespace RetailXMVC.Controllers
 {
     public class AuthController : Controller
     {
       
         private readonly IUserRepository _userRepository;
+        public AuthController(IUserRepository userRepository)
+        {
+            _userRepository = userRepository;
+        }
         [HttpGet]
         public IActionResult Login()
         {
@@ -14,22 +24,69 @@ namespace RetailXMVC.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(string email, string password)
+        public async Task<IActionResult> Login(string email, string password)
         {
-            
+            Console.WriteLine($"Attempting login for email: {email} : {password}");
             if (!_userRepository.VerifyUser(email, password))
             {
                 ViewBag.ErrorMessage = "Invalid email or password.";
                 return View();
             }
+            User user = _userRepository.GetUserByEmail(email);
 
+            // 🔹 Tạo claims
+            var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Email),
+            new Claim("FullName", user.FullName ?? user.Email),
+            new Claim("GlobalRole", user.GlobalRole ?? "User"),
+            new Claim("TenantId", user.TenantId?.ToString() ?? "")
+        };
+
+            var identity = new ClaimsIdentity(
+                claims,
+                CookieAuthenticationDefaults.AuthenticationScheme
+            );
+
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal
+            );
             Console.WriteLine("User authenticated successfully.");
             return RedirectToAction("Index", "Home");
         }
-
-        public IActionResult Logout()
+        [HttpGet]
+        public IActionResult SignUpAccount()
         {
-            return RedirectToAction("Login");
+            return View();
+        }
+        [HttpPost]
+        public IActionResult SignUpAccount(string email, string password, string fullname)
+        {
+            Console.WriteLine($"Sign up with {email} {password} {fullname} ");
+            if (_userRepository.GetUserByEmail(email) != null)
+            {
+                ViewBag.ErrorMessage = "Email already exists.";
+                return View();
+            }
+            if (_userRepository.SignUpUser(email, password, fullname))
+            {
+                ViewBag.Message = "Sign up successful. Please re-login.";
+                return RedirectToAction("Login");
+            }
+            else
+                            {
+                ViewBag.ErrorMessage = "Sign up failed. Please try again.";
+            }
+            return View();
+        }
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Index", "Home");
         }
     }
 }

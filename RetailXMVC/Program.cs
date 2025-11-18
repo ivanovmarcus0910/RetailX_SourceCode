@@ -1,4 +1,5 @@
 using DataAccessObjectRetailX;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using RepositoriesRetailX;
 
@@ -16,7 +17,13 @@ namespace RetailXMVC
                 options.UseSqlServer(builder.Configuration.GetConnectionString("RetailX")));
             builder.Services.AddScoped<UserDAO>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
-
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Auth/Login";
+        options.LogoutPath = "/Auth/Logout";
+        options.AccessDeniedPath = "/Auth/AccessDenied";
+    });
 
             //Build
             var app = builder.Build();
@@ -32,6 +39,7 @@ namespace RetailXMVC
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
