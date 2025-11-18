@@ -31,13 +31,7 @@ namespace RetailXMVC.Controllers
             return View(products);
         }
 
-        public IActionResult Details(int? id)
-        {
-            if (id == null) return NotFound();
-            var product = _repoProduct.GetById(id.Value);
-            if (product == null) return NotFound();
-            return View(product);
-        }
+        
 
         public IActionResult Create()
         {
@@ -48,7 +42,7 @@ namespace RetailXMVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create([Bind("ProductId,ProductName,CategoryId,SupplierId,Price")] Product product)
+        public IActionResult Create([Bind("ProductId,ProductName,CategoryId,SupplierId,Price,Quantity")] Product product)
         {
             if (!ModelState.IsValid)
             {
@@ -66,7 +60,7 @@ namespace RetailXMVC.Controllers
 
                 return View(product);
             }
-
+            product.IsActive = true;
             _repoProduct.Insert(product);
             return RedirectToAction(nameof(Index));
         }
@@ -98,12 +92,13 @@ namespace RetailXMVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, [Bind("ProductId,ProductName,CategoryId,SupplierId,Price")] Product product)
+        public IActionResult Edit(int id, [Bind("ProductId,ProductName,CategoryId,SupplierId,Price,Quantity")] Product product)
         {
             if (id != product.ProductId) return NotFound();
 
             if (ModelState.IsValid)
             {
+                product.IsActive = true;
                 _repoProduct.Update(product);
                 return RedirectToAction(nameof(Index));
             }

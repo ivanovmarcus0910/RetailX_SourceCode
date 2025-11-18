@@ -1,4 +1,4 @@
-﻿@* @model IEnumerable<BusinessObject.Models.Staff> *@
+﻿@model IEnumerable<BusinessObject.Models.Staff>
 
 @{
     ViewData["Title"] = "Quản lý Nhân viên";
@@ -34,7 +34,7 @@
             @foreach (var item in Model)
             {
                 <tr>
-                    <td>@item.StaffID</td>
+                    <td>@item.StaffId</td>
                     <td>@item.StaffName</td>
                     <td>@item.Email</td>
                     <td>@item.Phone</td>
@@ -46,8 +46,8 @@
                         { <span class="badge bg-secondary">Đã nghỉ</span> }
                     </td>
                     <td>
-                        <a asp-action="Edit" asp-route-id="@item.StaffID" class="btn btn-sm btn-primary">Sửa</a>
-                        <a asp-action="Delete" asp-route-id="@item.StaffID" class="btn btn-sm btn-danger">Xóa</a>
+                        <a asp-action="Edit" asp-route-id="@item.StaffId" class="btn btn-sm btn-primary">Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@item.StaffId" class="btn btn-sm btn-danger">Xóa</a>
                     </td>
                 </tr>
             }

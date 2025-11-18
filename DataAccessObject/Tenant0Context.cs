@@ -216,9 +216,7 @@ public partial class Tenant0Context : DbContext
             entity.Property(e => e.Amount).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.Bonus).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.Deduction).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.StaffId)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("StaffID");
+            entity.Property(e => e.StaffId).HasColumnName("StaffID");
 
             entity.HasOne(d => d.Staff).WithMany(p => p.Salaries)
                 .HasForeignKey(d => d.StaffId)
