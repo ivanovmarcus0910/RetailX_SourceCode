@@ -1,9 +1,4 @@
 ﻿using BusinessObject.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccessObject
@@ -17,21 +12,36 @@ namespace DataAccessObject
             _context = context;
         }
 
+        // ========== CREATE ==========
         public void AddOrder(Order order)
         {
             _context.Orders.Add(order);
         }
 
+        // ========== GET ALL ==========
+        public List<Order> GetAllOrders()
+        {
+            return _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.Staff)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(d => d.Product)
+                .OrderByDescending(o => o.CreateDate)
+                .ToList();
+        }
+
+        // ========== GET BY ID ==========
         public Order? GetOrderById(int id)
         {
             return _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.Staff)
                 .Include(o => o.OrderDetails)
-                .ThenInclude(d => d.Product)
+                    .ThenInclude(d => d.Product)
                 .FirstOrDefault(o => o.OrderId == id);
         }
 
+        // ========== GET BY STAFF ==========
         public List<Order> GetOrdersByStaff(int staffId)
         {
             return _context.Orders
@@ -39,6 +49,20 @@ namespace DataAccessObject
                 .Include(o => o.Customer)
                 .OrderByDescending(o => o.CreateDate)
                 .ToList();
+        }
+
+        // ========== DELETE ==========
+        public void DeleteOrder(int id)
+        {
+            var order = _context.Orders
+                                .Include(o => o.OrderDetails)
+                                .FirstOrDefault(o => o.OrderId == id);
+
+            if (order != null)
+            {
+                _context.OrderDetails.RemoveRange(order.OrderDetails);
+                _context.Orders.Remove(order);
+            }
         }
     }
 }
