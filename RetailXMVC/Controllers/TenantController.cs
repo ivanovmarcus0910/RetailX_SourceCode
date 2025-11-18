@@ -1,6 +1,8 @@
-﻿using BusinessObjectRetailX.Models;
+﻿using BusinessObject.Models;
+using BusinessObjectRetailX.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Repositories;
@@ -9,23 +11,28 @@ using System.Security.Claims;
 
 namespace RetailXMVC.Controllers
 {
+    [Authorize]
+
     public class TenantController : Controller
     {
         private readonly IUserRepository userRepo;
         private readonly ITenantRepository tenantRepo;
-        public TenantController(IUserRepository userRepo, ITenantRepository tenantRepo)
+        private readonly IStaffRepository _staffRepo;
+
+        public TenantController(IUserRepository userRepo, ITenantRepository tenantRepo, IStaffRepository staffRepo)
         {
             this.userRepo = userRepo;
             this.tenantRepo = tenantRepo;
-        }
-        public IActionResult Index()
-        {
-            return View();
+            this._staffRepo = staffRepo;
         }
 
         [HttpGet]
         public IActionResult SignUpTenant()
         {
+            if (TempData["Message"] != null)
+            {
+                ViewBag.Message = TempData["Message"];
+            }
             return View();
         }
         [HttpPost]
@@ -50,9 +57,9 @@ namespace RetailXMVC.Controllers
             {
                 tenantRepo.AddTenant(tempTenant);
                 CreateDatabaseForTenant(tempTenant);
+
                 user.TenantId = tempTenant.Id;
                 user.GlobalRole = "Owner";
-                userRepo.UpdateUser(user);
                 var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -73,7 +80,24 @@ namespace RetailXMVC.Controllers
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     principal
                 );
-            } catch (Exception)
+
+
+                Staff tempStaff = new Staff
+                {
+                    StaffName = user.FullName,
+                    Role = 1,
+                    Phone = user.Phone??"Not available",
+                    Email = user.Email,
+                    Address = "Not available",
+                    BaseSalary = 0,
+                    IsActive = true
+                };
+                _staffRepo.CreateStaff(tempStaff);
+                user.StaffId = tempStaff.StaffId;
+                userRepo.UpdateUser(user);
+
+            }
+            catch (Exception)
             {
                 Console.WriteLine("Lỗi ở Add Tenant");
             }
@@ -81,13 +105,44 @@ namespace RetailXMVC.Controllers
             return RedirectToAction("LoginTenant");
         }
 
+
         [HttpGet]
-        public IActionResult LoginTenant()
+        public async Task<IActionResult>  LoginTenant()
         {
+            var user = userRepo.GetUserByEmail(User.Identity.Name);
+            var staff = _staffRepo.GetStaffDetail(user.StaffId.Value);
 
+            if (user.TenantId == null || staff == null)
+            {
+                TempData["Message"] = "Bạn chưa có tenant. Vui lòng đăng ký tenant trước.";
+                return RedirectToAction("SignUpTenant");
+            }
+            var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Email),
+            new Claim("FullName", user.FullName ?? user.Email),
+            new Claim("GlobalRole", user.GlobalRole ?? "User"),
+            new Claim("TenantId", user.TenantId?.ToString() ?? ""),
+            new Claim("StaffId", user.StaffId?.ToString() ?? ""),
+            new Claim("IsTenantLogin", "True"),
+            new Claim("StaffRole", staff.Role.ToString())
+        };
 
+            var identity = new ClaimsIdentity(
+                claims,
+                CookieAuthenticationDefaults.AuthenticationScheme
+            );
+
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal
+            );
             return RedirectToAction("Index", "HubTenant");
         }
+
         private string BuildTenantConnectionString(Tenant tenant)
         {
             return $"Server=.;Database={tenant.DbName};Trusted_Connection=True;TrustServerCertificate=True;";

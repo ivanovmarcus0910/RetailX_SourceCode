@@ -76,6 +76,11 @@ namespace RetailXMVC
         options.LogoutPath = "/Auth/Logout";
         options.AccessDeniedPath = "/Auth/AccessDenied";
     });
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("TenantLoggedIn", policy =>
+                    policy.RequireClaim("IsTenantLogin", "True"));
+            });
 
             //Build
             var app = builder.Build();

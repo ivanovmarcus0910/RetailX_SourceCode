@@ -29,7 +29,6 @@ public partial class RetailXContext : DbContext
 
     public virtual DbSet<UserLoginHistory> UserLoginHistories { get; set; }
 
-   
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Package>(entity =>
@@ -124,6 +123,7 @@ public partial class RetailXContext : DbContext
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.PasswordHash).HasMaxLength(500);
             entity.Property(e => e.Phone).HasMaxLength(20);
+            entity.Property(e => e.StaffId).HasColumnName("staffId");
 
             entity.HasOne(d => d.Tenant).WithMany(p => p.Users)
                 .HasForeignKey(d => d.TenantId)
