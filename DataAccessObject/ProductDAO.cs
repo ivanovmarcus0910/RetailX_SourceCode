@@ -20,6 +20,8 @@ namespace DataAccessObject
         public List<Product> GetAllProducts()
         {
             return _context.Products
+                // SỬA: Sử dụng true/false trực tiếp
+                .Where(p => p.IsActive == true)
                 .Include(p => p.Category)
                 .Include(p => p.Supplier)
                 .ToList();
@@ -30,11 +32,14 @@ namespace DataAccessObject
             return _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Supplier)
-                .FirstOrDefault(p => p.ProductId == id);
+                // SỬA: Sử dụng true/false trực tiếp
+                .FirstOrDefault(p => p.ProductId == id && p.IsActive == true);
         }
 
         public void AddProduct(Product product)
         {
+            // Đảm bảo IsActive được đặt là true khi thêm mới
+            product.IsActive = true;
             _context.Products.Add(product);
             _context.SaveChanges();
         }
@@ -50,7 +55,9 @@ namespace DataAccessObject
             var product = _context.Products.Find(id);
             if (product != null)
             {
-                _context.Products.Remove(product);
+                product.IsActive = false;
+                _context.Entry(product).State = EntityState.Modified;
+
                 _context.SaveChanges();
             }
         }

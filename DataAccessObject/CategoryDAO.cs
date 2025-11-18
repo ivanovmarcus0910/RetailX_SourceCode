@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BusinessObject.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAccessObject
 {
@@ -19,7 +20,7 @@ namespace DataAccessObject
         // Lấy tất cả category
         public List<Category> GetAll()
         {
-            return _context.Categories.ToList();
+            return _context.Categories.Where(p => p.IsActive == true).ToList();
         }
 
         // Lấy category theo ID
@@ -48,7 +49,9 @@ namespace DataAccessObject
             var category = _context.Categories.FirstOrDefault(c => c.CategoryId == id);
             if (category != null)
             {
-                _context.Categories.Remove(category);
+                category.IsActive = false;
+                _context.Entry(category).State = EntityState.Modified;
+
                 _context.SaveChanges();
             }
         }
