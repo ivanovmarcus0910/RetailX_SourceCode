@@ -21,6 +21,8 @@ namespace RetailXMVC
 options.UseSqlServer("Server=localhost;Database=Tenant_0;Trusted_Connection=True;TrustServerCertificate=True;"));
             builder.Services.AddScoped<UserDAO>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<TenantDAO>();
+            builder.Services.AddScoped<ITenantRepository, TenantRepository>();
             builder.Services.AddScoped<StaffDAO>();
             builder.Services.AddScoped<IStaffRepository, StaffRepository>();
             builder.Services.AddScoped<LogDAO>();
