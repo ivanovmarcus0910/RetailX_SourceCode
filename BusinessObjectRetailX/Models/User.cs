@@ -23,6 +23,8 @@ public partial class User
 
     public DateTime? CreatedDate { get; set; }
 
+    public virtual ICollection<Request> Requests { get; set; } = new List<Request>();
+
     public virtual ICollection<SystemLog> SystemLogs { get; set; } = new List<SystemLog>();
 
     public virtual Tenant? Tenant { get; set; }
