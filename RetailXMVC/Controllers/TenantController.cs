@@ -84,7 +84,9 @@ namespace RetailXMVC.Controllers
         [HttpGet]
         public IActionResult LoginTenant()
         {
-            return View();
+
+
+            return RedirectToAction("Index", "HubTenant");
         }
         private string BuildTenantConnectionString(Tenant tenant)
         {
