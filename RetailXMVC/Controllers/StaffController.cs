@@ -29,7 +29,7 @@ namespace RetailXMVC.Controllers
 
         //public IActionResult PendingRequests()
         //{
-        //    var ownerTenantIdString = User.FindFirst("TenantId")?.Value;
+        //    var ownerTenantIdString = User.FindFirst("TenantId")?.;.Value;
         //    int currentTenantId = string.IsNullOrEmpty(ownerTenantIdString) ? 1 : int.Parse(ownerTenantIdString);
         //    var pendingUsers = _userRepo.GetUsersRequestingToJoin(currentTenantId);
 

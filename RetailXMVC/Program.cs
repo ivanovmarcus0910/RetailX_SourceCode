@@ -68,6 +68,7 @@ namespace RetailXMVC
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
+            app.MapHub<SignalR.NotificationHub>("/notificationHub");
             app.Run();
         }
     }
