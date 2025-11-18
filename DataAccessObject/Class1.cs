@@ -12,5 +12,6 @@ namespace DataAccessObject
         //Test new branch 2 Hai
         int a = 10;
         int b = 10;
+        uint c = 20;
     }
 }
