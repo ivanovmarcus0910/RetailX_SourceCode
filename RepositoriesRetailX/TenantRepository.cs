@@ -43,6 +43,10 @@ namespace RepositoriesRetailX
         {
             return $"Server=.;Database={tenant.DbName};Trusted_Connection=True;TrustServerCertificate=True;";
         }
+        public bool UpdateTenant(Tenant tenant)
+        {
+            return tenantDAO.UpdateTenant(tenant);
+        }
 
     }
 }

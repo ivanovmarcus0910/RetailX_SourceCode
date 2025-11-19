@@ -1,0 +1,167 @@
+﻿@using BusinessObjectRetailX.Models
+@model List<Tenant>
+
+@{
+    ViewData["Title"] = "Manage Tenants";
+}
+
+<div class="container my-4">
+    <h2 class="fw-bold mb-3">Manage Tenants</h2>
+
+    <!-- Filter + Search -->
+    <form method="get" class="card shadow-sm border-0 rounded-4 mb-3">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label">Tìm kiếm (Company / Owner / Email)</label>
+                    <input type="text"
+                           name="search"
+                           value="@Context.Request.Query["search"]"
+                           class="form-control"
+                           placeholder="Nhập từ khóa...">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="activeFilter" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="true" selected="@(Context.Request.Query["activeFilter"] == "true")">Active</option>
+                        <option value="false" selected="@(Context.Request.Query["activeFilter"] == "false")">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-funnel me-1"></i>Lọc
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Bảng Tenant -->
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="card-title mb-0">Danh sách Tenant</h5>
+                <span class="text-muted small">
+                    Tổng: @Model.Count() tenants
+                </span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Company</th>
+                            <th>Owner</th>
+                            <th>Email</th>
+                            <th>DbName</th>
+                            <th>Active</th>
+                            <th>Created</th>
+                            <th>Users</th>
+                            <th style="width: 180px;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-4">
+                                    Không có tenant nào.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var t in Model)
+                            {
+                                <tr>
+                                    <td>@t.Id</td>
+                                    <td>@t.CompanyName</td>
+                                    <td>@(t.OwnerName ?? "-")</td>
+                                    <td>@(t.OwnerEmail ?? "-")</td>
+                                    <td><code>@t.DbName</code></td>
+                                    <td>
+                                        @if (t.IsActive == true)
+                                        {
+                                            <span class="badge bg-success">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Inactive</span>
+                                        }
+                                    </td>
+                                    <td>@(t.CreatedDate?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                                    <td>@(t.Users?.Count ?? 0)</td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <!-- Toggle Active -->
+                                            <form asp-action="ToggleTenantActive"
+                                                  asp-controller="AdminRetailX"
+                                                  method="post"
+                                                  class="tenant-toggle-form">
+                                                <input type="hidden" name="id" value="@t.Id" />
+                                                <input type="hidden" name="returnUrl"
+                                                       value="@Context.Request.Path@Context.Request.QueryString" />
+                                                <button type="button"
+                                                        class="btn btn-sm @(t.IsActive == true ? "btn-warning" : "btn-success") btn-toggle-tenant"
+                                                        data-company="@t.CompanyName"
+                                                        data-active="@(t.IsActive == true ? "true" : "false")">
+                                                    @(t.IsActive == true ? "Deactive" : "Active")
+                                                </button>
+                                            </form>
+
+                                            <!-- Sau này làm thêm view chi tiết -->
+                                            @* <a asp-controller="AdminRetailX"
+                                               asp-action="TenantDetail"
+                                               asp-route-id="@t.Id"
+                                               class="btn btn-sm btn-outline-info">
+                                                Chi tiết
+                                               </a> *@
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- SweetAlert2 (nếu chưa add trong _Layout thì add ở đây) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.btn-toggle-tenant').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const form = this.closest('form');
+                    const company = this.getAttribute('data-company') || 'tenant';
+                    const isActive = this.getAttribute('data-active') === 'true';
+
+                    const actionText = isActive ? 'DEACTIVE' : 'ACTIVE';
+                    const confirmText = isActive ? 'Có, deactivate tenant!' : 'Có, activate tenant!';
+
+                    Swal.fire({
+                        title: `Bạn chắc chắn muốn ${actionText} "${company}"?`,
+                        text: "Hệ thống của tenant này sẽ bị ảnh hưởng.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: confirmText,
+                        cancelButtonText: 'Hủy',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit(); // gửi id + returnUrl về controller
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+}

@@ -68,5 +68,19 @@ namespace DataAccessObjectRetailX
             return _context.Tenants.Count();
 
         }
+
+        public bool UpdateTenant(Tenant tenant)
+        {
+            try
+            {
+                _context.Tenants.Update(tenant);
+                _context.SaveChanges();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
     }
 }
