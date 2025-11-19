@@ -1,0 +1,32 @@
+﻿@model List<BusinessObject.Models.Order>
+
+<h2>Danh sách hóa đơn</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Khách hàng</th>
+            <th>Nhân viên</th>
+            <th>Ngày tạo</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var o in Model)
+        {
+            <tr>
+                <td>@o.OrderId</td>
+                <td>@o.Customer.CustomerName</td>
+                <td>@o.Staff.StaffName</td>
+                <td>@o.CreateDate</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@o.OrderId" class="btn btn-info btn-sm">Xem</a>
+                    <a asp-action="Delete" asp-route-id="@o.OrderId" class="btn btn-danger btn-sm">Xóa</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Create" class="btn btn-primary">Tạo hóa đơn mới</a>

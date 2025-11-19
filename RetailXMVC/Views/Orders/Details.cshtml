@@ -1,0 +1,60 @@
+﻿@model BusinessObject.Models.Order
+
+@{
+    ViewData["Title"] = "Order Details";
+    decimal total = Model.OrderDetails.Sum(d => d.Quantity * (d.Product.Price ?? 0));
+}
+
+<h2>Chi tiết hóa đơn #@Model.OrderId</h2>
+<hr />
+
+<div class="card mb-4">
+    <div class="card-body">
+
+        <p><b>Khách hàng:</b> @Model.Customer.CustomerName</p>
+        <p><b>Nhân viên tạo:</b> @Model.Staff.StaffName</p>
+        <p><b>Ngày tạo:</b> @Model.CreateDate.ToString("dd/MM/yyyy HH:mm")</p>
+        <p><b>Trạng thái:</b> @(Model.Status == 1 ? "Hoàn thành" : "Khác")</p>
+
+    </div>
+</div>
+
+<h4>Sản phẩm trong hóa đơn</h4>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Sản phẩm</th>
+            <th>Đơn giá</th>
+            <th>Số lượng</th>
+            <th>Thành tiền</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var d in Model.OrderDetails)
+        {
+            <tr>
+                <td>@d.Product.ProductName</td>
+                <td>@String.Format("{0:N0} đ", d.Product.Price)</td>
+                <td>@d.Quantity</td>
+                <td>@String.Format("{0:N0} đ", d.Quantity * d.Product.Price)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="alert alert-info text-end">
+    <h4>Tổng tiền: @String.Format("{0:N0} đ", total)</h4>
+</div>
+
+<div class="d-flex justify-content-between mt-4">
+
+    <a asp-action="Index" class="btn btn-secondary">
+        ← Quay lại danh sách
+    </a>
+
+    <a asp-action="Edit" asp-route-id="@Model.OrderId" class="btn btn-warning">
+        ✏️ Sửa hóa đơn
+    </a>
+
+</div>

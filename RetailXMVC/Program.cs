@@ -68,6 +68,15 @@ namespace RetailXMVC
 
             builder.Services.AddScoped<SupplierDAO>();
             builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
+            
+            builder.Services.AddScoped<OrderDAO>();
+            builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+            builder.Services.AddScoped<OrderDetailDAO>();
+
+            builder.Services.AddScoped<CustomerDAO>();
+            builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+
 
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

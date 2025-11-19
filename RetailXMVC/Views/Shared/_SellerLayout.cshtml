@@ -1,0 +1,178 @@
+﻿@*
+    Seller Layout - RetailX
+    Designed for Seller Dashboard
+*@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Seller Panel</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        :root {
+            /* Định nghĩa màu sắc */
+            --primary-color: #3b82f6; /* Blue (Màu nhấn chính) */
+            --secondary-color: #1f2937; /* Dark Slate (Sidebar background) */
+            --text-color: #374151; /* Dark Gray (Text color) */
+            --light-gray: #e5e7eb; /* Light Gray (Border/Divider) */
+            --background-color: #f9fafb; /* Lighter Background */
+        }
+
+        body {
+            background-color: var(--background-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+        }
+
+        /* Reset/Utilities */
+        a {
+            text-decoration: none;
+            transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+        }
+
+        /* =========================
+                   1. Sidebar Nâng Cấp
+                   ========================= */
+        .sidebar {
+            width: 240px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: var(--secondary-color);
+            color: white;
+            padding-top: 20px;
+            box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1); /* Thêm bóng đổ dọc */
+        }
+
+            .sidebar .brand {
+                font-size: 24px;
+                font-weight: 800; /* Dày hơn */
+                color: white;
+                text-align: center;
+                margin-bottom: 40px; /* Tăng khoảng cách */
+                padding: 0 20px;
+            }
+
+            .sidebar a {
+                color: #d1d5db;
+                padding: 14px 25px; /* Tăng padding */
+                display: flex; /* Dùng flex cho icon và text */
+                align-items: center;
+                font-size: 15px;
+                font-weight: 500;
+                border-left: 4px solid transparent;
+                margin: 5px 0; /* Khoảng cách giữa các mục menu */
+            }
+
+                .sidebar a:hover {
+                    background: rgba(255, 255, 255, 0.1); /* Hiệu ứng sáng mờ */
+                    color: white;
+                    border-left-color: var(--primary-color);
+                }
+
+                .sidebar a.active {
+                    background: #374151;
+                    color: white;
+                    border-left-color: var(--primary-color); /* Màu nhấn chính */
+                }
+
+                /* Khoảng cách cho icon trong menu */
+                .sidebar a i {
+                    margin-right: 12px;
+                    font-size: 18px;
+                }
+
+        /* =========================
+                   2. Content & Header
+                   ========================= */
+        .main-content {
+            margin-left: 240px;
+            padding: 30px; /* Tăng padding */
+        }
+
+        .topbar {
+            background: white;
+            padding: 15px 25px; /* Tăng padding */
+            border-radius: 12px; /* Góc bo tròn hơn */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Bóng đổ mềm mại, hiện đại hơn */
+            margin-bottom: 30px;
+        }
+
+            .topbar h4 {
+                font-weight: 700;
+                color: var(--text-color);
+            }
+
+            .topbar .user-info {
+                font-weight: 600;
+                color: var(--text-color);
+                display: flex;
+                align-items: center;
+            }
+
+                .topbar .user-info .logout-btn {
+                    background-color: #ef4444; /* Red color */
+                    border-color: #ef4444;
+                    font-weight: 600;
+                    transition: background-color 0.2s, border-color 0.2s;
+                }
+
+                    .topbar .user-info .logout-btn:hover {
+                        background-color: #dc2626;
+                        border-color: #dc2626;
+                    }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <div class="brand">RetailX Seller</div>
+
+        <a asp-controller="Orders" asp-action="Create" class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Create" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Orders" ? "active" : "")">
+            <i>➕</i> Tạo hóa đơn
+        </a>
+
+        <a asp-controller="Customers" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Customers" ? "active" : "")">
+            <i>👥</i> Danh sách khách hàng
+        </a>
+
+        <a asp-controller="Orders" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Orders" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">
+            <i>📄</i> Danh sách hóa đơn
+        </a>
+    </div>
+
+    <div class="main-content">
+
+        <div class="topbar d-flex justify-content-between align-items-center">
+            <h4 class="m-0">@ViewData["Title"]</h4>
+
+            <div class="user-info">
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name;
+                    <span class="me-3 fw-bold">👤 @fullName</span>
+
+                    <a asp-controller="Auth" asp-action="Logout" class="btn btn-danger btn-sm logout-btn">
+                        Đăng xuất
+                    </a>
+                }
+            </div>
+        </div>
+
+        <div>
+            @RenderBody()
+        </div>
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

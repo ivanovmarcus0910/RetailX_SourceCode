@@ -1,5 +1,6 @@
 ﻿using BusinessObject.Models;
 using DataAccessObject;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,10 +22,26 @@ namespace Repositories
         }
 
         // Lấy tất cả đơn
-        public List<Order> GetAll() => _orderDao.GetAllOrders();
+        public List<Order> GetAll()
+        {
+            return _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.Staff)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .ToList();
+        }
 
         // Lấy 1 đơn theo id
-        public Order? GetById(int id) => _orderDao.GetOrderById(id);
+        public Order? GetById(int id)
+        {
+            return _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.Staff)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .FirstOrDefault(o => o.OrderId == id);
+        }
 
         // Insert đơn đơn giản (không truyền sẵn list details)
         public void Insert(Order order)
@@ -62,10 +79,42 @@ namespace Repositories
             return order;
         }
 
+
         // Lấy các đơn theo StaffId (nếu sau này Seller xem đơn của chính mình)
         public Order? GetOrderById(int id) => _orderDao.GetOrderById(id);
 
         public List<Order> GetOrdersByStaff(int staffId)
             => _orderDao.GetOrdersByStaff(staffId);
+
+        // public void DeleteOrderDetails(int orderId) => _orderDao.DeleteOrderDetails(orderId);
+
+        public void Update(Order order, List<OrderDetail> newDetails)
+        {
+            var dbOrder = _context.Orders
+                .Include(o => o.OrderDetails)
+                .First(o => o.OrderId == order.OrderId);
+
+            // Update order info
+            dbOrder.CustomerId = order.CustomerId;
+            dbOrder.StaffId = order.StaffId;
+            dbOrder.Status = order.Status;
+
+            // Xóa toàn bộ chi tiết cũ
+            _context.OrderDetails.RemoveRange(dbOrder.OrderDetails);
+
+            // Thêm chi tiết mới
+            foreach (var d in newDetails)
+            {
+                d.OrderId = dbOrder.OrderId;
+                _context.OrderDetails.Add(d);
+            }
+
+            _context.SaveChanges();
+        }
+
+
+
+
+
     }
 }
