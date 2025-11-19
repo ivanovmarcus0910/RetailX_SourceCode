@@ -17,7 +17,10 @@ namespace DataAccessObject
         {
             _context.Orders.Add(order);
         }
-
+        public void UpdateOrder(Order order)
+        {
+            _context.Orders.Update(order);
+        }
         // ========== GET ALL ==========
         public List<Order> GetAllOrders()
         {
@@ -64,5 +67,18 @@ namespace DataAccessObject
                 _context.Orders.Remove(order);
             }
         }
+        //public void DeleteOrderDetails(int orderId)
+        //{
+        //    var oldDetails = _context.OrderDetails
+        //        .Where(od => od.OrderId == orderId)
+        //        .ToList();
+
+        //    if (oldDetails.Any())
+        //    {
+        //        _context.OrderDetails.RemoveRange(oldDetails);
+        //        _context.SaveChanges();
+        //    }
+        //}
+
     }
 }

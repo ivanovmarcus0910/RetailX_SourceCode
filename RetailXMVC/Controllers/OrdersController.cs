@@ -44,6 +44,15 @@ namespace RetailXMVC.Controllers
             return View();
         }
 
+        public IActionResult Edit(int id)
+        {
+            var order = _orderRepo.GetById(id);
+            if (order == null) return NotFound();
+
+            ViewBag.Products = _productRepo.GetAll();
+            return View(order);
+        }
+
         // =============================
         // POST /Orders/Create
         // =============================
@@ -57,24 +66,85 @@ namespace RetailXMVC.Controllers
                 ViewBag.Products = _productRepo.GetAll();
                 return View(order);
             }
-
-            // Basic info
             order.CreateDate = DateTime.Now;
             order.Status = 1;
 
-            // Add order details
+            order.OrderDetails = new List<OrderDetail>();
+
             for (int i = 0; i < productIds.Length; i++)
             {
+                var product = _productRepo.GetById(productIds[i]);
+
+                if (product == null)
+                {
+                    ModelState.AddModelError("", "Sản phẩm không tồn tại!");
+                    ViewBag.Products = _productRepo.GetAll();
+                    return View(order);
+                }
+
+                if (quantities[i] > product.Quantity)
+                {
+                    ModelState.AddModelError("", 
+                        $"Sản phẩm {product.ProductName} không đủ hàng. (Còn: {product.Quantity})");
+
+                    ViewBag.Products = _productRepo.GetAll();
+                    return View(order);
+                }
+
                 order.OrderDetails.Add(new OrderDetail
                 {
                     ProductId = productIds[i],
                     Quantity = quantities[i]
                 });
+
+                product.Quantity -= quantities[i];
+                _productRepo.Update(product);
             }
 
             _orderRepo.Insert(order);
+
             return RedirectToAction(nameof(Index));
         }
+
+
+     //   [HttpPost]
+     //   public IActionResult Edit(
+     //int OrderId,
+     //int CustomerId,
+     //int StaffId,
+     //int[] productIds,
+     //int[] quantities,
+     //bool[] selected)
+     //   {
+     //       var order = _orderRepo.GetById(OrderId);
+     //       if (order == null) return NotFound();
+
+     //       order.CustomerId = CustomerId;
+     //       order.StaffId = StaffId;
+
+     //       List<OrderDetail> newDetails = new List<OrderDetail>();
+
+     //       for (int i = 0; i < productIds.Length; i++)
+     //       {
+     //           if (selected[i] && quantities[i] > 0)
+     //           {
+     //               newDetails.Add(new OrderDetail
+     //               {
+     //                   ProductId = productIds[i],
+     //                   Quantity = quantities[i]
+     //               });
+     //           }
+     //       }
+
+     //       _orderRepo.Update(order, newDetails);
+
+     //       return RedirectToAction("Index");
+     //   }
+
+
+
+
+
 
         // =============================
         // GET /Orders/Delete/5
@@ -84,12 +154,12 @@ namespace RetailXMVC.Controllers
             var order = _orderRepo.GetById(id);
             if (order == null) return NotFound();
 
-            return View(order);
+            return RedirectToAction(nameof(Index));
         }
 
         // =============================
         // POST /Orders/DeleteConfirmed
-        // =============================
+        // =============================    
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)

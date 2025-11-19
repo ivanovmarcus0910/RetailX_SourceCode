@@ -9,13 +9,21 @@
 
 <form asp-action="Create" method="post">
 
-    <!-- Chọn CustomerId -->
+    @* Hiển thị lỗi *@
+    <div class="text-danger">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <div>@error.ErrorMessage</div>
+        }
+    </div>
+
+    <!-- CustomerId -->
     <div class="form-group mb-3">
         <label>Customer ID</label>
         <input type="number" name="CustomerId" class="form-control" required />
     </div>
 
-    <!-- Chọn StaffId -->
+    <!-- StaffId -->
     <div class="form-group mb-3">
         <label>Staff ID</label>
         <input type="number" name="StaffId" class="form-control" required />
@@ -29,6 +37,8 @@
         <thead>
             <tr>
                 <th>Sản phẩm</th>
+                <th>Tồn kho</th>
+                <th>Chọn</th>
                 <th>Số lượng</th>
             </tr>
         </thead>
@@ -36,12 +46,26 @@
             @foreach (var p in products)
             {
                 <tr>
+                    <td>@p.ProductName</td>
+
+                    <td>@p.Quantity</td>
+
                     <td>
-                        <input type="checkbox" name="productIds" value="@p.ProductId" />
-                        @p.ProductName
+                        <input type="checkbox" class="chk-product"
+                               name="productIds"
+                               value="@p.ProductId"
+                               data-target="qty-@p.ProductId" />
                     </td>
+
                     <td>
-                        <input type="number" name="quantities" class="form-control" value="1" min="1" />
+                        <input type="number"
+                               name="quantities"
+                               id="qty-@p.ProductId"
+                               class="form-control"
+                               value="0"
+                               min="0"
+                               max="@p.Quantity"
+                               disabled />
                     </td>
                 </tr>
             }
@@ -50,5 +74,16 @@
 
     <button type="submit" class="btn btn-primary">Tạo Hóa Đơn</button>
     <a asp-action="Index" class="btn btn-secondary">Hủy</a>
-
 </form>
+
+@section Scripts {
+    <script>
+        // Bật / tắt ô số lượng khi người dùng click checkbox
+        document.querySelectorAll(".chk-product").forEach(chk => {
+            chk.addEventListener("change", function () {
+                let qtyInput = document.getElementById(this.dataset.target);
+                qtyInput.disabled = !this.checked;
+            });
+        });
+    </script>
+}

@@ -107,10 +107,9 @@ public partial class Tenant0Context : DbContext
             entity.ToTable("OrderDetail");
 
             entity.Property(e => e.OrderDetailId)
-                .ValueGeneratedNever()
+                 .ValueGeneratedOnAdd() //sửa
                 .HasColumnName("OrderDetailID");
             entity.Property(e => e.OrderId)
-                .ValueGeneratedOnAdd()
                 .HasColumnName("OrderID");
             entity.Property(e => e.ProductId).HasColumnName("ProductID");
 

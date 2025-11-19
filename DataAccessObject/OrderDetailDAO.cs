@@ -20,5 +20,17 @@ namespace DataAccessObject
         {
             _context.OrderDetails.Add(detail);
         }
+        public void UpdateOrderDetail(OrderDetail detail)
+        {
+            _context.OrderDetails.Update(detail);
+        }
+        public void DeleteDetailsByOrder(int orderId)
+        {
+            var details = _context.OrderDetails
+                .Where(d => d.OrderId == orderId)
+                .ToList();
+
+            _context.OrderDetails.RemoveRange(details);
+        }
     }
 }
