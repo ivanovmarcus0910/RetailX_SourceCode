@@ -1,4 +1,6 @@
-﻿@model IEnumerable<BusinessObjectRetailX.Models.User>
+﻿@using BusinessObjectRetailX.Models
+
+@model List<Request>
 
 @{
 	ViewData["Title"] = "Duyệt thành viên";
@@ -11,6 +13,7 @@
     <table class="table table-striped">
         <thead>
             <tr>
+                <th>Request ID</th>
                 <th>User ID</th>
                 <th>Họ tên</th>
                 <th>Email</th>
@@ -18,20 +21,22 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var user in Model)
+            @foreach (var request in Model) 
             {
                 <tr>
-                    <td>@user.Id</td>
-                    <td>@user.FullName</td>
-                    <td>@user.Email</td>
+                    <td>@request.Id</td> <td>@request.UserId</td> <td>@request.User.FullName</td> 
+                    <td>@request.User.Email</td>
+                    
                     <td>
                         <form asp-action="ApproveStaff" method="post">
-                            <input type="hidden" name="userId" value="@user.Id" />
+                            <input type="hidden" name="userId" value="@request.UserId" /> 
+                            
                             <button type="submit" class="btn btn-success btn-sm" 
                                     onclick="return confirm('Bạn chắc chắn muốn duyệt người này?');">
                                 <i class="fa fa-check"></i> Chấp nhận
                             </button>
-                        </form>
+                            
+                            </form>
                     </td>
                 </tr>
             }

@@ -71,6 +71,18 @@ namespace RetailXMVC
 
             builder.Services.AddScoped<StatisticDAO>();
             builder.Services.AddScoped<IStatisticRepository, StatisticRepository>();
+          
+            builder.Services.AddScoped<RequestDAO>();
+            builder.Services.AddScoped<IRequestRepository, RequestRepository>();
+          
+            builder.Services.AddScoped<PurchaseOrderDAO>();
+            builder.Services.AddScoped<IPurchaseOrderRepository, PurchaseRepository>();
+
+            builder.Services.AddScoped<PurchaseOrderDetailDAO>();
+            builder.Services.AddScoped<IPurchaseOrderDetailRepository, PurchaseOrderDetailRepository>();
+
+            builder.Services.AddScoped<InventoryDashboardDAO>();
+            builder.Services.AddScoped<IInventoryDashBoardRepository, InventoryDashboardRepository>();
 
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -85,6 +97,7 @@ namespace RetailXMVC
                     policy.RequireClaim("IsTenantLogin", "True"));
             });
 
+            builder.Services.AddSignalR();
             //Build
             var app = builder.Build();
             // Configure the HTTP request pipeline.
@@ -107,7 +120,7 @@ namespace RetailXMVC
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
-            //app.MapHub<SignalR.NotificationHub>("/notificationHub");
+            app.MapHub<SignalR.NotificationHub>("/notificationHub");
             app.Run();
         }
     }

@@ -1,4 +1,5 @@
-﻿using BusinessObject.Models;
+﻿using Azure.Core;
+using BusinessObject.Models;
 using BusinessObjectRetailX.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,12 +13,14 @@ namespace RetailXMVC.Controllers
     {
         private readonly IStaffRepository _staffRepo;
         private readonly IUserRepository _userRepo;
+        private readonly IRequestRepository _requestRepo;
         private readonly ILogRepository _logRepo;
 
-        public StaffController(IStaffRepository staffRepo, IUserRepository userRepo, ILogRepository logRepo)
+        public StaffController(IStaffRepository staffRepo, IUserRepository userRepo, IRequestRepository requestRepo, ILogRepository logRepo)
         {
             _staffRepo = staffRepo;
             _userRepo = userRepo;
+            _requestRepo = requestRepo;
             _logRepo = logRepo;
         }
 
@@ -27,54 +30,69 @@ namespace RetailXMVC.Controllers
             return View(staffList);
         }
 
-        //public IActionResult PendingRequests()
-        //{
-        //    var ownerTenantIdString = User.FindFirst("TenantId")?.;.Value;
-        //    int currentTenantId = string.IsNullOrEmpty(ownerTenantIdString) ? 1 : int.Parse(ownerTenantIdString);
-        //    var pendingUsers = _userRepo.GetUsersRequestingToJoin(currentTenantId);
+        public IActionResult PendingRequests()
+        {
+            // A. Lấy TenantId của Owner đang đăng nhập
+            var ownerTenantIdString = User.FindFirst("TenantId")?.Value;
+            int currentTenantId = string.IsNullOrEmpty(ownerTenantIdString) ? 1 : int.Parse(ownerTenantIdString);
 
-        //    return View(pendingUsers);
-        //}
+            // B. Lấy danh sách Request thay vì lọc từ bảng User
+            // Lấy List<Request> đã có thông tin User.
+            List<BusinessObjectRetailX.Models.Request > pendingRequests = _requestRepo.GetTenantPendingRequests(currentTenantId);
 
-        //[HttpPost]
-        //public IActionResult ApproveStaff(int userId)
-        //{
-        //    try
-        //    {
-        //        var ownerTenantIdString = User.FindFirst("TenantId")?.Value;
-        //        int currentTenantId = string.IsNullOrEmpty(ownerTenantIdString) ? 1 : int.Parse(ownerTenantIdString);
+            // Ở View (PendingRequests.cshtml), bạn duyệt List<Request> này 
+            // và hiển thị Request.User.FullName và Request.Id để duyệt.
 
-        //        var user = _userRepo.GetUserById(userId);
-        //        if (user == null) return NotFound();
+            return View(pendingRequests);
+        }
 
-        //        user.TenantId = currentTenantId;
-        //        user.RequestedTenantId = null;
-        //        user.GlobalRole = "Staff";
+        [HttpPost]
+        public IActionResult ApproveStaff(int requestId)
+        {
+            if (requestId <= 0)
+            {
+                TempData["Error"] = "Mã yêu cầu không hợp lệ.";
+                return RedirectToAction(nameof(PendingRequests));
+            }
+            try
+            {
+                var request = _requestRepo.GetRequestById(requestId);
+                if (request == null) return NotFound();
 
-        //        _userRepo.UpdateUser(user);
+                var user = _userRepo.GetUserById(request.UserId);
+                if (user == null || user.TenantId != null)
+                {
+                    TempData["Error"] = "User không tồn tại hoặc đã là thành viên.";
+                    return RedirectToAction(nameof(PendingRequests));
+                }
 
-        //        var newStaff = new Staff
-        //        {
-        //            StaffId = user.Id,
-        //            StaffName = user.FullName,
-        //            Email = user.Email,
-        //            Phone = user.Phone,
-        //            Role = 2,
-        //            IsActive = true,
-        //            BaseSalary = 5000000
-        //        };
+                user.TenantId = request.TenantId;
+                _userRepo.UpdateUser(user);
+                //_requestRepo.UpdateRequestStatus(requestId, true);
 
-        //        _staffRepo.CreateStaff(newStaff);
-        //        _logRepo.LogCreate($"Bạn đã duyệt nhân viên {user.FullName} (ID: {user.Id})");
-        //        TempData["Success"] = $"Đã duyệt nhân viên {user.FullName} thành công!";
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        TempData["Error"] = "Có lỗi xảy ra: " + ex.Message;
-        //        return RedirectToAction(nameof(PendingRequests));
-        //    }
-        //}
+                var newStaff = new Staff
+                {
+                    StaffId = user.Id,
+                    StaffName = user.FullName,
+                    Email = user.Email,
+                    Phone = user.Phone,
+                    Role = 2,
+                    IsActive = true,
+                    BaseSalary = 5000000
+                };
+
+                _staffRepo.CreateStaff(newStaff);
+                _logRepo.LogCreate($"Bạn đã duyệt nhân viên {user.FullName} (ID: {user.Id})", 0);
+
+                TempData["Success"] = $"Đã duyệt nhân viên {user.FullName} thành công!";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Có lỗi xảy ra: " + ex.Message;
+                return RedirectToAction(nameof(PendingRequests));
+            }
+        }
 
         public IActionResult Delete(int userId)
         {

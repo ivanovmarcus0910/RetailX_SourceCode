@@ -1,0 +1,154 @@
+﻿@{
+    ViewData["Title"] = "Warehouse Dashboard";
+
+    var lowStock = ViewBag.LowStock as List<BusinessObject.Models.Product>;
+    var monthlyImport = ViewBag.MonthlyImport as List<object>;
+}
+
+<section class="content-header">
+    <h1>Warehouse Dashboard <small>AdminLTE Style</small></h1>
+</section>
+
+<section class="content">
+
+    <div class="row">
+
+        <!-- Total Products -->
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-aqua">
+                <div class="inner">
+                    <h3>@ViewBag.TotalProducts</h3>
+                    <p>Total Products</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-cubes"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Categories -->
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-green">
+                <div class="inner">
+                    <h3>@ViewBag.TotalCategories</h3>
+                    <p>Total Categories</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-tags"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Suppliers -->
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-yellow">
+                <div class="inner">
+                    <h3>@ViewBag.TotalSuppliers</h3>
+                    <p>Total Suppliers</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-truck"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Value -->
+        <div class="col-lg-3 col-xs-6">
+            <div class="small-box bg-red">
+                <div class="inner">
+                    <h3>@String.Format("{0:N0}", ViewBag.InventoryValue) ₫</h3>
+                    <p>Inventory Value</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-dollar"></i>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Monthly Import Chart -->
+    <div class="row">
+        <section class="col-lg-7 connectedSortable">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Monthly Import Chart</h3>
+                </div>
+
+                <div class="box-body">
+                    <canvas id="importChart" height="150"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Low Stock Alert -->
+        <section class="col-lg-5 connectedSortable">
+            <div class="box box-danger">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Low Stock Alert</h3>
+                </div>
+
+                <div class="box-body table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in lowStock)
+                            {
+                                <tr>
+                                    <td>@p.ProductName</td>
+                                    <td><span class="badge bg-red">@p.Quantity</span></td>
+                                </tr>
+                            }
+                            @if (lowStock == null || !lowStock.Any())
+                            {
+                                <tr><td colspan="2">No low-stock items.</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+
+        // MONTHLY IMPORT DATA
+        var months = [];
+        var imports = [];
+
+        @if (monthlyImport != null)
+        {
+            foreach (dynamic m in monthlyImport)
+            {
+                <text>
+                    months.push("Tháng @m.Month");
+                    imports.push(@m.TotalImport);
+                </text>
+            }
+        }
+
+        // CHART CONFIG
+        new Chart(document.getElementById("importChart"), {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: "Imported Quantity",
+                    data: imports,
+                    borderWidth: 1
+                }]
+            }
+        });
+
+    </script>
+}

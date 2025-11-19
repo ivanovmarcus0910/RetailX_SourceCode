@@ -21,6 +21,13 @@ namespace DataAccessObjectRetailX
                 return _context.Users.FirstOrDefault(u => u.Email == email);
             
         }
+
+        public User GetUserById(int id)
+        {
+           
+                return _context.Users.FirstOrDefault(u => u.Id == id);
+
+        }
         public bool AddUser(User user)
         {
            

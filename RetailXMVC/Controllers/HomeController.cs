@@ -1,3 +1,4 @@
+using BusinessObjectRetailX.Models;
 using Microsoft.AspNetCore.Mvc;
 using RepositoriesRetailX;
 using RetailXMVC.Models;
@@ -9,17 +10,22 @@ namespace RetailXMVC.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IStatisticRepository statisticRepository;
-        public HomeController(ILogger<HomeController> logger, IStatisticRepository statisticRepository)
+        private readonly ITenantRepository _tenantRepo;
+        private readonly IUserRepository _userRepo;
+        
+        public HomeController(ILogger<HomeController> logger, IStatisticRepository statisticRepository, ITenantRepository tenantRepo, IUserRepository userRepo)
         {
             this.statisticRepository = statisticRepository;
             this.statisticRepository.IncreaseCount();
             _logger = logger;
-
+            _tenantRepo = tenantRepo;
+            _userRepo = userRepo;
         }
 
         public IActionResult Index()
         {
-            return View();
+            List<Tenant> activeTenants = _tenantRepo.GetAllTenant();
+            return View(activeTenants);
         }
 
         public IActionResult Privacy()
