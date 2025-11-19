@@ -15,6 +15,11 @@ namespace DataAccessObjectRetailX
             _context = context;
         }
 
+        public List<User> GetAllUser()
+        {
+            return _context.Users.ToList();
+        }
+
         public User GetUserByEmail(string email)
         {
             
@@ -104,7 +109,6 @@ namespace DataAccessObjectRetailX
             return _context.Users.Count();
 
         }
-
 
 
     }

@@ -16,6 +16,10 @@ namespace RepositoriesRetailX
         {
             _userDao = userDao;
         }
+        public List<User> GetAll()
+        {
+            return _userDao.GetAllUser();
+        }
         public User GetUserByEmail(string email)
         {
            

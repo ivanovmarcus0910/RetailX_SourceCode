@@ -36,6 +36,7 @@
                     <ul class="navbar-nav ms-auto mb-2 mb-sm-0">
                         @if (User?.Identity != null && User.Identity.IsAuthenticated)
                         {
+
                             var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name ?? "User";
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown"
@@ -43,12 +44,42 @@
                                     @fullName
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    <li>
-                                        <a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Index">
-                                            Dashboard
-                                        </a>
-                                    </li>
-                                    <li><hr class="dropdown-divider" /></li>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" asp-area="" asp-controller="AdminRetailX" asp-action="System">
+                                                System Manage
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                    }
+                                    else
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Profile">
+                                                Profile
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                    }
+                                    @if (User.IsInRole("Owner"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" asp-area="" asp-controller="Tenant" asp-action="TenantProfile">
+                                                Tenant Manage
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                    }
+                                    @if (User.IsInRole("User") && !string.IsNullOrEmpty(User.FindFirst("StaffId")?.Value))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Profile">
+                                                Tenant
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                    }
                                     <li>
                                         <a class="dropdown-item text-danger" asp-area="" asp-controller="Auth" asp-action="Logout">
                                             Đăng xuất
