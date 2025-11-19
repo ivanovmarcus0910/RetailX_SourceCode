@@ -1,0 +1,230 @@
+﻿@using System.Text.Json
+@model SystemStatisticViewModel
+
+@{
+    ViewData["Title"] = "System Statistic";
+    var ordered = Model.RecentDays
+        .OrderBy(s => s.Day)
+        .ToList();
+
+    var labelsJson = JsonSerializer.Serialize(ordered.Select(s => s.Day));
+    var accessJson = JsonSerializer.Serialize(ordered.Select(s => s.AccessCount));
+    var totalUserJson = JsonSerializer.Serialize(ordered.Select(s => s.TotalUser));
+    var activeUserJson = JsonSerializer.Serialize(ordered.Select(s => s.TotalUserActive));
+    var totalTenantJson = JsonSerializer.Serialize(ordered.Select(s => s.TotalTenant));
+    var activeTenantJson = JsonSerializer.Serialize(ordered.Select(s => s.TotalTenantActive));
+}
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container my-4">
+    <h2 class="mb-4 fw-bold">RetailX – System Statistic</h2>
+
+    <!-- Cards thống kê hôm nay -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-4 bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="text-uppercase mb-1 opacity-75">Lượt truy cập hôm nay</h6>
+                    <h2 class="fw-bold">@Model.Today.AccessCount</h2>
+                    <small class="opacity-75">Ngày @Model.Today.Day</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-4 bg-success text-white">
+                <div class="card-body">
+                    <h6 class="text-uppercase mb-1 opacity-75">User</h6>
+                    <h5 class="mb-0">
+                        @Model.Today.TotalUserActive
+                        <span class="fw-light">/ @Model.Today.TotalUser</span>
+                    </h5>
+                    <small class="opacity-75">Active / Tổng</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-4 bg-info text-white">
+                <div class="card-body">
+                    <h6 class="text-uppercase mb-1 opacity-75">Tenant</h6>
+                    <h5 class="mb-0">
+                        @Model.Today.TotalTenantActive
+                        <span class="fw-light">/ @Model.Today.TotalTenant</span>
+                    </h5>
+                    <small class="opacity-75">Active / Tổng</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-4 bg-dark text-white">
+                <div class="card-body">
+                    <h6 class="text-uppercase mb-1 opacity-75">Ngày thống kê</h6>
+                    <h5 class="mb-0">@Model.Today.Day</h5>
+                    <small class="opacity-75">Snapshot hệ thống</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ -->
+    <div class="row g-4">
+        <div class="col-md-7">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Lượt truy cập theo ngày</h5>
+                    <canvas id="accessChart" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow-sm border-0 rounded-4 mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">User (Tổng vs Active)</h5>
+                    <canvas id="userChart" height="120"></canvas>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Tenant (Tổng vs Active)</h5>
+                    <canvas id="tenantChart" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng chi tiết -->
+    <div class="card shadow-sm border-0 rounded-4 mt-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Chi tiết các ngày gần đây</h5>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ngày</th>
+                            <th>Lượt truy cập</th>
+                            <th>User (Active / Tổng)</th>
+                            <th>Tenant (Active / Tổng)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in ordered)
+                        {
+                            <tr>
+                                <td>@s.Day</td>
+                                <td>@s.AccessCount</td>
+                                <td>@s.TotalUserActive / @s.TotalUser</td>
+                                <td>@s.TotalTenantActive / @s.TotalTenant</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Data từ server
+    const labels = @Html.Raw(@labelsJson);
+    const accessData = @Html.Raw(@accessJson);
+    const totalUserData = @Html.Raw(@totalUserJson);
+    const activeUserData = @Html.Raw(@activeUserJson);
+    const totalTenantData = @Html.Raw(@totalTenantJson);
+    const activeTenantData = @Html.Raw(@activeTenantJson);
+
+    // Biểu đồ lượt truy cập
+    const ctxAccess = document.getElementById('accessChart').getContext('2d');
+    new Chart(ctxAccess, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Lượt truy cập',
+                data: accessData,
+                tension: 0.3,
+                borderWidth: 2,
+                pointRadius: 3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
+        }
+    });
+
+    // Biểu đồ User
+    const ctxUser = document.getElementById('userChart').getContext('2d');
+    new Chart(ctxUser, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Tổng user',
+                    data: totalUserData,
+                    borderWidth: 1
+                },
+                {
+                    label: 'User active',
+                    data: activeUserData,
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
+        }
+    });
+
+    // Biểu đồ Tenant
+    const ctxTenant = document.getElementById('tenantChart').getContext('2d');
+    new Chart(ctxTenant, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Tổng tenant',
+                    data: totalTenantData,
+                    borderWidth: 1
+                },
+                {
+                    label: 'Tenant active',
+                    data: activeTenantData,
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
+        }
+    });
+</script>

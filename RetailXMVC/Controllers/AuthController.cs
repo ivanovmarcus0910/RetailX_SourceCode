@@ -1,12 +1,13 @@
 ﻿using BusinessObjectRetailX.Models;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using RepositoriesRetailX;
 using System.Security.Claims;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Principal;
 namespace RetailXMVC.Controllers
 {
     public class AuthController : Controller
@@ -43,23 +44,29 @@ namespace RetailXMVC.Controllers
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Email),
+            new Claim(ClaimTypes.Role, user.GlobalRole),
             new Claim("FullName", user.FullName ?? user.Email),
-            new Claim("GlobalRole", user.GlobalRole ?? "User"),
-            new Claim("TenantId", user.TenantId?.ToString() ?? "")
+            new Claim("GlobalRole", user.GlobalRole),
+            new Claim("TenantId", user.TenantId?.ToString() ?? ""),
+            new Claim("StaffId", user.StaffId?.ToString() ?? ""),
         };
 
             var identity = new ClaimsIdentity(
-                claims,
-                CookieAuthenticationDefaults.AuthenticationScheme
-            );
+               claims,
+               CookieAuthenticationDefaults.AuthenticationScheme
+           );
 
             var principal = new ClaimsPrincipal(identity);
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal
             );
             Console.WriteLine("User authenticated successfully.");
+            if (user.GlobalRole=="Admin")
+                return RedirectToAction("System", "AdminRetailX");
+
             return RedirectToAction("Index", "Home");
         }
         [HttpGet]
@@ -91,6 +98,12 @@ namespace RetailXMVC.Controllers
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
+        }
+        [HttpGet]
+        public IActionResult AccessDenied(string? returnUrl = null)
+        {
+            ViewBag.ReturnUrl = returnUrl;
+            return View();
         }
     }
 }

@@ -94,6 +94,16 @@ namespace DataAccessObjectRetailX
             _context.SaveChanges();
             return true;
         }
+        public int QuantityUserActive()
+        {
+            return _context.Users.Count(u => u.IsActive==true);
+
+        }
+        public int QuantityUser()
+        {
+            return _context.Users.Count();
+
+        }
 
 
 

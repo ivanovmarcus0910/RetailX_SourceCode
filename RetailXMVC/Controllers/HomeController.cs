@@ -8,11 +8,16 @@ namespace RetailXMVC.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly ILogger<HomeController> _logger;
+        private readonly IStatisticRepository statisticRepository;
         private readonly ITenantRepository _tenantRepo;
         private readonly IUserRepository _userRepo;
-
-        public HomeController(ITenantRepository tenantRepo, IUserRepository userRepo)
+        
+        public HomeController(ILogger<HomeController> logger, IStatisticRepository statisticRepository, ITenantRepository tenantRepo, IUserRepository userRepo)
         {
+            this.statisticRepository = statisticRepository;
+            this.statisticRepository.IncreaseCount();
+            _logger = logger;
             _tenantRepo = tenantRepo;
             _userRepo = userRepo;
         }
