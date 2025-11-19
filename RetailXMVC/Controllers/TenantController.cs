@@ -53,11 +53,14 @@ namespace RetailXMVC.Controllers
                 IsActive = true,
                 CreatedDate = DateTime.Now
             };
+
             try
             {
+                // 1. Lưu Tenant + tạo DB cho Tenant
                 tenantRepo.AddTenant(tempTenant);
                 CreateDatabaseForTenant(tempTenant);
 
+                // 2. Cập nhật user với TenantId + role Owner
                 user.TenantId = tempTenant.Id;
                 user.GlobalRole = "Owner";
                 var claims = new List<Claim>
@@ -66,7 +69,7 @@ namespace RetailXMVC.Controllers
             new Claim(ClaimTypes.Name, user.Email),
             new Claim("FullName", user.FullName ?? user.Email),
             new Claim("GlobalRole", user.GlobalRole ?? "User"),
-            new Claim("TenantId", user.TenantId?.ToString() ?? "")
+            new Claim("TenantId", user.TenantId?.ToString() ?? ""),
         };
 
                 var identity = new ClaimsIdentity(
@@ -75,48 +78,80 @@ namespace RetailXMVC.Controllers
                 );
 
                 var principal = new ClaimsPrincipal(identity);
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
                 await HttpContext.SignInAsync(
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     principal
                 );
-
-
+                // 3. Tạo Staff cho user này
                 Staff tempStaff = new Staff
                 {
                     StaffName = user.FullName,
                     Role = 1,
-                    Phone = user.Phone??"Not available",
+                    Phone = user.Phone ?? "Not available",
                     Email = user.Email,
                     Address = "Not available",
                     BaseSalary = 0,
-                    IsActive = true
+                    IsActive = true,
+                    // nếu bảng Staff có TenantId thì gán luôn:
+                    // TenantId = tempTenant.Id
                 };
+
                 _staffRepo.CreateStaff(tempStaff);
+                Console.WriteLine("Staff ID after creation: " + tempStaff.StaffId);
+
+                // 4. Gán StaffId vào user + lưu DB
                 user.StaffId = tempStaff.StaffId;
                 userRepo.UpdateUser(user);
 
+                // 5. Sau khi DB ổn hết rồi mới build FULL claims + SignIn
+                 claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Email),
+            new Claim("FullName", user.FullName ?? user.Email),
+            new Claim("GlobalRole", user.GlobalRole ?? "User"),
+            new Claim("TenantId", user.TenantId?.ToString() ?? ""),
+            new Claim("StaffId", user.StaffId?.ToString() ?? ""),
+        };
+
+                 identity = new ClaimsIdentity(
+                    claims,
+                    CookieAuthenticationDefaults.AuthenticationScheme
+                );
+
+                 principal = new ClaimsPrincipal(identity);
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    principal
+                );
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine("Lỗi ở Add Tenant");
+                Console.WriteLine(e.Message);
+
+                // có thể redirect ra trang lỗi, tuỳ đại ca
             }
-            
+
             return RedirectToAction("LoginTenant");
         }
 
 
+
         [HttpGet]
-        public async Task<IActionResult>  LoginTenant()
+        public async Task<IActionResult> LoginTenant()
         {
             var user = userRepo.GetUserByEmail(User.Identity.Name);
-            var staff = _staffRepo.GetStaffDetail(user.StaffId.Value);
-
-            if (user.TenantId == null || staff == null)
+            if (user.StaffId == null || (user.TenantId == null))
             {
-                TempData["Message"] = "Bạn chưa có tenant. Vui lòng đăng ký tenant trước.";
+                TempData["Message"] = "Bạn không có quyền vào Tenant này. Vui lòng liên hệ quản trị viên. Hoặc đăng ký Tenant";
                 return RedirectToAction("SignUpTenant");
             }
+            var staff = _staffRepo.GetStaffDetail(user.StaffId.Value);
+
             var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
