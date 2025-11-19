@@ -10,6 +10,7 @@ namespace RepositoriesRetailX
     public interface IUserRepository
     {
         User GetUserByEmail(string email);
+        User GetUserById(int userId);
         bool VerifyUser(string email, string password);
         bool SignUpUser(string email, string password, string fullname);
         bool UpdateUser(User user);

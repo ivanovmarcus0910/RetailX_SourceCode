@@ -21,6 +21,12 @@ namespace RepositoriesRetailX
            
             return _userDao.GetUserByEmail(email);
         }
+
+        public User GetUserById(int userId)
+        {
+            return _userDao.GetUserById(userId);
+        }
+
         public bool VerifyUser(string email, string password)
         {
             var user = _userDao.GetUserByEmail(email);

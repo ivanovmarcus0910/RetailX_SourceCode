@@ -1,4 +1,6 @@
-﻿@{
+﻿@using BusinessObjectRetailX.Models
+@model List<Tenant>
+@{
     ViewData["Title"] = "Trang chủ";
     var tenantId = User?.FindFirst("TenantId")?.Value;
     var isLoggedIn = User?.Identity?.IsAuthenticated == true;
@@ -37,6 +39,58 @@
                 </div>
             </div>
         </div>
+    </div>
+
+@if (isLoggedIn && string.IsNullOrEmpty(tenantId))
+    {
+        <hr class="my-5" />
+        <div class="row">
+            <div class="col text-center mb-4">
+                <h2 class="fw-bold">Gia nhập công ty đã tồn tại</h2>
+                <p class="text-muted">Chọn công ty bạn muốn làm việc và gửi yêu cầu gia nhập</p>
+            </div>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var tenant in Model)
+                {
+                    <div class="col-md-4 col-lg-3">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body d-flex flex-column text-center">
+                                <h5 class="card-title fw-bold">@tenant.CompanyName</h5>
+                                <p class="card-text text-muted small">Owner: @tenant.OwnerName</p>
+                                
+                                <div class="mt-auto pt-3">
+                                    <form asp-controller="Tenant" asp-action="RequestJoin" method="post">
+                                        <input type="hidden" name="tenantId" value="@tenant.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+                                            <i class="fa fa-hand-point-right"></i> Gửi yêu cầu gia nhập
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center">
+                    <div class="alert alert-info">Chưa có công ty nào được tạo. Vui lòng thử đăng ký mới!</div>
+                    <a asp-controller="Tenant" asp-action="SignUpTenant" class="btn btn-primary mt-3">Tạo công ty mới</a>
+                </div>
+            }
+        </div>
+        <hr class="my-5" />
+        <div class="col text-center">
+            <p>Hoặc, nếu bạn là chủ doanh nghiệp:</p>
+            <a asp-controller="Tenant" asp-action="SignUpTenant" class="btn btn-outline-success btn-lg">
+                Đăng ký công ty mới ngay
+            </a>
+        </div>
+    }
     </div>
 
     <hr class="my-5" />

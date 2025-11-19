@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Data.SqlClient;
 using Repositories;
 using RepositoriesRetailX;
+using RetailXMVC.SignalR;
 using System.Security.Claims;
 
 namespace RetailXMVC.Controllers
@@ -13,10 +15,15 @@ namespace RetailXMVC.Controllers
     {
         private readonly IUserRepository userRepo;
         private readonly ITenantRepository tenantRepo;
-        public TenantController(IUserRepository userRepo, ITenantRepository tenantRepo)
+        private readonly IRequestRepository requestRepo;
+        private readonly IHubContext<NotificationHub> hubContext;
+        public TenantController(IUserRepository userRepo, ITenantRepository tenantRepo, 
+                                IRequestRepository requestRepo, IHubContext<NotificationHub> hubContext)
         {
             this.userRepo = userRepo;
             this.tenantRepo = tenantRepo;
+            this.requestRepo = requestRepo;
+            this.hubContext = hubContext;
         }
         public IActionResult Index()
         {
@@ -123,6 +130,53 @@ END";
 
             using var cmd = new SqlCommand(script, conn);
             cmd.ExecuteNonQuery();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RequestJoin(int tenantId)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString)) return Forbid();
+            int userId = int.Parse(userIdString);
+
+            var user = userRepo.GetUserById(userId);
+
+            if (user == null || user.TenantId != null)
+            {
+                TempData["Error"] = "Bạn đã là thành viên hoặc tài khoản không hợp lệ.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (requestRepo.IsRequestPending(userId, tenantId))
+            {
+                TempData["Warning"] = "Yêu cầu của bạn đang chờ duyệt. Vui lòng kiên nhẫn.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            try
+            {
+                requestRepo.CreateJoinRequest(userId, tenantId);
+
+                //logRepo.WriteLog($"User {user.FullName} đã gửi yêu cầu gia nhập Tenant ID {tenantId}",
+                //                 userId,
+                //                 Repositories.Enums.LogAction.Create);
+
+                await hubContext.Clients.Group($"Tenant_{tenantId}")
+                                 .SendAsync("ReceiveJoinRequest", user.FullName, user.Email);
+
+                TempData["Success"] = "Đã gửi yêu cầu gia nhập thành công. Vui lòng chờ Owner duyệt.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Lỗi khi gửi yêu cầu: " + ex.Message;
+            }
+
+            return RedirectToAction("Index");
         }
     }
 }
