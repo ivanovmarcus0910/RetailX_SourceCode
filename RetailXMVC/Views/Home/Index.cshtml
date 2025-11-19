@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Trang chủ";
     var tenantId = User?.FindFirst("TenantId")?.Value;
+    var globalRole = User?.FindFirst("GlobalRole")?.Value;
     var isLoggedIn = User?.Identity?.IsAuthenticated == true;
 }
 
@@ -41,7 +42,7 @@
         </div>
     </div>
 
-@if (isLoggedIn && string.IsNullOrEmpty(tenantId))
+@if (string.IsNullOrEmpty(tenantId) || globalRole != "Owner")
     {
         <hr class="my-5" />
         <div class="row">
@@ -75,22 +76,14 @@
                     </div>
                 }
             }
-            else
-            {
-                <div class="col-12 text-center">
-                    <div class="alert alert-info">Chưa có công ty nào được tạo. Vui lòng thử đăng ký mới!</div>
-                    <a asp-controller="Tenant" asp-action="SignUpTenant" class="btn btn-primary mt-3">Tạo công ty mới</a>
-                </div>
-            }
-        </div>
-        <hr class="my-5" />
-        <div class="col text-center">
-            <p>Hoặc, nếu bạn là chủ doanh nghiệp:</p>
-            <a asp-controller="Tenant" asp-action="SignUpTenant" class="btn btn-outline-success btn-lg">
-                Đăng ký công ty mới ngay
-            </a>
         </div>
     }
+    else
+        {
+             <div class="col-12 text-center">
+                 <div class="alert alert-info">Chưa có công ty nào được tạo.</div>
+             </div>
+        }
     </div>
 
     <hr class="my-5" />

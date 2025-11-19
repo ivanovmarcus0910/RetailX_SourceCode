@@ -72,7 +72,6 @@ namespace RetailXMVC.Controllers
 
                 var newStaff = new Staff
                 {
-                    StaffId = user.Id,
                     StaffName = user.FullName,
                     Email = user.Email,
                     Phone = user.Phone,
