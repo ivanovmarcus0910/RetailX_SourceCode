@@ -69,6 +69,9 @@ namespace RetailXMVC
             builder.Services.AddScoped<SupplierDAO>();
             builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 
+            builder.Services.AddScoped<RequestDAO>();
+            builder.Services.AddScoped<IRequestRepository, RequestRepository>();
+          
             builder.Services.AddScoped<PurchaseOrderDAO>();
             builder.Services.AddScoped<IPurchaseOrderRepository, PurchaseRepository>();
 
@@ -91,6 +94,7 @@ namespace RetailXMVC
                     policy.RequireClaim("IsTenantLogin", "True"));
             });
 
+            builder.Services.AddSignalR();
             //Build
             var app = builder.Build();
             // Configure the HTTP request pipeline.
@@ -113,7 +117,7 @@ namespace RetailXMVC
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
-            //app.MapHub<SignalR.NotificationHub>("/notificationHub");
+            app.MapHub<SignalR.NotificationHub>("/notificationHub");
             app.Run();
         }
     }

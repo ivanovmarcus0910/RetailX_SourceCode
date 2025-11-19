@@ -76,12 +76,16 @@
             </div>
         </nav>
     </header>
+    @if (User.Identity.IsAuthenticated && User.FindFirst("TenantId")?.Value != null) 
+    {
+        <input type="hidden" id="currentTenantId" value="@User.FindFirst("TenantId")?.Value" />
+    }
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
-    @* <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
       <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header bg-primary text-white">
           <strong class="me-auto"><i class="fa fa-bell"></i> Thông báo mới</strong>
@@ -91,7 +95,7 @@
         <div class="toast-body" id="toastMessage">
           </div>
       </div>
-    </div> *@
+    </div>
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2025 - RetailXMVC - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
@@ -99,8 +103,8 @@
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/microsoft-signalr/signalr.js"></script> 
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
