@@ -71,6 +71,15 @@ namespace RetailXMVC
 
             builder.Services.AddScoped<RequestDAO>();
             builder.Services.AddScoped<IRequestRepository, RequestRepository>();
+          
+            builder.Services.AddScoped<PurchaseOrderDAO>();
+            builder.Services.AddScoped<IPurchaseOrderRepository, PurchaseRepository>();
+
+            builder.Services.AddScoped<PurchaseOrderDetailDAO>();
+            builder.Services.AddScoped<IPurchaseOrderDetailRepository, PurchaseOrderDetailRepository>();
+
+            builder.Services.AddScoped<InventoryDashboardDAO>();
+            builder.Services.AddScoped<IInventoryDashBoardRepository, InventoryDashboardRepository>();
 
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -79,6 +88,11 @@ namespace RetailXMVC
         options.LogoutPath = "/Auth/Logout";
         options.AccessDeniedPath = "/Auth/AccessDenied";
     });
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("TenantLoggedIn", policy =>
+                    policy.RequireClaim("IsTenantLogin", "True"));
+            });
 
             builder.Services.AddSignalR();
             //Build

@@ -1,0 +1,35 @@
+﻿@model IEnumerable<BusinessObject.Models.PurchaseOrder>
+
+<h2>Purchase Orders</h2>
+
+<a asp-action="Create" class="btn btn-primary">Create PO</a>
+
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Supplier</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model)
+{
+    <tr>
+        <td>@item.PurchaseOrderId</td>
+        <td>@item.Supplier?.SupplierName</td>
+        <td>@item.CreateDate.ToShortDateString()</td>
+        <td>    @(item.Status == 2 ? "Pending" : item.Status == 3 ? "Confirmed" : "Unknown")</td>
+        <td>
+            <a asp-action="Details" asp-route-id="@item.PurchaseOrderId">Details</a> |
+              <form asp-action="Delete" asp-route-id="@item.PurchaseOrderId" method="post" style="display:inline;" 
+          onsubmit="return confirm('Are you sure you want to delete this Purchase Order?');">
+        <button type="submit" class="btn btn-link p-0 m-0 align-baseline">Delete</button>
+    </form>
+        </td>
+    </tr>
+}
+    </tbody>
+</table>
