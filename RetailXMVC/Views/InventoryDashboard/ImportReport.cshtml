@@ -1,0 +1,73 @@
+﻿@model List<dynamic>
+@{
+    ViewData["Title"] = "Import Report";
+}
+
+<h2>📦 Import Report</h2>
+
+<form method="get" asp-action="ImportReport" class="mb-3">
+    <label>Year:</label>
+    <select name="year" class="form-control d-inline-block w-auto" asp-items="ViewBag.Years">
+        <option value="">All</option>
+    </select>
+
+    <label>Month:</label>
+    <select name="month" class="form-control d-inline-block w-auto" asp-items="ViewBag.Months">
+        <option value="">All</option>
+    </select>
+
+    <label>Supplier:</label>
+    <select name="supplierId" class="form-control d-inline-block w-auto" asp-items="ViewBag.Suppliers">
+        <option value="">All Suppliers</option>
+    </select>
+
+    <label>Category:</label>
+    <select name="categoryId" class="form-control d-inline-block w-auto" asp-items="ViewBag.Categories">
+        <option value="">All Categories</option>
+    </select>
+
+    <button type="submit" class="btn btn-primary">Filter</button>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="p-5 text-center text-muted border rounded">Không có dữ liệu.</div>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Year</th>
+                <th>Month</th>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var group in Model.GroupBy(m => new { m.Year, m.TimeGroup }))
+            {
+                var totalGroup = group.Sum(x => (decimal)x.Total);
+
+                foreach (var item in group)
+                {
+                    <tr>
+                        <td>@item.Year</td>
+                        <td>@item.TimeGroup</td>
+                        <td>@item.ProductName</td>
+                        <td>@item.Quantity</td>
+                        <td>@String.Format("{0:N0}", item.Price)</td>
+                        <td>@String.Format("{0:N0}", item.Total)</td>
+                    </tr>
+                }
+
+                <tr class="table-info">
+                    <td colspan="5" class="text-right"><b>Total @group.Key.TimeGroup - @group.Key.Year:</b></td>
+                    <td><b>@String.Format("{0:N0}", totalGroup)</b></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
