@@ -25,15 +25,24 @@
                     <!-- Left menu -->
                     <ul class="navbar-nav me-auto mb-2 mb-sm-0">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="AdminRetailX" asp-action="System">System</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="AdminRetailX" asp-action="TenantManage">Tenant</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="AdminRetailX" asp-action="UserManage">User</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="AdminRetailX" asp-action="SystemLog">SystemLog</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="AdminRetailX" asp-action="UserLog">UserLog</a>
                         </li>
                     </ul>
 
                     <!-- Right menu: Login/Signup hoặc User + Logout -->
-                    @* <ul class="navbar-nav ms-auto mb-2 mb-sm-0">
+                    <ul class="navbar-nav ms-auto mb-2 mb-sm-0">
                         @if (User?.Identity != null && User.Identity.IsAuthenticated)
                         {
                             var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name ?? "User";
@@ -66,12 +75,12 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link btn btn-primary text-white px-3 ms-2"
-                                   asp-area="" asp-controller="Auth" asp-action="SignUp">
+                                   asp-area="" asp-controller="Auth" asp-action="SignUpAccount">
                                     Đăng ký
                                 </a>
                             </li>
                         }
-                    </ul> *@
+                    </ul>
                 </div>
             </div>
         </nav>
@@ -81,7 +90,17 @@
             @RenderBody()
         </main>
     </div>
-
+    @* <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
+      <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-primary text-white">
+          <strong class="me-auto"><i class="fa fa-bell"></i> Thông báo mới</strong>
+          <small>Vừa xong</small>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+          </div>
+      </div>
+    </div> *@
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2025 - RetailXMVC - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
@@ -90,8 +109,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

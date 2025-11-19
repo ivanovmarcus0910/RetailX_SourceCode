@@ -58,5 +58,15 @@ namespace DataAccessObjectRetailX
             }
 
         }
+        public int QuantityTenantActive()
+        {
+            return _context.Tenants.Count(u => u.IsActive == true);
+
+        }
+        public int QuantityTenant()
+        {
+            return _context.Tenants.Count();
+
+        }
     }
 }

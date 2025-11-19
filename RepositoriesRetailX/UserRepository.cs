@@ -38,7 +38,8 @@ namespace RepositoriesRetailX
                 PasswordHash = password, 
                 FullName = fullname,
                 IsActive = true,
-                CreatedDate = DateTime.Now
+                CreatedDate = DateTime.Now,
+                GlobalRole = "User"
             };
             return _userDao.AddUser(newUser);
         }

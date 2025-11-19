@@ -19,6 +19,8 @@ public partial class RetailXContext : DbContext
 
     public virtual DbSet<Request> Requests { get; set; }
 
+    public virtual DbSet<Statistic> Statistics { get; set; }
+
     public virtual DbSet<SystemLog> SystemLogs { get; set; }
 
     public virtual DbSet<Tenant> Tenants { get; set; }
@@ -53,6 +55,18 @@ public partial class RetailXContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Request_Users");
+        });
+
+        modelBuilder.Entity<Statistic>(entity =>
+        {
+            entity.HasKey(e => e.StatId);
+
+            entity.ToTable("Statistic");
+
+            entity.Property(e => e.StatId).HasColumnName("StatID");
+            entity.Property(e => e.Day)
+                .HasMaxLength(20)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<SystemLog>(entity =>

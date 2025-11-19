@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using RepositoriesRetailX;
 using RetailXMVC.Models;
 using System.Diagnostics;
 
@@ -7,10 +8,13 @@ namespace RetailXMVC.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+        private readonly IStatisticRepository statisticRepository;
+        public HomeController(ILogger<HomeController> logger, IStatisticRepository statisticRepository)
         {
+            this.statisticRepository = statisticRepository;
+            this.statisticRepository.IncreaseCount();
             _logger = logger;
+
         }
 
         public IActionResult Index()
