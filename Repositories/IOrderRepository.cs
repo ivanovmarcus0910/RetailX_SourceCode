@@ -13,7 +13,7 @@ namespace Repositories
         Order? GetById(int id);
         void Insert(Order order);
         void Delete(int id);
-        void Update(Order order, List<OrderDetail> newDetails);
+      //  void Update(Order order, List<OrderDetail> newDetails);
 
         Order CreateOrder(Order order, List<OrderDetail> details);
         Order? GetOrderById(int id);

@@ -1,5 +1,6 @@
 ﻿using BusinessObject.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Repositories;
 
 namespace RetailXMVC.Controllers
@@ -8,11 +9,14 @@ namespace RetailXMVC.Controllers
     {
         private readonly IOrderRepository _orderRepo;
         private readonly IProductRepository _productRepo;
-
-        public OrdersController(IOrderRepository orderRepo, IProductRepository productRepo)
+        private readonly ICustomerRepository _customerRepo;
+        private readonly ICategoryRepository _categoryRepo;
+        public OrdersController(IOrderRepository orderRepo, IProductRepository productRepo, ICustomerRepository customerRepo,ICategoryRepository categoryRepo)
         {
             _orderRepo = orderRepo;
             _productRepo = productRepo;
+            _customerRepo = customerRepo;
+            _categoryRepo = categoryRepo;
         }
 
         // =============================
@@ -38,20 +42,45 @@ namespace RetailXMVC.Controllers
         // =============================
         // GET /Orders/Create
         // =============================
-        public IActionResult Create()
+        public IActionResult Create(int? categoryId, string phone = null)
         {
-            ViewBag.Products = _productRepo.GetAll();
-            return View();
+            // Lấy danh sách category
+            ViewBag.Categories = _categoryRepo.GetAll().Where(c => c.IsActive).ToList();
+            ViewBag.SelectedCategory = categoryId;
+
+            // Lấy danh sách product theo category
+            if (categoryId.HasValue && categoryId > 0)
+                ViewBag.Products = _productRepo.GetAll()
+                                    .Where(p => p.CategoryId == categoryId && p.IsActive)
+                                    .ToList();
+            else
+                ViewBag.Products = _productRepo.GetAll();
+
+            // Xử lý tìm khách hàng nếu có phone
+            if (!string.IsNullOrWhiteSpace(phone))
+            {
+                ViewBag.Phone = phone;
+                var cus = _customerRepo.GetByPhone(phone);
+
+                if (cus != null)
+                {
+                    ViewBag.FoundCustomer = cus;
+                }
+            }
+
+            return View(new Order());
         }
 
-        public IActionResult Edit(int id)
-        {
-            var order = _orderRepo.GetById(id);
-            if (order == null) return NotFound();
 
-            ViewBag.Products = _productRepo.GetAll();
-            return View(order);
-        }
+
+        //public IActionResult Edit(int id)
+        //{
+        //    var order = _orderRepo.GetById(id);
+        //    if (order == null) return NotFound();
+
+        //    ViewBag.Products = _productRepo.GetAll();
+        //    return View(order);
+        //}
 
         // =============================
         // POST /Orders/Create
@@ -60,102 +89,117 @@ namespace RetailXMVC.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(Order order, int[] productIds, int[] quantities)
         {
-            if (productIds.Length != quantities.Length)
+            try
             {
-                ModelState.AddModelError("", "Sản phẩm và số lượng không khớp!");
-                ViewBag.Products = _productRepo.GetAll();
-                return View(order);
-            }
-            order.CreateDate = DateTime.Now;
-            order.Status = 1;
-
-            order.OrderDetails = new List<OrderDetail>();
-
-            for (int i = 0; i < productIds.Length; i++)
-            {
-                var product = _productRepo.GetById(productIds[i]);
-
-                if (product == null)
+                // ---------------- CHECK INPUT ----------------
+                if (order.CustomerId <= 0)
                 {
-                    ModelState.AddModelError("", "Sản phẩm không tồn tại!");
+                    ModelState.AddModelError("", "Bạn chưa chọn khách hàng.");
                     ViewBag.Products = _productRepo.GetAll();
                     return View(order);
                 }
 
-                if (quantities[i] > product.Quantity)
+                if (productIds == null || quantities == null || productIds.Length == 0)
                 {
-                    ModelState.AddModelError("", 
-                        $"Sản phẩm {product.ProductName} không đủ hàng. (Còn: {product.Quantity})");
-
+                    ModelState.AddModelError("", "Bạn chưa chọn sản phẩm.");
                     ViewBag.Products = _productRepo.GetAll();
                     return View(order);
                 }
 
-                order.OrderDetails.Add(new OrderDetail
+                if (productIds.Length != quantities.Length)
                 {
-                    ProductId = productIds[i],
-                    Quantity = quantities[i]
-                });
+                    ModelState.AddModelError("", "Sản phẩm và số lượng không khớp.");
+                    ViewBag.Products = _productRepo.GetAll();
+                    return View(order);
+                }
 
-                product.Quantity -= quantities[i];
-                _productRepo.Update(product);
+                // ---------------- SET ORDER INFO ----------------
+                order.CreateDate = DateTime.Now;
+                order.Status = 1;
+                order.OrderDetails = new List<OrderDetail>();
+
+                // ---------------- PROCESS PRODUCTS ----------------
+                for (int i = 0; i < productIds.Length; i++)
+                {
+                    var product = _productRepo.GetById(productIds[i]);
+
+                    if (product == null)
+                    {
+                        ModelState.AddModelError("", "Sản phẩm không tồn tại.");
+                        ViewBag.Products = _productRepo.GetAll();
+                        return View(order);
+                    }
+
+                    if (quantities[i] > product.Quantity)
+                    {
+                        ModelState.AddModelError("", $"Sản phẩm {product.ProductName} không đủ hàng (còn {product.Quantity}).");
+                        ViewBag.Products = _productRepo.GetAll();
+                        return View(order);
+                    }
+
+                    // Thêm chi tiết đơn hàng
+                    order.OrderDetails.Add(new OrderDetail
+                    {
+                        ProductId = productIds[i],
+                        Quantity = quantities[i]
+                    });
+
+                    // Cập nhật tồn kho
+                    product.Quantity -= quantities[i];
+                    _productRepo.Update(product); // ✅ dùng repository
+                }
+
+                // ---------------- INSERT ORDER ----------------
+                _orderRepo.Insert(order);
+
+                return RedirectToAction(nameof(Index));
             }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi ngoại lệ
+                return Content("Lỗi: " + ex.Message + "<br/>" + ex.StackTrace);
+            }
+        }
 
-            _orderRepo.Insert(order);
+        [HttpPost]
+        public IActionResult FindCustomer(string phone)
+        {
+            var cus = _customerRepo.GetByPhone(phone);
 
-            return RedirectToAction(nameof(Index));
+            ViewBag.Products = _productRepo.GetAll();
+            ViewBag.Phone = phone;
+
+            ViewBag.FoundCustomer = cus;  // ❗ chỉ dùng 1 biến duy nhất
+
+            return View("Create", new Order());
         }
 
 
-     //   [HttpPost]
-     //   public IActionResult Edit(
-     //int OrderId,
-     //int CustomerId,
-     //int StaffId,
-     //int[] productIds,
-     //int[] quantities,
-     //bool[] selected)
-     //   {
-     //       var order = _orderRepo.GetById(OrderId);
-     //       if (order == null) return NotFound();
 
-     //       order.CustomerId = CustomerId;
-     //       order.StaffId = StaffId;
+        [HttpPost]
+        public IActionResult AddCustomerAjax([FromBody] Customer customer)
+        {
+            if (customer == null) return BadRequest();
 
-     //       List<OrderDetail> newDetails = new List<OrderDetail>();
+            _customerRepo.Insert(customer);
 
-     //       for (int i = 0; i < productIds.Length; i++)
-     //       {
-     //           if (selected[i] && quantities[i] > 0)
-     //           {
-     //               newDetails.Add(new OrderDetail
-     //               {
-     //                   ProductId = productIds[i],
-     //                   Quantity = quantities[i]
-     //               });
-     //           }
-     //       }
-
-     //       _orderRepo.Update(order, newDetails);
-
-     //       return RedirectToAction("Index");
-     //   }
-
-
-
-
-
-
+            return Json(new
+            {
+                id = customer.CustomerId,
+                name = customer.CustomerName,
+                phone = customer.Phone
+            });
+        }
         // =============================
         // GET /Orders/Delete/5
         // =============================
         public IActionResult Delete(int id)
         {
-            var order = _orderRepo.GetById(id);
-            if (order == null) return NotFound();
-
-            return RedirectToAction(nameof(Index));
+            _orderRepo.Delete(id);
+            TempData["msg"] = "Đã hủy hóa đơn.";
+            return RedirectToAction("Index");
         }
+
 
         // =============================
         // POST /Orders/DeleteConfirmed

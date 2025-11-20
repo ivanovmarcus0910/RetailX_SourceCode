@@ -1,0 +1,50 @@
+﻿@model IEnumerable<BusinessObject.Models.Order>
+@{
+    Layout = "_SellerLayout";
+}
+
+<h2>Lịch sử mua hàng</h2>
+
+<table class="table table-striped mt-3">
+    <thead>
+        <tr>
+            <th>Mã đơn</th>
+            <th>Ngày tạo</th>
+            <th>Nhân viên</th>
+            <th>Tổng tiền</th>
+            <th>Chi tiết</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var o in Model)
+        {
+            <tr>
+                <td>@o.OrderId</td>
+                <td>@o.CreateDate</td>
+                <td>@o.Staff?.StaffName</td>
+
+                <td>
+                    @{
+                        decimal total = o.OrderDetails.Sum(d =>
+                        (decimal)d.Quantity * (d.Product?.Price ?? 0)
+                        );
+
+                    }
+
+                    @String.Format("{0:N0} đ", total)
+                </td>
+
+                <td>
+                    <a asp-controller="OrderDetail"
+                       asp-action="Detail"
+                       asp-route-id="@o.OrderId"
+                       class="btn btn-sm btn-primary">
+                        Xem chi tiết
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="btn btn-secondary">Quay lại</a>

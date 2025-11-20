@@ -1,0 +1,28 @@
+﻿@model BusinessObject.Models.Customer
+@{
+    Layout = "_SellerLayout";
+}
+
+
+<h2>Thêm khách hàng</h2>
+
+<form asp-action="Create" method="post">
+
+    <div class="mb-3">
+        <label>Tên khách hàng</label>
+        <input asp-for="CustomerName" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label>Số điện thoại</label>
+        <input asp-for="Phone" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label>Địa chỉ</label>
+        <input asp-for="Address" class="form-control" />
+    </div>
+
+    <button class="btn btn-primary">Lưu</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

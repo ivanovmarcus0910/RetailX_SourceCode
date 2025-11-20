@@ -1,37 +1,108 @@
 ﻿@model BusinessObject.Models.Order
 
-@{
-    ViewData["Title"] = "Create Order";
-    var products = ViewBag.Products as List<BusinessObject.Models.Product>;
-}
-
 <h2>Create Order</h2>
 
-<form asp-action="Create" method="post">
+<!-- ========================= -->
+<!-- 1) LỌC THEO CATEGORY -->
+<!-- ========================= -->
 
-    @* Hiển thị lỗi *@
-    <div class="text-danger">
-        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-        {
-            <div>@error.ErrorMessage</div>
-        }
+
+
+<!-- ========================= -->
+<!-- 2) TÌM KHÁCH HÀNG -->
+<!-- ========================= -->
+<form asp-action="FindCustomer" method="post" class="mb-4">
+    <div class="input-group">
+        <input type="text" name="phone" class="form-control"
+               placeholder="Nhập số điện thoại..."
+               value="@ViewBag.Phone" />
+
+        <!-- Truyền categoryId giữ nguyên filter -->
+        <input type="hidden" name="categoryId" value="@ViewBag.SelectedCategory" />
+
+        <button class="btn btn-primary">Tìm khách hàng</button>
+    </div>
+</form>
+<form asp-action="Create" method="get" class="mb-4">
+    <div class="input-group">
+
+        <select name="categoryId" class="form-select">
+            <option value="">-- Chọn loại sản phẩm --</option>
+
+            @foreach (var c in ViewBag.Categories)
+            {
+                <option value="@c.CategoryId"
+                        selected="@(c.CategoryId == ViewBag.SelectedCategory)">
+                    @c.CategoryName
+                </option>
+            }
+        </select>
+
+        <button class="btn btn-secondary">Lọc</button>
+    </div>
+</form>
+
+<!-- ========================= -->
+<!-- 3) KẾT QUẢ TÌM KHÁCH -->
+<!-- ========================= -->
+@if (ViewBag.FoundCustomer != null)
+{
+    var cus = ViewBag.FoundCustomer;
+
+    if (cus.IsActive)
+    {
+        <div class="alert alert-success">
+            <strong>Khách hàng:</strong> @cus.CustomerName <br />
+            <strong>SĐT:</strong> @cus.Phone
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            Số điện thoại <strong>@cus.Phone</strong> thuộc khách hàng
+            <strong>@cus.CustomerName</strong> nhưng đang bị <b>vô hiệu hóa</b>.
+            <br />
+            <a asp-controller="Customer"
+               asp-action="Profile"
+               asp-route-id="@cus.CustomerId"
+               class="btn btn-warning btn-sm mt-2">
+                🔄 Xem hồ sơ để khôi phục
+            </a>
+        </div>
+    }
+}
+else if (ViewBag.Phone != null)
+{
+    <div class="alert alert-danger">
+        Không tìm thấy khách hàng với số <strong>@ViewBag.Phone</strong>.
     </div>
 
-    <!-- CustomerId -->
-    <div class="form-group mb-3">
-        <label>Customer ID</label>
-        <input type="number" name="CustomerId" class="form-control" required />
-    </div>
+    <button type="button"
+            class="btn btn-success mb-3"
+            data-bs-toggle="modal"
+            data-bs-target="#addCustomerModal">
+        ➕ Thêm khách hàng mới
+    </button>
+}
 
-    <!-- StaffId -->
-    <div class="form-group mb-3">
+<hr />
+
+<!-- ========================= -->
+<!-- 4) FORM TẠO HÓA ĐƠN -->
+<!-- ========================= -->
+<form id="OrderForm" asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <!-- Hidden giữ Customer -->
+    <input type="hidden" id="CustomerIdInput" name="CustomerId"
+           value="@(ViewBag.FoundCustomer != null ? ViewBag.FoundCustomer.CustomerId : 0)" />
+
+    <div class="mb-3">
         <label>Staff ID</label>
         <input type="number" name="StaffId" class="form-control" required />
     </div>
 
-    <hr />
-
-    <h4>Chọn Sản Phẩm</h4>
+    <h4>Danh sách sản phẩm</h4>
 
     <table class="table table-bordered">
         <thead>
@@ -43,25 +114,25 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var p in products)
+            @foreach (var p in ViewBag.Products)
             {
                 <tr>
                     <td>@p.ProductName</td>
-
                     <td>@p.Quantity</td>
 
                     <td>
-                        <input type="checkbox" class="chk-product"
+                        <input type="checkbox"
+                               class="chk-product"
+                               data-target="qty-@p.ProductId"
                                name="productIds"
-                               value="@p.ProductId"
-                               data-target="qty-@p.ProductId" />
+                               value="@p.ProductId" />
                     </td>
 
                     <td>
                         <input type="number"
-                               name="quantities"
                                id="qty-@p.ProductId"
-                               class="form-control"
+                               name="quantities"
+                               class="form-control qty-input"
                                value="0"
                                min="0"
                                max="@p.Quantity"
@@ -72,17 +143,99 @@
         </tbody>
     </table>
 
-    <button type="submit" class="btn btn-primary">Tạo Hóa Đơn</button>
-    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+    <button type="submit" class="btn btn-primary mt-3">Tạo hóa đơn</button>
 </form>
+
+<!-- ========================= -->
+<!-- 5) POPUP THÊM KHÁCH HÀNG -->
+<!-- ========================= -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm khách hàng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div id="cusError" class="alert alert-danger d-none"></div>
+                <div id="cusSuccess" class="alert alert-success d-none"></div>
+
+                <form id="AddCustomerForm">
+
+                    <div class="mb-2">
+                        <label>Tên</label>
+                        <input name="CustomerName" class="form-control" required />
+                    </div>
+
+                    <div class="mb-2">
+                        <label>Số điện thoại</label>
+                        <input name="Phone" class="form-control" required />
+                    </div>
+
+                    <div class="mb-2">
+                        <label>Email</label>
+                        <input name="Email" class="form-control" />
+                    </div>
+
+                    <div class="mb-2">
+                        <label>Địa chỉ</label>
+                        <input name="Address" class="form-control" />
+                    </div>
+
+                    <button class="btn btn-primary mt-2 w-100">Lưu khách hàng</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <script>
-        // Bật / tắt ô số lượng khi người dùng click checkbox
+        // Bật/tắt input số lượng khi check product
         document.querySelectorAll(".chk-product").forEach(chk => {
             chk.addEventListener("change", function () {
-                let qtyInput = document.getElementById(this.dataset.target);
-                qtyInput.disabled = !this.checked;
+                const input = document.getElementById(this.dataset.target);
+                input.disabled = !this.checked;
+                if (!this.checked) input.value = 0;
+            });
+        });
+
+        // Thêm khách hàng bằng AJAX
+        document.getElementById("AddCustomerForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            let formData = new FormData(this);
+
+            fetch('/Customer/CreateFromOrder', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+
+                const err = document.getElementById("cusError");
+                const ok = document.getElementById("cusSuccess");
+
+                err.classList.add("d-none");
+                ok.classList.add("d-none");
+
+                if (!data.success) {
+                    err.innerText = data.message;
+                    err.classList.remove("d-none");
+                    return;
+                }
+
+                ok.innerText = "✔ Tạo/Kích hoạt khách hàng thành công!";
+                ok.classList.remove("d-none");
+
+                document.getElementById("CustomerIdInput").value = data.id;
+
+                setTimeout(() => {
+                    bootstrap.Modal.getInstance(document.getElementById("addCustomerModal")).hide();
+                    document.getElementById("AddCustomerForm").reset();
+                }, 1000);
             });
         });
     </script>

@@ -21,7 +21,9 @@
                 <td>@o.Staff.StaffName</td>
                 <td>@o.CreateDate</td>
                 <td>
-                    <a asp-action="Details" asp-route-id="@o.OrderId" class="btn btn-info btn-sm">Xem</a>
+                    <a asp-controller="OrderDetail" asp-action="Detail" asp-route-id="@o.OrderId"
+                       class="btn btn-info btn-sm">Xem</a>
+
                     <a asp-action="Delete" asp-route-id="@o.OrderId" class="btn btn-danger btn-sm">Xóa</a>
                 </td>
             </tr>
