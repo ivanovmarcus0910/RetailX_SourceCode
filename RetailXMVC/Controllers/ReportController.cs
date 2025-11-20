@@ -252,5 +252,59 @@ namespace RetailXMVC.Controllers
 
             return field;
         }
+
+        [HttpGet]
+        public IActionResult Chart(int? year)
+        {
+            int selectedYear = year ?? DateTime.Now.Year;
+
+            // Lấy range lớn để có đủ dữ liệu
+            DateTime startDate = new DateTime(2020, 1, 1);
+            DateTime endDate = new DateTime(DateTime.Now.Year + 1, 12, 31);
+
+            var allReports = _reportRepository.GetRevenueReports(startDate, endDate);
+
+            // Filter theo Year và group theo Month
+            var monthlyData = Enumerable.Range(1, 12).Select(month => new
+            {
+                Month = month,
+                Year = selectedYear,
+                Revenue = allReports.Where(r => r.Month == month && r.Year == selectedYear)
+                                   .Sum(r => r.AmountRevenue ?? 0),
+                Cost = allReports.Where(r => r.Month == month && r.Year == selectedYear)
+                                .Sum(r => r.AmountCost ?? 0),
+                Salary = allReports.Where(r => r.Month == month && r.Year == selectedYear)
+                                  .Sum(r => r.AmountSalary ?? 0),
+                Profit = allReports.Where(r => r.Month == month && r.Year == selectedYear)
+                                  .Sum(r => r.Profit ?? 0)
+            }).ToList();
+
+            var totalRevenue = monthlyData.Sum(m => m.Revenue);
+            var totalCost = monthlyData.Sum(m => m.Cost);
+            var totalSalary = monthlyData.Sum(m => m.Salary);
+            var totalProfit = monthlyData.Sum(m => m.Profit);
+
+            var availableYears = allReports
+                .Where(r => r.Year.HasValue)    
+                .Select(r => r.Year.Value)      
+                .Distinct()
+                .OrderByDescending(y => y)
+                .ToList();
+
+            if (!availableYears.Any())
+            {
+                availableYears.Add(DateTime.Now.Year);
+            }
+
+            ViewBag.SelectedYear = selectedYear;
+            ViewBag.AvailableYears = availableYears;
+            ViewBag.TotalRevenue = totalRevenue;
+            ViewBag.TotalCost = totalCost;
+            ViewBag.TotalSalary = totalSalary;
+            ViewBag.TotalProfit = totalProfit;
+            ViewBag.MonthlyData = System.Text.Json.JsonSerializer.Serialize(monthlyData);
+
+            return View();
+        }
     }
 }

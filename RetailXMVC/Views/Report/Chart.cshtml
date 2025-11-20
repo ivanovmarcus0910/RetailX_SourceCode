@@ -1,0 +1,549 @@
+﻿@{
+    Layout = "_FinanceLayout";
+}
+@{
+    ViewData["Title"] = "Biểu Đồ Thống Kê";
+    var selectedYear = (int)ViewBag.SelectedYear;
+    var availableYears = ViewBag.AvailableYears as List<int> ?? new List<int> { DateTime.Now.Year };
+    var totalRevenue = (decimal)ViewBag.TotalRevenue;
+    var totalCost = (decimal)ViewBag.TotalCost;
+    var totalSalary = (decimal)ViewBag.TotalSalary;
+    var totalProfit = (decimal)ViewBag.TotalProfit;
+}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+<style>
+    .summary-card {
+        border-left: 4px solid;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .summary-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+    /* ✅ GIẢM CHIỀU CAO BIỂU ĐỒ CHÍNH: 450px → 320px */
+    .chart-container-main {
+        position: relative;
+        height: 320px;
+    }
+
+    .metric-tabs {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 0;
+    }
+
+    .metric-tab {
+        padding: 0.6rem 1.2rem; /* ✅ GIẢM PADDING TAB: 0.8rem → 0.6rem */
+        background: #f8f9fa;
+        border: none;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: 500;
+        font-size: 0.85rem; /* ✅ GIẢM FONT: 0.9rem → 0.85rem */
+        position: relative;
+        bottom: -2px;
+    }
+
+        .metric-tab:hover {
+            background: #e9ecef;
+        }
+
+        .metric-tab.active {
+            background: #fff;
+            border-bottom: 3px solid;
+            font-weight: 600;
+        }
+
+            .metric-tab.active.revenue {
+                border-bottom-color: #0d6efd;
+                color: #0d6efd;
+            }
+
+            .metric-tab.active.cost {
+                border-bottom-color: #dc3545;
+                color: #dc3545;
+            }
+
+            .metric-tab.active.salary {
+                border-bottom-color: #fd7e14;
+                color: #fd7e14;
+            }
+
+            .metric-tab.active.profit {
+                border-bottom-color: #198754;
+                color: #198754;
+            }
+
+    .year-selector {
+        display: inline-flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .year-btn {
+        padding: 0.5rem 1rem;
+        border: 2px solid #dee2e6;
+        background: #fff;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: 500;
+    }
+
+        .year-btn:hover {
+            background: #f8f9fa;
+            border-color: #0d6efd;
+        }
+
+        .year-btn.active {
+            background: #0d6efd;
+            color: #fff;
+            border-color: #0d6efd;
+        }
+</style>
+
+<!-- HEADER -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <p class="text-muted mb-0" style="font-size: 0.9rem;">
+            <i class="far fa-calendar-alt me-1"></i>
+            Biểu đồ năm <strong>@selectedYear</strong>
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <!-- YEAR SELECTOR -->
+        <div class="year-selector">
+            <button class="btn btn-sm btn-outline-secondary" onclick="changeYear(@(selectedYear - 1))">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <!-- ✅ FIX: Tự động chọn đúng năm -->
+            <select class="form-select form-select-sm" style="width: 120px;" onchange="changeYear(this.value)" id="yearDropdown">
+                @foreach (var y in availableYears)
+                {
+                    @if (y == selectedYear)
+                    {
+                        <option value="@y" selected>Năm @y</option>
+                    }
+                    else
+                    {
+                        <option value="@y">Năm @y</option>
+                    }
+                }
+            </select>
+
+            <button class="btn btn-sm btn-outline-secondary" onclick="changeYear(@(selectedYear + 1))">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <a href="@Url.Action("Index", "Report")" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i> Quay Lại
+        </a>
+    </div>
+</div>
+
+<!-- SUMMARY CARDS -->
+<div class="row g-2 mb-3">
+    <div class="col-md-3">
+        <div class="card summary-card border-0 shadow-sm h-100" style="border-left-color: #0d6efd !important;">
+            <div class="card-body py-2 px-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1" style="font-size: 0.75rem;">Tổng Doanh Thu</p>
+                        <h5 class="mb-0 text-primary fw-bold" style="font-size: 1.1rem;">@totalRevenue.ToString("N0")</h5>
+                        <small class="text-muted" style="font-size: 0.7rem;">VNĐ</small>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-2 rounded">
+                        <i class="fas fa-dollar-sign fa-lg text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card summary-card border-0 shadow-sm h-100" style="border-left-color: #dc3545 !important;">
+            <div class="card-body py-2 px-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1" style="font-size: 0.75rem;">Chi Phí Nhập Hàng</p>
+                        <h5 class="mb-0 text-danger fw-bold" style="font-size: 1.1rem;">@totalCost.ToString("N0")</h5>
+                        <small class="text-muted" style="font-size: 0.7rem;">VNĐ</small>
+                    </div>
+                    <div class="bg-danger bg-opacity-10 p-2 rounded">
+                        <i class="fas fa-shopping-cart fa-lg text-danger"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card summary-card border-0 shadow-sm h-100" style="border-left-color: #fd7e14 !important;">
+            <div class="card-body py-2 px-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1" style="font-size: 0.75rem;">Chi Phí Lương</p>
+                        <h5 class="mb-0 text-warning fw-bold" style="font-size: 1.1rem;">@totalSalary.ToString("N0")</h5>
+                        <small class="text-muted" style="font-size: 0.7rem;">VNĐ</small>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 p-2 rounded">
+                        <i class="fas fa-users fa-lg text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card summary-card border-0 shadow-sm h-100" style="border-left-color: @(totalProfit >= 0 ? "#198754" : "#dc3545") !important;">
+            <div class="card-body py-2 px-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1" style="font-size: 0.75rem;">Lợi Nhuận</p>
+                        <h5 class="mb-0 fw-bold" style="color: @(totalProfit >= 0 ? "#198754" : "#dc3545"); font-size: 1.1rem;">
+                            @totalProfit.ToString("N0")
+                        </h5>
+                        <small class="text-muted" style="font-size: 0.7rem;">VNĐ</small>
+                    </div>
+                    <div class="p-2 rounded" style="background-color: @(totalProfit >= 0 ? "rgba(25, 135, 84, 0.1)" : "rgba(220, 53, 69, 0.1)")">
+                        <i class="fas fa-chart-line fa-lg" style="color: @(totalProfit >= 0 ? "#198754" : "#dc3545")"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TABS & CHART -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom-0 pb-0">
+        <div class="metric-tabs">
+            <button class="metric-tab active revenue" onclick="showChart('revenue')">
+                <i class="fas fa-dollar-sign me-1"></i>
+                Doanh Thu
+            </button>
+            <button class="metric-tab cost" onclick="showChart('cost')">
+                <i class="fas fa-shopping-cart me-1"></i>
+                Chi Phí Nhập Hàng
+            </button>
+            <button class="metric-tab salary" onclick="showChart('salary')">
+                <i class="fas fa-users me-1"></i>
+                Chi Phí Lương
+            </button>
+            <button class="metric-tab profit" onclick="showChart('profit')">
+                <i class="fas fa-chart-line me-1"></i>
+                Lợi Nhuận
+            </button>
+        </div>
+    </div>
+    <div class="card-body pt-2 pb-3">
+        <div class="chart-container-main">
+            <canvas id="mainChart"></canvas>
+        </div>
+
+        <!-- ✅ GIẢM PADDING INSIGHT: p-3 → p-2 -->
+        <div id="chartInsights" class="mt-2 p-2 rounded" style="background: #f8f9fa;">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-lightbulb text-warning me-2" style="font-size: 1rem;"></i>
+                <div id="insightText" style="font-size: 0.85rem;">
+                    Chọn một chỉ số để xem phân tích chi tiết...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SO SÁNH - ✅ GIẢM CHIỀU CAO: 350px → 280px -->
+<div class="row g-3 mt-3">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-2">
+                <h6 class="mb-0 fw-bold" style="font-size: 0.9rem;">
+                    <i class="fas fa-chart-bar text-success me-2"></i>
+                    So Sánh Tổng Quan Năm @selectedYear
+                </h6>
+            </div>
+            <div class="card-body">
+                <div style="position: relative; height: 280px;">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-2">
+                <h6 class="mb-0 fw-bold" style="font-size: 0.9rem;">
+                    <i class="fas fa-chart-pie text-warning me-2"></i>
+                    Cơ Cấu Chi Phí Năm @selectedYear
+                </h6>
+            </div>
+            <div class="card-body">
+                <div style="position: relative; height: 280px;">
+                    <canvas id="costPieChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const monthlyData = @Html.Raw(ViewBag.MonthlyData);
+        const labels = monthlyData.map(m => `T${m.Month}`);
+        const revenues = monthlyData.map(m => m.Revenue);
+        const costs = monthlyData.map(m => m.Cost);
+        const salaries = monthlyData.map(m => m.Salary);
+        const profits = monthlyData.map(m => m.Profit);
+
+        let mainChart = null;
+
+        function showChart(type) {
+            document.querySelectorAll('.metric-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`.metric-tab.${type}`).classList.add('active');
+
+            if (mainChart) mainChart.destroy();
+
+            const configs = {
+                revenue: {
+                    label: 'Doanh Thu',
+                    data: revenues,
+                    color: 'rgb(13, 110, 253)',
+                    bgColor: 'rgba(13, 110, 253, 0.1)',
+                    insight: generateInsight('revenue', revenues)
+                },
+                cost: {
+                    label: 'Chi Phí Nhập Hàng',
+                    data: costs,
+                    color: 'rgb(220, 53, 69)',
+                    bgColor: 'rgba(220, 53, 69, 0.1)',
+                    insight: generateInsight('cost', costs)
+                },
+                salary: {
+                    label: 'Chi Phí Lương',
+                    data: salaries,
+                    color: 'rgb(255, 193, 7)',
+                    bgColor: 'rgba(255, 193, 7, 0.1)',
+                    insight: generateInsight('salary', salaries)
+                },
+                profit: {
+                    label: 'Lợi Nhuận',
+                    data: profits,
+                    color: 'rgb(25, 135, 84)',
+                    bgColor: 'rgba(25, 135, 84, 0.1)',
+                    insight: generateInsight('profit', profits)
+                }
+            };
+
+            const config = configs[type];
+
+            mainChart = new Chart(document.getElementById('mainChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: config.label,
+                        data: config.data,
+                        borderColor: config.color,
+                        backgroundColor: config.bgColor,
+                        borderWidth: 2.5,  // ✅ GIẢM: 3 → 2.5
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,  // ✅ GIẢM: 5 → 4
+                        pointHoverRadius: 6,  // ✅ GIẢM: 7 → 6
+                        pointBackgroundColor: config.color,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: { size: 12, weight: 'bold' },  // ✅ GIẢM: 14 → 12
+                                padding: 12  // ✅ GIẢM: 20 → 12
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => config.label + ': ' + ctx.parsed.y.toLocaleString('vi-VN') + ' VNĐ'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => {
+                                    if (value >= 1000000) return (value / 1000000).toFixed(0) + 'M';
+                                    return value.toLocaleString('vi-VN');
+                                },
+                                font: { size: 11 }  // ✅ GIẢM: 12 → 11
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: { size: 11 }  // ✅ GIẢM: 12 → 11
+                            }
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('insightText').innerHTML = config.insight;
+        }
+
+        function generateInsight(type, data) {
+            const total = data.reduce((a, b) => a + b, 0);
+            const avg = total / 12;
+            const max = Math.max(...data);
+            const min = Math.min(...data);
+            const maxIndex = data.indexOf(max);
+            const minIndex = data.indexOf(min);
+
+            const recentAvg = data.slice(-3).reduce((a, b) => a + b, 0) / 3;
+            const oldAvg = data.slice(0, 3).reduce((a, b) => a + b, 0) / 3;
+            const trend = recentAvg > oldAvg ? 'tăng' : 'giảm';
+            const trendPercent = oldAvg > 0 ? (((recentAvg - oldAvg) / oldAvg) * 100).toFixed(1) : 0;
+
+            const labels = ['Doanh Thu', 'Chi Phí Nhập Hàng', 'Chi Phí Lương', 'Lợi Nhuận'];
+            const icons = ['💰', '📦', '👥', '📈'];
+            const idx = ['revenue', 'cost', 'salary', 'profit'].indexOf(type);
+
+            return `
+                <strong>${icons[idx]} ${labels[idx]}:</strong>
+                Trung bình/tháng: <strong>${avg.toLocaleString('vi-VN')} VNĐ</strong> |
+                Cao nhất: <strong>${max.toLocaleString('vi-VN')} VNĐ</strong> (T${maxIndex + 1}) |
+                Thấp nhất: <strong>${min.toLocaleString('vi-VN')} VNĐ</strong> (T${minIndex + 1}) |
+                Xu hướng: <strong style="color: ${trend === 'tăng' ? '#198754' : '#dc3545'}">${trend.toUpperCase()} ${Math.abs(trendPercent)}%</strong>
+            `;
+        }
+
+        showChart('revenue');
+
+        // Comparison
+        new Chart(document.getElementById('comparisonChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Doanh Thu',
+                        data: revenues,
+                        backgroundColor: 'rgba(13, 110, 253, 0.7)',
+                        borderColor: 'rgb(13, 110, 253)',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Tổng Chi Phí',
+                        data: costs.map((c, i) => c + salaries[i]),
+                        backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                        borderColor: 'rgb(220, 53, 69)',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Lợi Nhuận',
+                        data: profits,
+                        backgroundColor: 'rgba(25, 135, 84, 0.7)',
+                        borderColor: 'rgb(25, 135, 84)',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { font: { size: 11 } }  // ✅ GIẢM FONT
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString('vi-VN') + ' VNĐ'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (value) => {
+                                if (value >= 1000000) return (value / 1000000).toFixed(0) + 'M';
+                                return value.toLocaleString('vi-VN');
+                            },
+                            font: { size: 10 }  // ✅ GIẢM FONT
+                        }
+                    },
+                    x: {
+                        ticks: { font: { size: 10 } }  // ✅ GIẢM FONT
+                    }
+                }
+            }
+        });
+
+        // Pie
+        const totalCost = costs.reduce((a, b) => a + b, 0);
+        const totalSalary = salaries.reduce((a, b) => a + b, 0);
+
+        new Chart(document.getElementById('costPieChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Chi Phí Nhập Hàng', 'Chi Phí Lương'],
+                datasets: [{
+                    data: [totalCost, totalSalary],
+                    backgroundColor: ['rgba(220, 53, 69, 0.8)', 'rgba(255, 193, 7, 0.8)'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 10 }, padding: 10 }  // ✅ GIẢM FONT & PADDING
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const value = ctx.parsed;
+                                const total = totalCost + totalSalary;
+                                const percent = ((value / total) * 100).toFixed(1);
+                                return ctx.label + ': ' + value.toLocaleString('vi-VN') + ' VNĐ (' + percent + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        function changeYear(year) {
+            window.location.href = '@Url.Action("Chart", "Report")?year=' + year;
+        }
+
+        window.showChart = showChart;
+        window.changeYear = changeYear;
+
+        // ✅ FIX: Đảm bảo dropdown chọn đúng năm khi load trang
+        window.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('yearDropdown').value = @selectedYear;
+        });
+    </script>
+}
