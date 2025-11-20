@@ -34,16 +34,14 @@ namespace RetailXMVC
 
                 if (string.IsNullOrEmpty(tenantIdStr) || !int.TryParse(tenantIdStr, out var tenantId))
                 {
-                    // chưa có tenant → tùy mi xử lý, có thể throw
+                    // chưa có tenant
                     return;
                 }
 
                 var tenant = tenantRepo.GetTenantById(tenantId);
                 if (tenant == null) return;
 
-                // dùng helper của mi
                 var connStr = tenantRepo.BuildTenantConnectionString(tenant);
-                // ví dụ: $"Server=.;Database={tenant.DbName};Trusted_Connection=True;TrustServerCertificate=True;"
                 Console.WriteLine("CONNECTION STRING IS "+connStr);
                 options.UseSqlServer(connStr);
             });
@@ -116,6 +114,7 @@ namespace RetailXMVC
             {
                 options.AddPolicy("TenantLoggedIn", policy =>
                     policy.RequireClaim("IsTenantLogin", "True"));
+
             });
 
             builder.Services.AddSignalR();

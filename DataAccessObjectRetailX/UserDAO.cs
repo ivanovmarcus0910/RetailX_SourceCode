@@ -1,10 +1,11 @@
-﻿using System;
+﻿using BusinessObjectRetailX;
+using BusinessObjectRetailX.Models;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BusinessObjectRetailX;
-using BusinessObjectRetailX.Models;
 namespace DataAccessObjectRetailX
 {
     public class UserDAO
@@ -17,7 +18,7 @@ namespace DataAccessObjectRetailX
 
         public List<User> GetAllUser()
         {
-            return _context.Users.ToList();
+            return _context.Users.Include(u => u.Tenant).ToList();
         }
 
         public User GetUserByEmail(string email)

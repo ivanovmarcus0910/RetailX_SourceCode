@@ -36,15 +36,16 @@ namespace RetailXMVC.Controllers
             this._loginHistoryRepo = loginHistoryRepository;
 
         }
-        public IActionResult Index()
-        {
-            return View();
-        }
 
 
         [HttpGet]
         public IActionResult SignUpTenant()
         {
+            var isTenantLogin = User.HasClaim("IsTenantLogin", "True");
+            if (isTenantLogin)
+            {
+                return RedirectToAction("Index", "HubTenant");
+            }
             if (TempData["Message"] != null)
             {
                 ViewBag.Message = TempData["Message"];
@@ -54,6 +55,11 @@ namespace RetailXMVC.Controllers
         [HttpPost]
         public async Task<IActionResult> SignUpTenant(string companyName)
         {
+            var isTenantLogin = User.HasClaim("IsTenantLogin", "True");
+            if (isTenantLogin)
+            {
+                return RedirectToAction("Index", "HubTenant");
+            }
             var user = userRepo.GetUserByEmail(User.Identity.Name);
             if (user.TenantId != null) return RedirectToAction("LoginTenant");
 
@@ -119,7 +125,11 @@ namespace RetailXMVC.Controllers
         [HttpGet]
         public async Task<IActionResult> LoginTenant()
         {
-            
+            var isTenantLogin = User.HasClaim("IsTenantLogin", "True");
+            if (isTenantLogin)
+            {
+                return RedirectToAction("Index", "HubTenant");
+            }
             var user = userRepo.GetUserByEmail(User.Identity.Name);
             if ((user.TenantId == null))
             {
