@@ -1,5 +1,8 @@
 ﻿@model BusinessObject.Models.PurchaseOrder
 @{
+    Layout = "_InventoryLayout";
+}
+@{
     var details = ViewBag.Details as List<BusinessObject.Models.PurchaseOrderDetail>;
 }
 

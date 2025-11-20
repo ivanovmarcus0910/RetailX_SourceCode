@@ -1,4 +1,4 @@
-﻿@model BusinessObject.Models.Supplier
+﻿@model BusinessObject.Models.Category
 @{
     Layout = null;
 }
@@ -8,11 +8,11 @@
     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 </div>
 
-<form id="supplierForm" asp-action="Delete" method="post" class="p-3">
+<form id="categoryForm" asp-action="Delete" method="post" class="p-3">
     @Html.AntiForgeryToken()
-    <input type="hidden" name="id" value="@Model.SupplierId" />
+    <input type="hidden" name="id" value="@Model.CategoryId" />
 
-    <p>Are you sure you want to delete <strong>@Model.SupplierName</strong>?</p>
+    <p>Are you sure you want to delete <strong>@Model.CategoryName</strong>?</p>
 
     <div class="d-flex justify-content-end gap-2">
         <button type="button" class="btn btn-outline-secondary rounded" data-bs-dismiss="modal">Cancel</button>
