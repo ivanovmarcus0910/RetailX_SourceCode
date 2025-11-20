@@ -7,14 +7,14 @@ namespace RetailXMVC.Controllers
     public class SalaryController : Controller
     {
         private readonly ISalaryRepository _salaryRepository;
-        private const int PageSize = 10; // Số bản ghi mỗi trang
+        private const int PageSize = 10; 
 
         public SalaryController(ISalaryRepository salaryRepository)
         {
             _salaryRepository = salaryRepository;
         }
 
-        // --- 1. Xem Danh sách Lương với Phân trang
+        // --- 1. Xem Danh sách Lương 
         public IActionResult Index(int? month, int? year, int page = 1)
         {
             int currentMonth = month ?? DateTime.Now.Month;
@@ -23,28 +23,28 @@ namespace RetailXMVC.Controllers
             // Lấy tất cả lương trong tháng
             var allSalaries = _salaryRepository.GetSalaries(currentMonth, currentYear);
 
-            // Tính toán phân trang
+     
             var totalSalaries = allSalaries.Count;
             var totalPages = (int)Math.Ceiling(totalSalaries / (double)PageSize);
 
-            // Đảm bảo page hợp lệ
+ 
             if (page < 1) page = 1;
             if (page > totalPages && totalPages > 0) page = totalPages;
 
             // Lấy dữ liệu cho trang hiện tại
             var pagedSalaries = allSalaries
-                .OrderBy(s => s.Staff.StaffName)
+                .OrderBy(s => s.Staff.StaffId)
                 .Skip((page - 1) * PageSize)
                 .Take(PageSize)
                 .ToList();
 
-            // Truyền dữ liệu
+ 
             ViewBag.Month = currentMonth;
             ViewBag.Year = currentYear;
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
             ViewBag.TotalSalaries = totalSalaries;
-            ViewBag.AllSalaries = allSalaries; // Để tính summary
+            ViewBag.AllSalaries = allSalaries; 
 
             return View(pagedSalaries);
         }
