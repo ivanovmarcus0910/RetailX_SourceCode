@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - RetailX Finance</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    @await Html.PartialAsync("_FinanceNavigation")
+
+    <!-- Main Content -->
+    <div class="finance-content">
+        <!-- Header -->
+        <div class="finance-header">
+            <h4>@ViewData["Title"]</h4>
+            <div class="user-info">
+                <span class="user-name">
+                    <i class="fas fa-user-circle me-1"></i>
+                    @User.FindFirst("FullName")?.Value
+                </span>
+                <a href="@Url.Action("Logout", "Auth")" class="btn btn-sm btn-outline-danger">
+                    <i class="fas fa-sign-out-alt me-1"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <main>
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

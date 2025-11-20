@@ -1,0 +1,235 @@
+﻿@{
+    var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+}
+
+<style>
+    /* ===== SIDEBAR ===== */
+    .finance-sidebar {
+        background: linear-gradient(180deg, #1e2139 0%, #12141d 100%);
+        min-height: 100vh;
+        width: 220px;
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 4px 0 10px rgba(0,0,0,0.2);
+    }
+
+    .finance-brand {
+        padding: 1.2rem 0.8rem;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        text-align: center;
+    }
+
+        .finance-brand h3 {
+            color: #fff;
+            font-weight: 600;
+            margin: 0;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+            .finance-brand h3 i {
+                font-size: 1.2rem;
+            }
+
+        .finance-brand small {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.7rem;
+            display: block;
+            margin-top: 0.3rem;
+        }
+
+    .finance-nav {
+        padding: 0.8rem 0;
+    }
+
+    .finance-nav-item {
+        display: flex;
+        align-items: center;
+        padding: 0.7rem 1rem;
+        color: rgba(255,255,255,0.65);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border-left: 3px solid transparent;
+        margin: 0.15rem 0;
+        font-size: 0.9rem;
+    }
+
+        .finance-nav-item:hover {
+            background: rgba(255,255,255,0.06);
+            color: #fff;
+            border-left-color: #0dcaf0;
+        }
+
+        .finance-nav-item.active {
+            background: rgba(13, 202, 240, 0.12);
+            color: #0dcaf0;
+            border-left-color: #0dcaf0;
+            font-weight: 500;
+        }
+
+        .finance-nav-item i {
+            font-size: 1.1rem;
+            width: 26px;
+            margin-right: 0.7rem;
+        }
+
+    /* ===== MAIN CONTENT ===== */
+    .finance-content {
+        margin-left: 220px;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    .finance-header {
+        background: #fff;
+        padding: 0.8rem 1.5rem;
+        margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+        .finance-header h4 {
+            margin: 0;
+            color: #1a1f36;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+        .user-info .user-name {
+            color: #495057;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+            .user-info .user-name i {
+                font-size: 1rem;
+            }
+
+        .user-info .btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+
+    /* ===== RESPONSIVE ===== */
+    @@media (max-width: 992px) {
+        .finance-sidebar {
+            width: 70px;
+        }
+
+        .finance-nav-item span {
+            display: none;
+        }
+
+        .finance-content {
+            margin-left: 70px;
+        }
+
+        .finance-brand h3 span {
+            display: none;
+        }
+
+        .finance-brand small {
+            display: none;
+        }
+
+        .finance-brand h3 {
+            justify-content: center;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .finance-header {
+            flex-direction: column;
+            gap: 0.8rem;
+            text-align: center;
+        }
+
+            .finance-header h4 {
+                font-size: 1.1rem;
+            }
+
+        .user-info {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<!-- SIDEBAR -->
+<div class="finance-sidebar">
+    <!-- Brand -->
+    <div class="finance-brand">
+        <h3>
+            <i class="fas fa-chart-line"></i>
+            <span>RetailX Finance</span>
+        </h3>
+        <small>Quản Lý Tài Chính</small>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="finance-nav">
+        <!-- Quản Lý Lương -->
+        <a href="@Url.Action("Index", "Salary")"
+           class="finance-nav-item @(currentController == "Salary" && currentAction == "Index" ? "active" : "")">
+            <i class="fas fa-money-check-alt"></i>
+            <span>Quản Lý Lương</span>
+        </a>
+
+        <!-- Báo Cáo Tài Chính -->
+        <a href="@Url.Action("Index", "Report")"
+           class="finance-nav-item @(currentController == "Report" && currentAction == "Index" ? "active" : "")">
+            <i class="fas fa-file-invoice-dollar"></i>
+            <span>Báo Cáo Tài Chính</span>
+        </a>
+
+        <!-- Biểu Đồ Thống Kê -->
+        <a href="@Url.Action("Chart", "Report")"
+           class="finance-nav-item @(currentController == "Report" && currentAction == "Chart" ? "active" : "")">
+            <i class="fas fa-chart-bar"></i>
+            <span>Biểu Đồ Thống Kê</span>
+        </a>
+
+        <!-- Divider -->
+        <div style="height: 1px; background: rgba(255,255,255,0.08); margin: 0.8rem 0;"></div>
+
+        <!-- Nhân Viên -->
+        <a href="@Url.Action("Index", "Staff")"
+           class="finance-nav-item @(currentController == "Staff" ? "active" : "")">
+            <i class="fas fa-users"></i>
+            <span>Nhân Viên</span>
+        </a>
+
+        <!-- Khách Hàng -->
+        <a href="@Url.Action("Index", "Customer")"
+           class="finance-nav-item @(currentController == "Customer" ? "active" : "")">
+            <i class="fas fa-user-tie"></i>
+            <span>Khách Hàng</span>
+        </a>
+
+        <!-- Divider -->
+        <div style="height: 1px; background: rgba(255,255,255,0.08); margin: 0.8rem 0;"></div>
+
+        <!-- Trang Chủ -->
+        <a href="@Url.Action("Index", "Home")"
+           class="finance-nav-item">
+            <i class="fas fa-home"></i>
+            <span>Trang Chủ</span>
+        </a>
+    </nav>
+</div>
