@@ -21,17 +21,17 @@ namespace Repositories
 
         public int GetTotalProducts()
         {
-            return _context.Products.Count();
+            return _context.Products.Where(p => p.IsActive == true).Count();
         }
 
         public int GetTotalCategories()
         {
-            return _context.Categories.Count();
+            return _context.Categories.Where(p => p.IsActive == true).Count();
         }
 
         public int GetTotalSuppliers()
         {
-            return _context.Suppliers.Count();
+            return _context.Suppliers.Where(p => p.IsActive == true).Count();
         }
 
         public int GetTotalCustomers()
@@ -56,6 +56,7 @@ namespace Repositories
         public List<dynamic> GetMonthlyImport()
         {
             var detailsWithMonth = _context.PurchaseOrderDetails
+                 .Include(d => d.PurchaseOrder)   
                 .Select(d => new
                 {
                     Month = d.PurchaseOrder.CreateDate.Month,
@@ -80,7 +81,9 @@ namespace Repositories
         }
         public List<dynamic> GetImportReportDetail(int? year = null, int? month = null, int? supplierId = null, int? categoryId = null)
         {
-            var query = _context.PurchaseOrderDetails.AsQueryable();
+            var query = _context.PurchaseOrderDetails
+                .Include(d => d.PurchaseOrder)  
+                .Include(d => d.Product).AsQueryable();
 
             if (year.HasValue)
                 query = query.Where(d => d.PurchaseOrder.CreateDate.Year == year.Value);
@@ -101,6 +104,7 @@ namespace Repositories
                     Month = d.PurchaseOrder.CreateDate.Month,
                     Year = d.PurchaseOrder.CreateDate.Year,
                     Quantity = d.Quantity,
+                    CreateDate = d.PurchaseOrder.CreateDate, // thêm dòng này
                     Price = d.Price,
                     Total = d.Quantity * d.Price
                 })
@@ -110,6 +114,7 @@ namespace Repositories
                 .Select(d =>
                 {
                     dynamic obj = new ExpandoObject();
+                    obj.CreateDate = d.CreateDate; // thêm ngày tạo
                     obj.Year = d.Year;
                     obj.TimeGroup = "Tháng " + d.Month;
                     obj.ProductName = d.ProductName;

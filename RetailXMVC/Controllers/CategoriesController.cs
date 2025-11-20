@@ -1,5 +1,6 @@
 ﻿using BusinessObject.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Repositories;
 
 namespace RetailXMVC.Controllers
@@ -14,68 +15,83 @@ namespace RetailXMVC.Controllers
         }
 
         // GET: Categories
-        public IActionResult Index()
+        public IActionResult Index(string searchString)
         {
             var categories = _repoCategory.GetAll();
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                categories = categories
+                    .Where(c => c.CategoryName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            ViewBag.SearchString = searchString;
+
             return View(categories);
         }
 
-        // GET: Categories/Create
+        // GET: load partial create
         public IActionResult Create()
         {
-            return View();
+            return PartialView("_CreateCategoryPartial", new Category());
         }
 
-        // POST: Categories/Create
+        // POST: Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create([Bind("CategoryId,CategoryName,Decription")] Category category)
         {
             if (!ModelState.IsValid)
             {
-                foreach (var modelState in ModelState)
-                {
-                    foreach (var error in modelState.Value.Errors)
-                    {
-                        Console.WriteLine($"MODELSTATE ERROR → FIELD: {modelState.Key} | MESSAGE: {error.ErrorMessage}");
-                    }
-                }
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return PartialView("_CreateCategoryPartial", category);
+
                 return View(category);
             }
 
-            category.IsActive = true; // nếu dùng soft delete
+            category.IsActive = true;
             _repoCategory.Add(category);
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return Json(new { success = true });
+
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Categories/Edit/5
-        public IActionResult Edit(int? id)
+        // GET: load partial edit
+        public IActionResult Edit(int id)
         {
-            if (id == null) return NotFound();
-
-            var category = _repoCategory.GetById(id.Value);
+            var category = _repoCategory.GetById(id);
             if (category == null) return NotFound();
 
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return PartialView("_EditCategoryPartial", category);
+
             return View(category);
         }
 
-        // POST: Categories/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, [Bind("CategoryId,CategoryName,Decription")] Category category)
+        public IActionResult Edit([Bind("CategoryId,CategoryName,Decription")] Category category)
         {
-            if (id != category.CategoryId) return NotFound();
-
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                category.IsActive = true;
-                _repoCategory.Update(category);
-                return RedirectToAction(nameof(Index));
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return PartialView("_EditCategoryPartial", category);
+                return View(category);
             }
-            return View(category);
+            category.IsActive = true;
+            _repoCategory.Update(category);
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return Json(new { success = true });
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Categories/Delete/5
+
+        // GET: load partial delete
         public IActionResult Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -83,16 +99,19 @@ namespace RetailXMVC.Controllers
             var category = _repoCategory.GetById(id.Value);
             if (category == null) return NotFound();
 
-            return View(category);
+            return PartialView("_DeleteCategoryPartial", category);
         }
 
-        // POST: Categories/Delete/5
+        // POST: Delete
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            // soft delete
             _repoCategory.Delete(id);
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return Json(new { success = true });
+
             return RedirectToAction(nameof(Index));
         }
     }

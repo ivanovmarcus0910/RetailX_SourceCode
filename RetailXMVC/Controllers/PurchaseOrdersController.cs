@@ -1,5 +1,6 @@
 ﻿using BusinessObject.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Repositories;
 
 namespace RetailXMVC.Controllers
@@ -21,11 +22,47 @@ namespace RetailXMVC.Controllers
             _repoProduct = repoProduct;
             _repoSupplier = repoSupplier;
         }
-        public IActionResult Index()
+        public IActionResult Index(string searchSupplier, int? statusFilter, DateTime? fromDate, DateTime? toDate)
         {
-            var orders = _repoOrder.GetAll();
-            return View(orders);
+            var orders = _repoOrder.GetAll().AsQueryable();
+
+            // Search theo supplier
+            if (!string.IsNullOrEmpty(searchSupplier))
+                orders = orders.Where(o => o.Supplier != null &&
+                                           o.Supplier.SupplierName.Contains(searchSupplier));
+
+            // Filter status
+            if (statusFilter.HasValue)
+                orders = orders.Where(o => o.Status == statusFilter.Value);
+
+            // Filter From Date
+            if (fromDate.HasValue)
+                orders = orders.Where(o => o.CreateDate >= fromDate.Value);
+
+            // Filter To Date
+            if (toDate.HasValue)
+                orders = orders.Where(o => o.CreateDate <= toDate.Value);
+
+            // SORT: Ngày mới nhất lên đầu
+            orders = orders.OrderByDescending(o => o.CreateDate);
+
+            // Lưu vào ViewBag để giữ giá trị sau khi submit
+            ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+            ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+            ViewBag.SearchSupplier = searchSupplier;
+
+            // Dropdown Status
+            ViewBag.StatusList = new SelectList(new[]
+            {
+        new { Value = "", Text = "All Status" },
+        new { Value = "2", Text = "Pending" },
+        new { Value = "3", Text = "Confirmed" }
+    }, "Value", "Text", statusFilter?.ToString());
+
+            return View(orders.ToList());
         }
+
+
 
         // GET: PurchaseOrders/Details/5
         public IActionResult Details(int id)

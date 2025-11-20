@@ -5,35 +5,110 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Suppliers</h1>
+<h2>Suppliers</h2>
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Create New</a>
-</p>
+<div class="d-flex justify-content-between mb-3 flex-wrap">
+    <!-- Search -->
+    <form method="get" class="d-flex gap-2 mb-2">
+        <input type="text" name="searchString" value="@ViewBag.SearchString"
+               class="form-control" placeholder="Search supplier..." />
+        <button class="btn btn-primary rounded-pill">Search</button>
+    </form>
 
-<table class="table">
+    <!-- Create Button -->
+    <button class="btn btn-primary rounded-pill" id="btnCreateSupplier">
+        Add Supplier
+    </button>
+</div>
+
+<table class="table table-hover">
     <thead>
         <tr>
-            <th>@Html.DisplayNameFor(model => model.SupplierName)</th>
-            <th>@Html.DisplayNameFor(model => model.Phone)</th>
-            <th>@Html.DisplayNameFor(model => model.Email)</th>
-            <th>@Html.DisplayNameFor(model => model.Address)</th>
-            <th></th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Address</th>
+            <th class="text-center">Actions</th>
         </tr>
     </thead>
     <tbody>
-    @foreach (var item in Model)
-    {
-        <tr>
-            <td>@Html.DisplayFor(m => item.SupplierName)</td>
-            <td>@Html.DisplayFor(m => item.Phone)</td>
-            <td>@Html.DisplayFor(m => item.Email)</td>
-            <td>@Html.DisplayFor(m => item.Address)</td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.SupplierId">Edit</a> |
-                <a asp-action="Delete" asp-route-id="@item.SupplierId">Delete</a>
-            </td>
-        </tr>
-    }
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.SupplierName</td>
+                <td>@item.Phone</td>
+                <td>@item.Email</td>
+                <td>@item.Address</td>
+                <td class="text-center">
+                    <a href="javascript:void(0)" class="btn btn-sm btn-warning rounded-pill me-1 btn-edit-supplier"
+                       data-id="@item.SupplierId">Edit</a>
+
+                    <a href="javascript:void(0)" class="btn btn-sm btn-danger rounded-pill btn-delete-supplier"
+                       data-id="@item.SupplierId">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
+
+
+<!-- Modal -->
+<div class="modal fade" id="supplierModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" id="supplierModalContent"></div>
+    </div>
+</div>
+
+
+@section Scripts {
+<script>
+    // Load Create
+    $(document).on("click", "#btnCreateSupplier", function () {
+        $.get('@Url.Action("Create", "Suppliers")', function (data) {
+            $("#supplierModalContent").html(data);
+            $("#supplierModal").modal("show");
+        });
+    });
+
+    // Load Edit
+    $(document).on("click", ".btn-edit-supplier", function () {
+        var id = $(this).data("id");
+        $.get('@Url.Action("Edit", "Suppliers")', { id: id }, function (data) {
+            $("#supplierModalContent").html(data);
+            $("#supplierModal").modal("show");
+        });
+    });
+
+    // Load Delete Confirm
+    $(document).on("click", ".btn-delete-supplier", function () {
+        var id = $(this).data("id");
+        $.get('@Url.Action("Delete", "Suppliers")', { id: id }, function (data) {
+            $("#supplierModalContent").html(data);
+            $("#supplierModal").modal("show");
+        });
+    });
+
+    // Submit Create/Edit/Delete
+    $(document).on("submit", "#supplierForm", function (e) {
+        e.preventDefault();
+
+        $.post($(this).attr("action"), $(this).serialize(), function (res) {
+            if (res.success) {
+                $("#supplierModal").modal("hide");
+                location.reload();
+            }
+        });
+    });
+</script>
+<style>
+    table.table-hover tbody tr:hover { background-color: #f2f2f2; }
+    table td.text-center { vertical-align: middle; }
+    .btn-warning { background-color: #f0ad4e; border-color: #f0ad4e; color: white; transition: all 0.2s; }
+    .btn-warning:hover { background-color: #ec9d4a; border-color: #ec9d4a; color: white; }
+    .btn-danger { background-color: #d9534f; border-color: #d9534f; color: white; transition: all 0.2s; }
+    .btn-danger:hover { background-color: #c9302c; border-color: #c9302c; color: white; }
+    .btn-primary { background-color: #4e73df; border-color: #4e73df; color: white; transition: all 0.2s; }
+    .btn-primary:hover { background-color: #3c5ec0; border-color: #3c5ec0; color: white; }
+
+</style>
+}

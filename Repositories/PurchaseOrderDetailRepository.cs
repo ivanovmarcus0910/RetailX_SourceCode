@@ -14,7 +14,11 @@ namespace Repositories
         public PurchaseOrderDetailRepository(PurchaseOrderDetailDAO dao) 
         { _dao = dao; }
         public List<PurchaseOrderDetail> GetByOrder(int orderId) => _dao.GetByOrder(orderId); 
-        public void Add(PurchaseOrderDetail detail) => _dao.Add(detail); 
+        public void Add(PurchaseOrderDetail detail) => _dao.Add(detail);
+        public void Update(PurchaseOrderDetail detail) => _dao.Update(detail); // thêm Update
+        public PurchaseOrderDetail GetById(int detailId) => _dao.GetById(detailId); // thêm
+
+
         public void Delete(int id) => _dao.Delete(id);
     }
 }

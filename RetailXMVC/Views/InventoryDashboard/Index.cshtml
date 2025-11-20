@@ -6,123 +6,97 @@
 }
 
 <section class="content-header">
-    <h1>Warehouse Dashboard <small>AdminLTE Style</small></h1>
+    <h2>Warehouse Dashboard</h2>
 </section>
 
 <section class="content">
 
-    <div class="row">
+    <!-- Dashboard Summary -->
+    <div class="row mb-3">
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-light shadow-sm p-3 text-center">
+                <h3>@ViewBag.TotalProducts</h3>
+                <p>Total Products</p>
+                <a href="@Url.Action("Index", "Products")" class="dashboard-btn mt-2">Manage Products</a>
 
-        <!-- Total Products -->
-        <div class="col-lg-3 col-xs-6">
-            <div class="small-box bg-aqua">
-                <div class="inner">
-                    <h3>@ViewBag.TotalProducts</h3>
-                    <p>Total Products</p>
-                </div>
-                <div class="icon">
-                    <i class="fa fa-cubes"></i>
-                </div>
             </div>
         </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-light shadow-sm p-3 text-center">
+                <h3>@ViewBag.TotalCategories</h3>
+                <p>Total Categories</p>
+                <a href="@Url.Action("Index", "Categories")" class="dashboard-btn mt-2">Manage Categories</a>
 
-        <!-- Total Categories -->
-        <div class="col-lg-3 col-xs-6">
-            <div class="small-box bg-green">
-                <div class="inner">
-                    <h3>@ViewBag.TotalCategories</h3>
-                    <p>Total Categories</p>
-                </div>
-                <div class="icon">
-                    <i class="fa fa-tags"></i>
-                </div>
+
             </div>
         </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-light shadow-sm p-3 text-center">
+                <h3>@ViewBag.TotalSuppliers</h3>
+                <p>Total Suppliers</p>
+                <a href="@Url.Action("Index", "Suppliers")" class="dashboard-btn mt-2">Manage Suppliers</a>
 
-        <!-- Total Suppliers -->
-        <div class="col-lg-3 col-xs-6">
-            <div class="small-box bg-yellow">
-                <div class="inner">
-                    <h3>@ViewBag.TotalSuppliers</h3>
-                    <p>Total Suppliers</p>
-                </div>
-                <div class="icon">
-                    <i class="fa fa-truck"></i>
-                </div>
+
             </div>
         </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-light shadow-sm p-3 text-center">
+                <h3>@String.Format("{0:N0}", ViewBag.InventoryValue) ₫</h3>
+                <p>Inventory Value</p>
+                <a href="@Url.Action("ImportReport", "InventoryDashboard")" class="dashboard-btn mt-2">Report</a>
 
-        <!-- Inventory Value -->
-        <div class="col-lg-3 col-xs-6">
-            <div class="small-box bg-red">
-                <div class="inner">
-                    <h3>@String.Format("{0:N0}", ViewBag.InventoryValue) ₫</h3>
-                    <p>Inventory Value</p>
-                </div>
-                <div class="icon">
-                    <i class="fa fa-dollar"></i>
-                </div>
             </div>
         </div>
-
     </div>
 
-    <!-- Monthly Import Chart -->
     <div class="row">
-        <section class="col-lg-7 connectedSortable">
-            <div class="box box-primary">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Monthly Import Chart</h3>
-                </div>
 
-                <div class="box-body">
-                    <canvas id="importChart" height="150"></canvas>
-                </div>
+        <!-- Monthly Import Chart -->
+        <div class="col-lg-7 mb-3">
+            <div class="card p-3">
+                <h5 class="mb-3">Monthly Import</h5>
+                <canvas id="importChart" height="180"></canvas>
             </div>
-        </section>
+        </div>
 
-        <!-- Low Stock Alert -->
-        <section class="col-lg-5 connectedSortable">
-            <div class="box box-danger">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Low Stock Alert</h3>
-                </div>
-
-                <div class="box-body table-responsive">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Qty</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var p in lowStock)
+        <!-- Low Stock -->
+        <div class="col-lg-5 mb-3">
+            <div class="card p-3">
+                <h5 class="mb-3">Low Stock Alert</h5>
+                <table class="table table-sm table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Product</th>
+                            <th>Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (lowStock != null && lowStock.Any())
+                        {
+                            foreach (var p in lowStock)
                             {
                                 <tr>
                                     <td>@p.ProductName</td>
-                                    <td><span class="badge bg-red">@p.Quantity</span></td>
+                                    <td class="text-danger font-weight-bold">@p.Quantity</td>
                                 </tr>
                             }
-                            @if (lowStock == null || !lowStock.Any())
-                            {
-                                <tr><td colspan="2">No low-stock items.</td></tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                        }
+                        else
+                        {
+                            <tr><td colspan="2" class="text-center">No low-stock items</td></tr>
+                        }
+                    </tbody>
+                </table>
             </div>
-        </section>
+        </div>
+
     </div>
 
 </section>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script>
-
-        // MONTHLY IMPORT DATA
         var months = [];
         var imports = [];
 
@@ -137,18 +111,46 @@
             }
         }
 
-        // CHART CONFIG
         new Chart(document.getElementById("importChart"), {
             type: 'bar',
             data: {
                 labels: months,
                 datasets: [{
-                    label: "Imported Quantity",
+                    label: "Imported Qty",
                     data: imports,
-                    borderWidth: 1
+                    backgroundColor: '#4e73df'
                 }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
             }
         });
-
     </script>
+    <style>
+    /* Button chung cho dashboard */
+    .dashboard-btn {
+        background-color: #4e73df; /* màu xanh thống nhất */
+        color: white;
+        border-radius: 12px; /* bo tròn */
+        padding: 5px 12px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease; /* hover mượt */
+    }
+
+    .dashboard-btn:hover {
+        background-color: #2e59d9; /* đậm hơn khi hover */
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px); /* nhích nhẹ khi hover */
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .dashboard-btn:active {
+        transform: translateY(0);
+        box-shadow: none;
+    }
+</style>
 }

@@ -1,43 +1,120 @@
 ﻿@model IEnumerable<BusinessObject.Models.Category>
-
 @{
     ViewData["Title"] = "Categories";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Categories</h1>
+<h2>Categories</h2>
 
-<p>
-    <a asp-action="Create">Create New Category</a>
-</p>
+<div class="d-flex justify-content-between mb-3 flex-wrap">
+    <!-- Search -->
+    <form method="get" class="d-flex mb-2">
+        <input type="text" name="searchString" value="@ViewBag.SearchString" class="form-control me-2" placeholder="Search category..." />
+        <button type="submit" class="btn btn-primary rounded-pill">Search</button>
+    </form>
 
-<table class="table">
+    <!-- Create Button -->
+    <button type="button" class="btn btn-primary rounded-pill" id="btnCreateCategory" data-bs-toggle="modal" data-bs-target="#categoryModal">
+        Create New Category
+    </button>
+</div>
+
+<table class="table table-hover">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.First().CategoryName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.First().Decription)
-            </th>
-            <th></th>
+            <th>@Html.DisplayNameFor(model => model.First().CategoryName)</th>
+            <th>@Html.DisplayNameFor(model => model.First().Decription)</th>
+            <th class="text-center">Actions</th>
         </tr>
     </thead>
     <tbody>
-    @foreach (var item in Model)
-    {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.CategoryName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Decription)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.CategoryId">Edit</a> |
-                <a asp-action="Delete" asp-route-id="@item.CategoryId">Delete</a>
-            </td>
-        </tr>
-    }
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.CategoryName</td>
+                    <td>@item.Decription</td>
+                    <td class="text-center">
+                        <a href="javascript:void(0)" class="btn btn-sm btn-warning rounded-pill me-1 btn-edit-category" data-id="@item.CategoryId">Edit</a>
+                        <a href="javascript:void(0)" class="btn btn-sm btn-danger rounded-pill btn-delete-category" data-id="@item.CategoryId">Delete</a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="3" class="text-center text-muted">No categories available</td>
+            </tr>
+        }
     </tbody>
 </table>
+
+<!-- Modal -->
+<div class="modal fade" id="categoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" id="categoryModalContent"></div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+<script>
+    // Load Create Partial
+    $(document).on("click", "#btnCreateCategory", function(){
+        $.get('@Url.Action("Create","Categories")', function(data){
+            $("#categoryModalContent").html(data);
+        });
+    });
+
+    // Load Edit Partial
+    $(document).on("click", ".btn-edit-category", function(){
+        var id = $(this).data("id");
+        $.get('@Url.Action("Edit","Categories")', { id: id }, function(data){
+            $("#categoryModalContent").html(data);
+            $("#categoryModal").modal("show");
+        });
+    });
+
+    // Load Delete Partial
+    $(document).on("click", ".btn-delete-category", function(){
+        var id = $(this).data("id");
+        $.get('@Url.Action("Delete","Categories")', { id: id }, function(data){
+            $("#categoryModalContent").html(data);
+            $("#categoryModal").modal("show");
+        });
+    });
+
+    // Submit form (Create/Edit/Delete)
+    $(document).on("submit", "#categoryForm", function(e){
+        e.preventDefault();
+        var form = $(this);
+        $.ajax({
+            type: "POST",
+            url: form.attr("action"),
+            data: form.serialize(),
+            success: function(response){
+                if(response.success){
+                    $('#categoryModal').modal('hide');
+                    location.reload();
+                } else {
+                    $("#categoryModalContent").html(response);
+                }
+            }
+        });
+    });
+</script>
+<style>
+    table.table-hover tbody tr:hover { background-color: #f2f2f2; }
+    table td.text-center { vertical-align: middle; }
+    .btn-warning { background-color: #f0ad4e; border-color: #f0ad4e; color: white; transition: all 0.2s; }
+    .btn-warning:hover { background-color: #ec9d4a; border-color: #ec9d4a; color: white; }
+    .btn-danger { background-color: #d9534f; border-color: #d9534f; color: white; transition: all 0.2s; }
+    .btn-danger:hover { background-color: #c9302c; border-color: #c9302c; color: white; }
+    .btn-primary { background-color: #4e73df; border-color: #4e73df; color: white; transition: all 0.2s; }
+    .btn-primary:hover { background-color: #3c5ec0; border-color: #3c5ec0; color: white; }
+
+</style>
+}
