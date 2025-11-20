@@ -11,6 +11,9 @@ namespace Repositories
     {
         List<PurchaseOrderDetail> GetByOrder(int orderId);
         void Add(PurchaseOrderDetail detail);
+        void Update(PurchaseOrderDetail detail); // thêm Update
+        PurchaseOrderDetail GetById(int detailId);   // thêm
+
         void Delete(int id);
     }
 }

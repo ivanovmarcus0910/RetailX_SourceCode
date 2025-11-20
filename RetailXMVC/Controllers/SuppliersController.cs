@@ -13,61 +13,61 @@ namespace RetailXMVC.Controllers
             _repoSupplier = repoSupplier;
         }
 
-        // GET: Suppliers
-        public IActionResult Index()
+        public IActionResult Index(string searchString)
         {
             var suppliers = _repoSupplier.GetAllSuppliers();
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                suppliers = suppliers.Where(s =>
+                    s.SupplierName.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                    s.Email.Contains(searchString) ||
+                    s.Phone.Contains(searchString)
+                ).ToList();
+            }
+
+            ViewBag.SearchString = searchString;
             return View(suppliers);
         }
 
-        // GET: Suppliers/Create
+        // GET Create Partial
         public IActionResult Create()
         {
-            return View();
+            return PartialView("_CreateSupplierPartial", new Supplier());
         }
 
-        // POST: Suppliers/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Create([Bind("SupplierId,SupplierName,Phone,Email,Address")] Supplier supplier)
+        public IActionResult Create(Supplier supplier)
         {
-            if (ModelState.IsValid)
-            {
-                supplier.IsActive = true;
-                _repoSupplier.AddSupplier(supplier);
-                return RedirectToAction(nameof(Index));
-            }
-            return View(supplier);
+            if (!ModelState.IsValid)
+                return PartialView("_CreateSupplierPartial", supplier);
+
+            supplier.IsActive = true;
+            _repoSupplier.AddSupplier(supplier);
+
+            return Json(new { success = true });
         }
 
-        // GET: Suppliers/Edit/5
-        public IActionResult Edit(int? id)
+        // GET Edit Partial
+        public IActionResult Edit(int id)
         {
-            if (id == null) return NotFound();
-
-            var supplier = _repoSupplier.GetSupplierById(id.Value);
-            if (supplier == null) return NotFound();
-
-            return View(supplier);
+            var supplier = _repoSupplier.GetSupplierById(id);
+            return PartialView("_EditSupplierPartial", supplier);
         }
 
-        // POST: Suppliers/Edit/5
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, [Bind("SupplierId,SupplierName,Phone,Email,Address")] Supplier supplier)
+        public IActionResult Edit(Supplier supplier)
         {
-            if (id != supplier.SupplierId) return NotFound();
+            if (!ModelState.IsValid)
+                return PartialView("_EditSupplierPartial", supplier);
 
-            if (ModelState.IsValid)
-            {
-                supplier.IsActive = true;
-                _repoSupplier.UpdateSupplier(supplier);
-                return RedirectToAction(nameof(Index));
-            }
-            return View(supplier);
+            supplier.IsActive = true;
+            _repoSupplier.UpdateSupplier(supplier);
+
+            return Json(new { success = true });
         }
 
-        // GET: Suppliers/Delete/5
+        // GET: load partial delete
         public IActionResult Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -75,16 +75,22 @@ namespace RetailXMVC.Controllers
             var supplier = _repoSupplier.GetSupplierById(id.Value);
             if (supplier == null) return NotFound();
 
-            return View(supplier);
+            return PartialView("_DeleteSupplierPartial", supplier);
         }
 
-        // POST: Suppliers/Delete/5
+        // POST: Delete
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
             _repoSupplier.DeleteSupplier(id);
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return Json(new { success = true });
+
             return RedirectToAction(nameof(Index));
         }
+
+
     }
 }

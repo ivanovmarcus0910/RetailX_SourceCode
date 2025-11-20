@@ -40,5 +40,23 @@ namespace DataAccessObject
                 _context.SaveChanges();
             }
         }
+
+        public void Update(PurchaseOrderDetail detail)
+        {
+            var existing = _context.PurchaseOrderDetails.Find(detail.PurchaseOrderDetailId);
+            if (existing != null)
+            {
+                existing.ProductId = detail.ProductId;
+                existing.Quantity = detail.Quantity;
+                existing.Price = detail.Price;
+                _context.SaveChanges();
+            }
+        }
+        public PurchaseOrderDetail GetById(int detailId)
+        {
+            return _context.PurchaseOrderDetails
+                           .Include(d => d.Product)
+                           .FirstOrDefault(d => d.PurchaseOrderDetailId == detailId);
+        }
     }
 }

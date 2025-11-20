@@ -6,6 +6,7 @@
 <h2>📦 Import Report</h2>
 
 <form method="get" asp-action="ImportReport" class="mb-3">
+
     <label>Year:</label>
     <select name="year" class="form-control d-inline-block w-auto" asp-items="ViewBag.Years">
         <option value="">All</option>
@@ -29,17 +30,29 @@
     <button type="submit" class="btn btn-primary">Filter</button>
 </form>
 
+@{
+    var qYear = ViewContext.HttpContext.Request.Query["year"].FirstOrDefault();
+    var qMonth = ViewContext.HttpContext.Request.Query["month"].FirstOrDefault();
+    var qSupplier = ViewContext.HttpContext.Request.Query["supplierId"].FirstOrDefault();
+    var qCategory = ViewContext.HttpContext.Request.Query["categoryId"].FirstOrDefault();
+}
+
+<a class="btn btn-success mb-3"
+   href="@Url.Action("ExportImportReport", "InventoryDashboard", 
+        new { year = qYear, month = qMonth, supplierId = qSupplier, categoryId = qCategory })">
+    Export CSV
+</a>
+
 @if (!Model.Any())
 {
     <div class="p-5 text-center text-muted border rounded">Không có dữ liệu.</div>
 }
 else
 {
-    <table class="table table-bordered">
-        <thead>
+    <table class="table table-bordered table-striped">
+        <thead class="table-light">
             <tr>
-                <th>Year</th>
-                <th>Month</th>
+                <th>Create Date</th>
                 <th>Product Name</th>
                 <th>Quantity</th>
                 <th>Price</th>
@@ -47,27 +60,37 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var group in Model.GroupBy(m => new { m.Year, m.TimeGroup }))
+
+        @foreach (var group in Model
+            .GroupBy(m => new {
+                Year = m.Year,
+                Month = int.Parse(m.TimeGroup.Replace("Tháng ", "")),
+                TimeGroup = m.TimeGroup
+            })
+            .OrderByDescending(g => g.Key.Year)
+            .ThenByDescending(g => g.Key.Month))
+        {
+            var totalGroup = group.Sum(x => (decimal)x.Total);
+
+            foreach (var item in group)
             {
-                var totalGroup = group.Sum(x => (decimal)x.Total);
-
-                foreach (var item in group)
-                {
-                    <tr>
-                        <td>@item.Year</td>
-                        <td>@item.TimeGroup</td>
-                        <td>@item.ProductName</td>
-                        <td>@item.Quantity</td>
-                        <td>@String.Format("{0:N0}", item.Price)</td>
-                        <td>@String.Format("{0:N0}", item.Total)</td>
-                    </tr>
-                }
-
-                <tr class="table-info">
-                    <td colspan="5" class="text-right"><b>Total @group.Key.TimeGroup - @group.Key.Year:</b></td>
-                    <td><b>@String.Format("{0:N0}", totalGroup)</b></td>
+                <tr>
+                    <td>@Convert.ToDateTime(item.CreateDate).ToString("dd/MM/yyyy")</td>
+                    <td>@item.ProductName</td>
+                    <td>@item.Quantity</td>
+                    <td>@String.Format("{0:N0}", item.Price)</td>
+                    <td>@String.Format("{0:N0}", item.Total)</td>
                 </tr>
             }
+
+            <tr class="table-info">
+                <td colspan="4" class="text-end">
+                    <b>Total @group.Key.TimeGroup - @group.Key.Year:</b>
+                </td>
+                <td><b>@String.Format("{0:N0}", totalGroup)</b></td>
+            </tr>
+        }
+
         </tbody>
     </table>
 }
