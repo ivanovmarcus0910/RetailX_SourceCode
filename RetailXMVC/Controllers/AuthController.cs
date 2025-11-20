@@ -1,17 +1,14 @@
 ﻿using BusinessObjectRetailX.Models;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RepositoriesRetailX;
 using System.Security.Claims;
-using System.Security.Claims;
-using System.Security.Principal;
-using Microsoft.AspNetCore.Http;
 
 namespace RetailXMVC.Controllers
 {
+    [Authorize]
     public class AuthController : Controller
     {
       
@@ -23,8 +20,14 @@ namespace RetailXMVC.Controllers
             this.systemLogRepository = systemLogRepository;
         }
         [HttpGet]
+        [AllowAnonymous]
+
         public IActionResult Login()
         {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             if (TempData["Message"] != null)
             {
                 ViewBag.Message = TempData["Message"];
@@ -33,6 +36,8 @@ namespace RetailXMVC.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
+
         public async Task<IActionResult> Login(string email, string password)
         {
             Console.WriteLine($"Attempting login for email: {email} : {password}");
@@ -74,11 +79,19 @@ namespace RetailXMVC.Controllers
             return RedirectToAction("Index", "Home");
         }
         [HttpGet]
+        [AllowAnonymous]
+
         public IActionResult SignUpAccount()
         {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             return View();
         }
         [HttpPost]
+        [AllowAnonymous]
+
         public IActionResult SignUpAccount(string email, string password, string fullname)
         {
             Console.WriteLine($"Sign up with {email} {password} {fullname} ");
@@ -104,6 +117,8 @@ namespace RetailXMVC.Controllers
             return RedirectToAction("Index", "Home");
         }
         [HttpGet]
+        [AllowAnonymous]
+
         public IActionResult AccessDenied(string? returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;

@@ -90,7 +90,10 @@
                                     <td>@u.FullName</td>
                                     <td>@u.Email</td>
                                     <td>@(u.Phone ?? "-")</td>
-                                    <td>@(u.Tenant?.CompanyName ?? "NULL")</td>
+                                    <td>
+                                        <div class="fw-semibold">@(u.Tenant?.CompanyName ?? "NULL")</div>
+                                        <div class="text-muted small">@(u.Tenant?.DbName ?? "NULL")</div>
+                                    </td>
                                     <td>
                                         <span class="badge bg-secondary">@u.GlobalRole</span>
                                     </td>
@@ -110,21 +113,15 @@
                                         <div class="d-flex gap-1">
                                             <form asp-action="ToggleUserActive"
                                                   asp-controller="AdminRetailX"
-                                                  method="post">
+                                                  method="post" class="form-toggle-user">
                                                 <input type="hidden" name="id" value="@u.Id" />
-                                                <button type="submit"
-                                                        class="btn btn-sm @(u.IsActive == true ? "btn-warning" : "btn-success")"
-                                                        onclick="return confirm('Bạn có chắc muốn @(u.IsActive == true ? "KHÓA" : "MỞ KHÓA") user này không?');">
+                                                <button type="button"
+                                                        class="btn btn-sm @(u.IsActive == true ? "btn-warning" : "btn-success") btn-toggle-user"
+                                                        data-username="@u.FullName"
+                                                        data-active="@(u.IsActive?.ToString().ToLower() ?? "false")">
                                                     @(u.IsActive == true ? "Khóa" : "Mở khóa")
                                                 </button>
                                             </form>
-
-                                            @* <a asp-controller="AdminRetailX"
-                                               asp-action="UserDetail"  <!-- nếu sau này làm -->
-                                               asp-route-id="@u.Id"
-                                               class="btn btn-sm btn-outline-info">
-                                                Chi tiết
-                                            </a> *@
                                         </div>
                                     </td>
                                 </tr>
@@ -136,3 +133,37 @@
         </div>
     </div>
 </div>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.btn-toggle-user').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    const form = this.closest('form');
+                    const userName = this.getAttribute('data-username') || 'user này';
+                    const isActive = this.getAttribute('data-active') === 'true';
+
+                    const actionText = isActive ? 'KHÓA' : 'MỞ KHÓA';
+                    const confirmText = isActive ? 'Có, KHÓA user!' : 'Có, MỞ KHÓA user!';
+
+                    Swal.fire({
+                        title: `Bạn có chắc muốn ${actionText} "${userName}"?`,
+                        text: "Trạng thái đăng nhập của user sẽ thay đổi.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: confirmText,
+                        cancelButtonText: 'Hủy',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+}
