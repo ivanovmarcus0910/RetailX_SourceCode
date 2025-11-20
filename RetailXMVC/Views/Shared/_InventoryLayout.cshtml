@@ -1,0 +1,184 @@
+﻿@*
+    Inventory Manager Layout - RetailX
+    Designed for Inventory Dashboard
+*@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Inventory Manager</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        :root {
+            --primary-color: #10b981; /* Green Accent */
+            --secondary-color: #1e293b; /* Dark Slate */
+            --text-color: #334155; /* Gray-700 */
+            --light-gray: #e5e7eb;
+            --background-color: #f1f5f9;
+        }
+
+        body {
+            background-color: var(--background-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+        }
+
+        a {
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: var(--secondary-color);
+            color: white;
+            padding-top: 20px;
+            box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+        }
+
+            .sidebar .brand {
+                font-size: 24px;
+                font-weight: 800;
+                text-align: center;
+                margin-bottom: 40px;
+            }
+
+            .sidebar a {
+                color: #cbd5e1;
+                padding: 14px 25px;
+                display: flex;
+                align-items: center;
+                font-weight: 500;
+                border-left: 4px solid transparent;
+                margin: 5px 0;
+                font-size: 15px;
+            }
+
+                .sidebar a:hover {
+                    background: rgba(255,255,255,0.08);
+                    color: white;
+                    border-left-color: var(--primary-color);
+                }
+
+                .sidebar a.active {
+                    background: #334155;
+                    border-left-color: var(--primary-color);
+                    color: white;
+                }
+
+            .sidebar i {
+                margin-right: 12px;
+                font-size: 18px;
+            }
+
+        /* Content */
+        .main-content {
+            margin-left: 240px;
+            padding: 30px;
+        }
+
+        /* Topbar */
+        .topbar {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+            .topbar h4 {
+                font-weight: 700;
+            }
+
+            .topbar .user-info {
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+            }
+
+                .topbar .logout-btn {
+                    background-color: #ef4444;
+                    border-color: #ef4444;
+                    font-weight: 600;
+                }
+
+                .topbar .logout-btn:hover {
+                    background-color: #dc2626;
+                    border-color: #dc2626;
+                }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <div class="brand">RetailX Inventory</div>
+
+        <a asp-controller="InventoryDashboard" asp-action="Index"
+           class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "InventoryDashboard" ? "active" : "")">
+            <i>📊</i> Dashboard
+        </a>
+
+        <a asp-controller="Products" asp-action="Index"
+           class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Products" ? "active" : "")">
+            <i>📦</i> Products
+        </a>
+
+        <a asp-controller="Categories" asp-action="Index"
+           class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Categories" ? "active" : "")">
+            <i>🗂️</i> Categories
+        </a>
+
+        <a asp-controller="Suppliers" asp-action="Index"
+           class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Suppliers" ? "active" : "")">
+            <i>🚚</i> Suppliers
+        </a>
+
+        <a asp-controller="PurchaseOrders" asp-action="Index"
+           class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "PurchaseOrders" ? "active" : "")">
+            <i>🧾</i> Purchase Orders
+        </a>
+
+      
+    </div>
+
+    <div class="main-content">
+
+        <div class="topbar d-flex justify-content-between align-items-center">
+            <h4 class="m-0">@ViewData["Title"]</h4>
+
+            <div class="user-info">
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name;
+                    <span class="me-3 fw-bold">👤 @fullName</span>
+
+                    <a asp-controller="Auth" asp-action="Logout" class="btn btn-danger btn-sm logout-btn">
+                        Logout
+                    </a>
+                }
+            </div>
+        </div>
+
+        <div>
+            @RenderBody()
+        </div>
+
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
