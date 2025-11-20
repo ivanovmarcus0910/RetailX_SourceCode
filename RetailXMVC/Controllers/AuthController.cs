@@ -8,15 +8,19 @@ using RepositoriesRetailX;
 using System.Security.Claims;
 using System.Security.Claims;
 using System.Security.Principal;
+using Microsoft.AspNetCore.Http;
+
 namespace RetailXMVC.Controllers
 {
     public class AuthController : Controller
     {
       
         private readonly IUserRepository _userRepository;
-        public AuthController(IUserRepository userRepository)
+        private readonly ISystemLogRepository systemLogRepository;
+        public AuthController(IUserRepository userRepository, ISystemLogRepository systemLogRepository)
         {
             _userRepository = userRepository;
+            this.systemLogRepository = systemLogRepository;
         }
         [HttpGet]
         public IActionResult Login()
@@ -105,5 +109,6 @@ namespace RetailXMVC.Controllers
             ViewBag.ReturnUrl = returnUrl;
             return View();
         }
+        
     }
 }
