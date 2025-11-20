@@ -42,7 +42,7 @@ namespace RetailXMVC.Controllers
 
             // Lấy dữ liệu cho trang hiện tại
             var pagedReports = allReports
-                .OrderByDescending(r => r.CreateDate)
+                .OrderBy(r => r.ReportRevenueId) 
                 .Skip((page - 1) * PageSize)
                 .Take(PageSize)
                 .ToList();
@@ -61,7 +61,16 @@ namespace RetailXMVC.Controllers
         [HttpPost]
         public IActionResult Generate(DateTime startDate, DateTime endDate)
         {
-            int staffIdCreator = 2;
+            
+            var staffIdCreatorReport = User.FindFirst("StaffId")?.Value;
+
+            if (string.IsNullOrEmpty(staffIdCreatorReport))
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy thông tin nhân viên. Vui lòng đăng nhập lại.";
+                return RedirectToAction("Index");
+            }
+
+            int staffIdCreator = int.Parse(staffIdCreatorReport);
 
             try
             {
@@ -207,10 +216,10 @@ namespace RetailXMVC.Controllers
             sb.AppendLine();
             sb.AppendLine("ID,Kỳ Báo Cáo,Doanh Thu (VNĐ),Chi Phí Nhập (VNĐ),Chi Phí Lương (VNĐ),Lợi Nhuận (VNĐ),Ngày Tạo,Người Tạo");
 
-            foreach (var report in reports.OrderByDescending(r => r.CreateDate))
+            foreach (var report in reports.OrderBy(r => r.ReportRevenueId))
             {
                 sb.Append($"{report.ReportRevenueId},");
-                sb.Append($"{report.DayStart} - {report.DayEnd},");
+                sb.Append($"{report.DayStart:dd/MM/yyyy} - {report.DayEnd:dd/MM/yyyy},");
                 sb.Append($"{report.AmountRevenue ?? 0},");
                 sb.Append($"{report.AmountCost ?? 0},");
                 sb.Append($"{report.AmountSalary ?? 0},");
