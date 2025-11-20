@@ -20,15 +20,27 @@ namespace RetailXMVC.Controllers
             var tenantIdStr = User.FindFirst("TenantId")?.Value;
             var user = _userRepo.GetUserByEmail(User.Identity.Name);
 
-            // Không có TenantId -> bắt đi đăng ký tenant
             if (string.IsNullOrEmpty(tenantIdStr) || user.StaffId==null)
             {
-                // Có thể cho message nhẹ
                 TempData["TenantMessage"] = "Bạn chưa tạo Tenant. Vui lòng đăng ký công ty trước.";
                 return RedirectToAction("SignUpTenant", "Tenant");
             }
             
-           
+            var staffId = user.StaffId;
+            if (staffId == null)
+            {
+                return RedirectToAction("AccessDenied", "Auth");
+            }
+
+            var staff = _staffRepo.GetStaffDetail(staffId.Value);
+            Console.WriteLine("Role in Tenant" + staff.Role);
+            switch (staff.Role)
+            {
+                case 1: Console.WriteLine("Owner"); return RedirectToAction("Index", "Staff"); break;
+                    case 2: Console.WriteLine("Accountant"); return RedirectToAction("Index", "Salary"); break ;
+                    case 3: Console.WriteLine("Seller"); return RedirectToAction("Create", "Orders"); break;
+                    case 4: Console.WriteLine("Inventorier"); return RedirectToAction("Index", "InventoryDashboard"); break;
+            }    
 
             return View();
         }
