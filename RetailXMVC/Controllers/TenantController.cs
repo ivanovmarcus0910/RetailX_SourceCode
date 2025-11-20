@@ -10,6 +10,7 @@ using Repositories;
 using RepositoriesRetailX;
 using RetailXMVC.SignalR;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace RetailXMVC.Controllers
 {
@@ -22,15 +23,17 @@ namespace RetailXMVC.Controllers
         private readonly IRequestRepository requestRepo;
         private readonly IHubContext<NotificationHub> hubContext;
         private readonly IStaffRepository _staffRepo;
+        private readonly ILoginHistoryRepository _loginHistoryRepo;
 
         public TenantController(IUserRepository userRepo, ITenantRepository tenantRepo, 
-                                IRequestRepository requestRepo, IHubContext<NotificationHub> hubContext, IStaffRepository staffRepo)
+                                IRequestRepository requestRepo, IHubContext<NotificationHub> hubContext, IStaffRepository staffRepo, ILoginHistoryRepository loginHistoryRepository)
         {
             this.userRepo = userRepo;
             this.tenantRepo = tenantRepo;
             this.requestRepo = requestRepo;
             this.hubContext = hubContext;
             this._staffRepo = staffRepo;
+            this._loginHistoryRepo = loginHistoryRepository;
 
         }
         public IActionResult Index()
@@ -173,6 +176,11 @@ namespace RetailXMVC.Controllers
             );
 
             Console.WriteLine($"Tenant login successful. {user.TenantId} : {user.StaffId}");
+            var ip = HttpContext.Request.Headers["X-Forwarded-For"]
+             .FirstOrDefault()?.Split(',').First().Trim()
+         ?? HttpContext.Connection.RemoteIpAddress?.ToString();
+            var userAgent = HttpContext.Request.Headers["User-Agent"].ToString();
+            AddLog(ip, userAgent, user.TenantId ?? 0);
             return RedirectToAction("Index", "HubTenant");
         }
 
@@ -260,6 +268,39 @@ END";
             }
 
             return RedirectToAction("Index");
+        }
+        public bool AddLog(string ip, string device, int tenantId)
+        {
+            Console.WriteLine($"Đã vào add log : {ip} -  {device} -  {tenantId}");
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdString == null)
+            {
+                Console.WriteLine("ID user null");
+                return false;
+            }
+            try
+            {
+                int id = int.Parse(userIdString);
+                UserLoginHistory temp = new UserLoginHistory
+                {
+                    UserId = id,
+                    TenantId = tenantId,
+                    LoginTime = DateTime.Now,
+                    IpAddress = ip,
+                    Device = device
+                };
+
+                _loginHistoryRepo.AddLoginHistory(temp);
+                Console.WriteLine("Add thanh cong");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Lỗi khi add log "+ ex.Message);
+                return false;
+            }
+
         }
     }
 }

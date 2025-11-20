@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using RepositoriesRetailX;
 using DataAccessObject;
 using Repositories;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace RetailXMVC
 {
@@ -16,6 +17,11 @@ namespace RetailXMVC
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders =
+                    ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            });
             builder.Services.AddDbContext<RetailXContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("RetailX")));
             builder.Services.AddDbContext<Tenant0Context>((sp, options) =>
@@ -92,6 +98,12 @@ namespace RetailXMVC
 
             builder.Services.AddScoped<InventoryDashboardDAO>();
             builder.Services.AddScoped<IInventoryDashBoardRepository, InventoryDashboardRepository>();
+
+            builder.Services.AddScoped<SystemLogDAO>();
+            builder.Services.AddScoped<ISystemLogRepository, SystemLogRepository>();
+
+            builder.Services.AddScoped<UserLoginHistoryDAO>();
+            builder.Services.AddScoped<ILoginHistoryRepository, LoginHistoryRepository>();
 
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
