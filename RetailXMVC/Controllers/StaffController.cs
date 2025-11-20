@@ -3,6 +3,8 @@ using BusinessObject.Models;
 using BusinessObjectRetailX.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Repositories;
 using RepositoriesRetailX;
 
@@ -29,19 +31,13 @@ namespace RetailXMVC.Controllers
             var staffList = _staffRepo.GetStaffListForOwner();
             return View(staffList);
         }
-
+        [HttpGet]
         public IActionResult PendingRequests()
         {
-            // A. Lấy TenantId của Owner đang đăng nhập
             var ownerTenantIdString = User.FindFirst("TenantId")?.Value;
             int currentTenantId = string.IsNullOrEmpty(ownerTenantIdString) ? 1 : int.Parse(ownerTenantIdString);
 
-            // B. Lấy danh sách Request thay vì lọc từ bảng User
-            // Lấy List<Request> đã có thông tin User.
             List<BusinessObjectRetailX.Models.Request > pendingRequests = _requestRepo.GetTenantPendingRequests(currentTenantId);
-
-            // Ở View (PendingRequests.cshtml), bạn duyệt List<Request> này 
-            // và hiển thị Request.User.FullName và Request.Id để duyệt.
 
             return View(pendingRequests);
         }
@@ -68,20 +64,20 @@ namespace RetailXMVC.Controllers
 
                 user.TenantId = request.TenantId;
                 _userRepo.UpdateUser(user);
-                //_requestRepo.UpdateRequestStatus(requestId, true);
+                _requestRepo.DeleteRequest(requestId);
 
                 var newStaff = new Staff
                 {
                     StaffName = user.FullName,
                     Email = user.Email,
-                    Phone = user.Phone,
+                    Phone = user.Phone ?? "Not available",
                     Role = 2,
                     IsActive = true,
                     BaseSalary = 5000000
                 };
 
                 _staffRepo.CreateStaff(newStaff);
-                _logRepo.LogCreate($"Bạn đã duyệt nhân viên {user.FullName} (ID: {user.Id})", 0);
+                _logRepo.LogCreate($"Bạn đã duyệt nhân viên {user.FullName} (ID: {newStaff.StaffId})", 1);
 
                 TempData["Success"] = $"Đã duyệt nhân viên {user.FullName} thành công!";
                 return RedirectToAction(nameof(Index));
@@ -93,13 +89,76 @@ namespace RetailXMVC.Controllers
             }
         }
 
-        public IActionResult Delete(int userId)
+        [HttpGet]
+        public IActionResult GetEditPartial(int id)
         {
-            // Logic
-            // 1. Xóa (hoặc set Active=false) ở DB Riêng
-            // 2. Set TenantId = null ở DB Chung (để họ free)
-            _logRepo.LogWarning($"Bạn đã xóa nhân viên ID: {userId}", 0);
-            return View();
+            var staff = _staffRepo.GetStaffDetail(id);
+            if (staff == null) return NotFound();
+
+            ViewBag.Roles = new List<SelectListItem>
+            {
+                new SelectListItem { Value = "2", Text = "Accountant" },
+                new SelectListItem { Value = "3", Text = "Seller" },
+                new SelectListItem { Value = "4", Text = "Inventory Manager" }
+            };
+
+            return PartialView("_EditStaffPartial", staff);
+        }
+
+        [HttpPost]
+        public IActionResult Edit(Staff model)
+        {
+            if (model.Role == 1)
+            {
+                TempData["Error"] = "Bạn không thể cấp quyền Owner cho nhân viên.";
+                return RedirectToAction("Index");
+            }
+
+            var staff = _staffRepo.GetStaffDetail(model.StaffId);
+            if (staff != null)
+            {
+                staff.Role = model.Role;
+                staff.BaseSalary = model.BaseSalary;
+                _staffRepo.UpdateStaff(staff);
+                _logRepo.LogUpdate($"Bạn đã cập nhật thông tin nhân viên {staff.StaffName} (ID: {staff.StaffId})", 1);
+                TempData["Success"] = $"Cập nhật thông tin {staff.StaffName} thành công!";
+            }
+            else
+            {
+                TempData["Error"] = "Không tìm thấy nhân viên này.";
+            }
+            return RedirectToAction("Index");
+        }
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                var staff = _staffRepo.GetStaffDetail(id);
+                if (staff == null)
+                {
+                    TempData["Error"] = "Nhân viên không tồn tại.";
+                    return RedirectToAction("Index");
+                }
+
+                staff.IsActive = false;
+                _staffRepo.UpdateStaff(staff);
+
+                var user = _userRepo.GetAll().FirstOrDefault(u => u.Email == staff.Email);
+                if (user != null)
+                {
+                    user.TenantId = null;
+                    _userRepo.UpdateUser(user);
+                }
+
+                _logRepo.LogWarning($"Bạn đã xóa nhân viên {staff.StaffName} (ID: {id})", 1);
+                TempData["Success"] = "Đã xóa nhân viên thành công";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Lỗi khi xóa: " + ex.Message;
+            }
+
+            return RedirectToAction("Index");
         }
     }
 }

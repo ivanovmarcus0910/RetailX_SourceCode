@@ -30,5 +30,32 @@ namespace DataAccessObject
                            .Take(count)
                            .ToList();
         }
+
+        public List<Log> GetLogsByFilter(DateTime? fromDate, DateTime? toDate, int? logLevel, int count)
+        {
+            var query = _context.Logs
+                .Include(l => l.Staff)
+                .AsQueryable();
+
+            if (fromDate.HasValue)
+            {
+                query = query.Where(l => l.CreateDate >= fromDate.Value);
+            }
+
+            if (toDate.HasValue)
+            {
+                var endOfDay = toDate.Value.AddDays(1);
+                query = query.Where(l => l.CreateDate < endOfDay);
+            }
+
+            if (logLevel.HasValue && logLevel.Value > 0)
+            {
+                query = query.Where(l => l.LogLevel == logLevel.Value);
+            }
+
+            return query.OrderByDescending(l => l.CreateDate)
+                        .Take(count)
+                        .ToList();
+        }
     }
 }

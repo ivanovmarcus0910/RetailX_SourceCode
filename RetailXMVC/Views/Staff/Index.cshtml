@@ -2,6 +2,14 @@
 
 @{
     ViewData["Title"] = "Quản lý Nhân viên";
+    string GetRoleName(int? role) => role switch
+    {
+        1 => "Owner",
+        2 => "Accountant",
+        3 => "Seller",
+        4 => "Inventory Manager",
+        _ => "Chưa phân quyền"
+    };
 }
 
 <div class="container mt-4">
@@ -24,8 +32,8 @@
                 <th>ID</th>
                 <th>Họ tên</th>
                 <th>Email</th>
-                <th>Số điện thoại</th>
-                <th>Lương</th>
+                <th>Vai trò</th>
+                <th>Lương cơ bản</th>
                 <th>Trạng thái</th>
                 <th>Hành động</th>
             </tr>
@@ -37,7 +45,9 @@
                     <td>@item.StaffId</td>
                     <td>@item.StaffName</td>
                     <td>@item.Email</td>
-                    <td>@item.Phone</td>
+                    <td>
+                        <span class="badge bg-info text-dark">@GetRoleName(item.Role)</span>
+                    </td>
                     <td>@string.Format("{0:N0} VNĐ", item.BaseSalary)</td>
                     <td>
                         @if(item.IsActive) 
@@ -46,11 +56,58 @@
                         { <span class="badge bg-secondary">Đã nghỉ</span> }
                     </td>
                     <td>
-                        <a asp-action="Edit" asp-route-id="@item.StaffId" class="btn btn-sm btn-primary">Sửa</a>
-                        <a asp-action="Delete" asp-route-id="@item.StaffId" class="btn btn-sm btn-danger">Xóa</a>
+                        @if (item.Role != 1)
+                        {
+                            <button onclick="loadEditModal(@item.StaffId)" class="btn btn-sm btn-primary">Sửa</button>
+                            <button onclick="confirmDelete(@item.StaffId, '@item.StaffName')" class="btn btn-sm btn-danger">Xóa</button>
+                        }
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 </div>
+
+<div class="modal fade" id="dynamicModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" id="modalContentContainer"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn xóa nhân viên <strong id="deleteStaffName"></strong>?<br/>
+            </div>
+            <div class="modal-footer">
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" name="id" id="deleteStaffId" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger">Xóa ngay</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function loadEditModal(id) {
+            $.get('/Staff/GetEditPartial', { id: id }, function (response) {
+                $('#modalContentContainer').html(response);
+                $('#dynamicModal').modal('show');
+            });
+        }
+
+        function confirmDelete(id, name) {
+            $('#deleteStaffId').val(id);
+            $('#deleteStaffName').text(name);
+            $('#deleteConfirmModal').modal('show');
+        }
+    </script>
+}
