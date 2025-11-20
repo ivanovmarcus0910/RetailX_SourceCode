@@ -15,9 +15,9 @@ public partial class Order
 
     public byte? Status { get; set; }
 
-    public virtual Customer Customer { get; set; } = null!;
+    public virtual Customer? Customer { get; set; } = null!;
 
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 
-    public virtual Staff Staff { get; set; } = null!;
+    public virtual Staff? Staff { get; set; } = null!;
 }

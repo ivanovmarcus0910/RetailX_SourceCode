@@ -16,21 +16,29 @@ namespace DataAccessObject
             _context = context;
         }
 
-        public void AddOrderDetail(OrderDetail detail)
-        {
-            _context.OrderDetails.Add(detail);
-        }
-        public void UpdateOrderDetail(OrderDetail detail)
-        {
-            _context.OrderDetails.Update(detail);
-        }
-        public void DeleteDetailsByOrder(int orderId)
-        {
-            var details = _context.OrderDetails
-                .Where(d => d.OrderId == orderId)
-                .ToList();
+        public OrderDetail? GetById(int id)
+            => _context.OrderDetails.FirstOrDefault(x => x.OrderDetailId == id);
 
-            _context.OrderDetails.RemoveRange(details);
+        public List<OrderDetail> GetByOrder(int orderId)
+            => _context.OrderDetails.Where(x => x.OrderId == orderId).ToList();
+
+        public void Add(OrderDetail detail)
+            => _context.OrderDetails.Add(detail);
+
+        public void Update(OrderDetail detail)
+        {
+            var old = _context.OrderDetails
+                .FirstOrDefault(x => x.OrderDetailId == detail.OrderDetailId);
+
+            if (old == null) return;
+
+            old.ProductId = detail.ProductId;
+            old.Quantity = detail.Quantity;
         }
+
+
+        public void Delete(OrderDetail detail)
+            => _context.OrderDetails.Remove(detail);
     }
+
 }

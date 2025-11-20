@@ -1,60 +1,47 @@
 ﻿@model BusinessObject.Models.Order
-@{
-    var products = ViewBag.Products as List<BusinessObject.Models.Product>;
-    var existing = Model.OrderDetails.ToDictionary(d => d.ProductId, d => d.Quantity);
-}
+
+<h2>Edit Order</h2>
 
 <form asp-action="Edit" method="post">
-    <input type="hidden" name="OrderId" value="@Model.OrderId" />
 
-    <div class="mb-3">
-        <label>Customer</label>
-        <input type="number" name="CustomerId" value="@Model.CustomerId" class="form-control" />
-    </div>
+    <input type="hidden" asp-for="OrderId" />
 
-    <div class="mb-3">
-        <label>Staff</label>
-        <input type="number" name="StaffId" value="@Model.StaffId" class="form-control" />
-    </div>
+    <label>Customer</label>
+    <input asp-for="CustomerId" class="form-control" />
 
-    <table class="table table-bordered">
+    <label>Staff</label>
+    <input asp-for="StaffId" class="form-control" />
+
+    <h3>Order Details</h3>
+    <table class="table">
         <thead>
             <tr>
-                <th>Chọn</th>
-                <th>Sản phẩm</th>
-                <th>Tồn kho</th>
-                <th>Số lượng</th>
+                <th>Product</th>
+                <th>Quantity</th>
             </tr>
         </thead>
         <tbody>
-            @for (int i = 0; i < products.Count; i++)
+            @for (int i = 0; i < Model.OrderDetails.Count; i++)
             {
-                var p = products[i];
-                int qty = existing.ContainsKey(p.ProductId) ? existing[p.ProductId] : 0;
-
                 <tr>
                     <td>
-                        <input type="hidden" name="selected[@i]" value="false" />
-
-                        <input type="checkbox"
-                               name="selected[@i]"
-                               value="true"
-                               @(qty > 0 ? "checked" : "") />
-
+                        @Model.OrderDetails.ElementAt(i).Product.ProductName
+                        <input type="hidden"
+                               name="OrderDetails[@i].ProductId"
+                               value="@Model.OrderDetails.ElementAt(i).ProductId" />
                     </td>
 
-                    <td>@p.ProductName</td>
-                    <td>@p.Quantity</td>
-
                     <td>
-                        <input type="number" name="quantities[@i]" value="@qty" />
-                        <input type="hidden" name="productIds[@i]" value="@p.ProductId" />
-
+                        <input type="number"
+                               name="OrderDetails[@i].Quantity"
+                               value="@Model.OrderDetails.ElementAt(i).Quantity"
+                               min="0"
+                               class="form-control" />
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 
-    <button class="btn btn-primary">Lưu</button>
+    <button class="btn btn-primary">Save</button>
 </form>

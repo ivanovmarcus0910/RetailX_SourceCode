@@ -1,0 +1,19 @@
+﻿@model BusinessObject.Models.OrderDetail
+
+<h2>Sửa sản phẩm trong hóa đơn</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="OrderDetailId" />
+    <input type="hidden" asp-for="OrderId" />
+
+    <label>Sản phẩm</label>
+    <select asp-for="ProductId"
+            asp-items="@(new SelectList(ViewBag.Products, "ProductId", "ProductName"))"
+            class="form-control">
+    </select>
+
+    <label>Số lượng</label>
+    <input asp-for="Quantity" class="form-control" min="0" />
+
+    <button class="btn btn-primary mt-3">Lưu</button>
+</form>

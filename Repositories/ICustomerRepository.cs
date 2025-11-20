@@ -14,5 +14,7 @@ namespace Repositories
         void Insert(Customer customer);
         void Update(Customer customer);
         void Delete(int id);
+        Customer? GetByPhone(string phone);
+        Customer? GetByEmail(string email);
     }
 }

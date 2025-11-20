@@ -1,0 +1,22 @@
+﻿@model BusinessObject.Models.Customer
+@{
+    Layout = "_SellerLayout";
+}
+
+<h2>Thông tin khách hàng</h2>
+
+<table class="table">
+    <tr><td>Tên</td><td>@Model.CustomerName</td></tr>
+    <tr><td>SĐT</td><td>@Model.Phone</td></tr>
+    <tr><td>Email</td><td>@Model.Email</td></tr>
+    <tr><td>Địa chỉ</td><td>@Model.Address</td></tr>
+    <tr><td>Trạng thái</td><td>@(Model.IsActive ? "Active" : "Inactive")</td></tr>
+</table>
+
+@if (!Model.IsActive)
+{
+    <a asp-action="Restore" asp-route-id="@Model.CustomerId"
+       class="btn btn-success">Khôi phục</a>
+}
+
+<a asp-action="Index" class="btn btn-secondary ms-2">Quay lại</a>

@@ -1,0 +1,56 @@
+﻿@model IEnumerable<BusinessObject.Models.Customer>
+@{
+    Layout = "_SellerLayout";
+}
+
+<h2>Danh sách khách hàng</h2>
+
+<table class="table table-bordered mt-3">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Tên</th>
+            <th>Số điện thoại</th>
+            <th>Địa chỉ</th>
+            <th>Lịch sử</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.CustomerId</td>
+                <td>@c.CustomerName</td>
+                <td>@c.Phone</td>
+                <td>@c.Address</td>
+
+                <td>
+                    <a asp-controller="Customer"
+                       asp-action="History"
+                       asp-route-id="@c.CustomerId"
+                       class="btn btn-sm btn-info">
+                        📜 Xem lịch sử
+                    </a>
+                </td>
+
+                <td>
+                    <a asp-controller="Customer"
+                       asp-action="Edit"
+                       asp-route-id="@c.CustomerId"
+                       class="btn btn-sm btn-warning me-1">
+                        ✏ Sửa
+                    </a>
+
+                    <a asp-controller="Customer"
+                       asp-action="Delete"
+                       asp-route-id="@c.CustomerId"
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('Bạn có chắc muốn vô hiệu hóa khách hàng này?')">
+                        ❌ Xóa
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
