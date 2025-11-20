@@ -43,5 +43,13 @@ namespace Repositories
             };
             _logDAO.AddLog(log);
         }
+        public List<Log> GetRecentLogs(int count)
+        {
+            return _logDAO.GetRecentLogs(count);
+        }
+        public List<Log> GetLogsByFilter(DateTime? fromDate, DateTime? toDate, int? logLevel, int count)
+        {
+            return _logDAO.GetLogsByFilter(fromDate, toDate, logLevel, count);
+        }
     }
 }

@@ -18,7 +18,7 @@ namespace DataAccessObject
 
         public List<Staff> GetAll()
         {
-            return _context.Staff.AsNoTracking().ToList();
+            return _context.Staff.AsNoTracking().Where(s => s.IsActive == true).ToList();
         }
 
         public Staff GetById(int staffId)

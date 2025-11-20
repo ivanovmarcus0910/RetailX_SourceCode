@@ -19,7 +19,7 @@ namespace Repositories
 
         public List<Staff> GetStaffListForOwner()
         {
-            return _staffDAO.GetAll().OrderByDescending(s => s.IsActive).ToList();
+            return _staffDAO.GetAll();
         }
 
         public Staff GetStaffDetail(int staffId)

@@ -1,0 +1,94 @@
+﻿@model IEnumerable<BusinessObject.Models.Log>
+
+@{
+    ViewData["Title"] = "Nhật ký hệ thống";
+}
+
+<div class="container-fluid mt-4">
+    
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <form method="get" asp-action="Index">
+                <div class="row g-3 align-items-end">
+                    
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Từ ngày:</label>
+                        <input type="date" name="fromDate" class="form-control" value="@ViewBag.FromDate" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Đến ngày:</label>
+                        <input type="date" name="toDate" class="form-control" value="@ViewBag.ToDate" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Mức độ cảnh báo:</label>
+                        <select name="logLevel" class="form-select">
+                            <option value="">-- Tất cả --</option>
+                            <option value="1" selected="@(ViewBag.LogLevel == 1)">Thông thường (Xanh)</option>
+                            <option value="2" selected="@(ViewBag.LogLevel == 2)">Cập nhật (Vàng)</option>
+                            <option value="3" selected="@(ViewBag.LogLevel == 3)">Cảnh báo (Đỏ)</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fa fa-search"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-white">
+            <h5 class="m-0 font-weight-bold text-primary">
+                <i class="fa fa-list"></i> Danh sách Nhật ký
+                <span class="badge bg-secondary float-end">@Model.Count() bản ghi</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Thời gian</th>
+                            <th>Người thực hiện</th>
+                            <th>Hành động</th>
+                            <th class="text-center">Mức độ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    Không tìm thấy nhật ký nào phù hợp điều kiện.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.CreateDate?.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                    <td>
+                                        @(item.Staff?.StaffName ?? "Hệ thống/Đã xóa")
+                                    </td>
+                                    <td>@item.Decription</td>
+                                    <td class="text-center">
+                                        @if (item.LogLevel == 1) { <span class="badge bg-success">Info</span> }
+                                        else if (item.LogLevel == 2) { <span class="badge bg-warning text-dark">Update</span> }
+                                        else if (item.LogLevel >= 3) { <span class="badge bg-danger">Warning</span> }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,25 @@
+﻿@model BusinessObject.Models.Staff
+
+<form asp-action="Edit" method="post">
+    <div class="modal-header">
+        <h5 class="modal-title">Chỉnh sửa nhân viên: @Model.StaffName</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+    <div class="modal-body">
+        <input type="hidden" asp-for="StaffId" />
+        
+        <div class="mb-3">
+            <label class="form-label">Vai trò (Role)</label>
+            <select asp-for="Role" class="form-select" asp-items="ViewBag.Roles"></select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Lương cơ bản</label>
+            <input asp-for="BaseSalary" class="form-control" type="number" />
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+    </div>
+</form>
