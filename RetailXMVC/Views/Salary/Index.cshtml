@@ -1,4 +1,8 @@
-﻿@model IEnumerable<BusinessObject.Models.Salary>
+﻿@{
+    Layout = "_FinanceLayout";
+}
+
+@model IEnumerable<BusinessObject.Models.Salary>
 @{
     ViewData["Title"] = "Quản Lý Lương";
     int currentMonth = ViewBag.Month;
@@ -8,7 +12,6 @@
     int totalSalaries = ViewBag.TotalSalaries;
     var allSalaries = (List<BusinessObject.Models.Salary>)ViewBag.AllSalaries;
 
-    // Tính tổng cho summary cards
     var totalBaseSalary = allSalaries?.Sum(s => s.Staff?.BaseSalary ?? 0) ?? 0;
     var totalBonus = allSalaries?.Sum(s => s.Bonus ?? 0) ?? 0;
     var totalDeduction = allSalaries?.Sum(s => s.Deduction ?? 0) ?? 0;
@@ -17,11 +20,7 @@
     var totalUnpaid = allSalaries?.Count(s => s.Status == 0) ?? 0;
 }
 
-@* ✅ THÊM FONTAWESOME *@
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
 <style>
     .summary-card {
@@ -30,11 +29,10 @@
     }
 
         .summary-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
         }
 
-    /* Completed badge animation */
     .completed-badge {
         animation: pulse 2s infinite;
     }
@@ -50,19 +48,13 @@
     }
 </style>
 
-<!-- HEADER -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="mb-1">
-            <i class="fas fa-money-check-alt text-primary me-2"></i>
-            Quản Lý Lương
-        </h2>
-        <p class="text-muted mb-0">
-            <i class="far fa-calendar-alt me-1"></i>
-            Tháng <strong>@currentMonth/@currentYear</strong>
-            <span class="badge bg-secondary ms-2">@totalSalaries nhân viên</span>
-        </p>
-    </div>
+<!-- HEADER INFO -->
+<div class="mb-3">
+    <p class="text-muted mb-0" style="font-size: 0.9rem;">
+        <i class="far fa-calendar-alt me-1"></i>
+        Tháng <strong>@currentMonth/@currentYear</strong>
+        <span class="badge bg-secondary ms-2" style="font-size: 0.75rem;">@totalSalaries nhân viên</span>
+    </p>
 </div>
 
 <!-- THÔNG BÁO -->
@@ -83,76 +75,76 @@
     </div>
 }
 
-<!-- SUMMARY CARDS -->
+<!-- SUMMARY CARDS (4 CARDS TOP) -->
 @if (allSalaries != null && allSalaries.Any())
 {
-    <div class="row g-3 mb-4">
-        <!-- Card 1: Tổng Lương Cơ Bản -->
+    <div class="row g-2 mb-3">
+        <!-- Card 1 -->
         <div class="col-md-3">
             <div class="card summary-card border-0 shadow-sm h-100" style="border-left-color: #0d6efd !important;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <p class="text-muted mb-1 small">Tổng Lương Cơ Bản</p>
-                            <h4 class="mb-0 text-primary fw-bold">@totalBaseSalary.ToString("N0")</h4>
-                            <small class="text-muted">VNĐ</small>
+                            <p class="text-muted mb-1" style="font-size: 0.75rem;">Tổng Lương Cơ Bản</p>
+                            <h5 class="mb-0 text-primary fw-bold" style="font-size: 1.1rem;">@totalBaseSalary.ToString("N0")</h5>
+                            <small class="text-muted" style="font-size: 0.7rem;">VNĐ</small>
                         </div>
-                        <div class="bg-primary bg-opacity-10 p-3 rounded">
-                            <i class="fas fa-wallet fa-2x text-primary"></i>
+                        <div class="bg-primary bg-opacity-10 p-2 rounded">
+                            <i class="fas fa-wallet text-primary" style="font-size: 1.3rem;"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Card 2: Tổng Thưởng -->
+        <!-- Card 2 -->
         <div class="col-md-3">
             <div class="card summary-card border-0 shadow-sm h-100" style="border-left-color: #198754 !important;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <p class="text-muted mb-1 small">Tổng Thưởng</p>
-                            <h4 class="mb-0 text-success fw-bold">@totalBonus.ToString("N0")</h4>
-                            <small class="text-muted">VNĐ</small>
+                            <p class="text-muted mb-1" style="font-size: 0.75rem;">Tổng Thưởng</p>
+                            <h5 class="mb-0 text-success fw-bold" style="font-size: 1.1rem;">@totalBonus.ToString("N0")</h5>
+                            <small class="text-muted" style="font-size: 0.7rem;">VNĐ</small>
                         </div>
-                        <div class="bg-success bg-opacity-10 p-3 rounded">
-                            <i class="fas fa-gift fa-2x text-success"></i>
+                        <div class="bg-success bg-opacity-10 p-2 rounded">
+                            <i class="fas fa-gift text-success" style="font-size: 1.3rem;"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Card 3: Tổng Khấu Trừ -->
+        <!-- Card 3 -->
         <div class="col-md-3">
             <div class="card summary-card border-0 shadow-sm h-100" style="border-left-color: #dc3545 !important;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <p class="text-muted mb-1 small">Tổng Khấu Trừ</p>
-                            <h4 class="mb-0 text-danger fw-bold">@totalDeduction.ToString("N0")</h4>
-                            <small class="text-muted">VNĐ</small>
+                            <p class="text-muted mb-1" style="font-size: 0.75rem;">Tổng Khấu Trừ</p>
+                            <h5 class="mb-0 text-danger fw-bold" style="font-size: 1.1rem;">@totalDeduction.ToString("N0")</h5>
+                            <small class="text-muted" style="font-size: 0.7rem;">VNĐ</small>
                         </div>
-                        <div class="bg-danger bg-opacity-10 p-3 rounded">
-                            <i class="fas fa-minus-circle fa-2x text-danger"></i>
+                        <div class="bg-danger bg-opacity-10 p-2 rounded">
+                            <i class="fas fa-minus-circle text-danger" style="font-size: 1.3rem;"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Card 4: Tổng Lương NET -->
+        <!-- Card 4 -->
         <div class="col-md-3">
             <div class="card summary-card border-0 shadow-sm h-100" style="border-left-color: #0dcaf0 !important;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <p class="text-muted mb-1 small">Tổng Lương NET</p>
-                            <h4 class="mb-0 fw-bold" style="color: #0dcaf0">@totalNetSalary.ToString("N0")</h4>
-                            <small class="text-muted">VNĐ</small>
+                            <p class="text-muted mb-1" style="font-size: 0.75rem;">Tổng Lương NET</p>
+                            <h5 class="mb-0 fw-bold" style="color: #0dcaf0; font-size: 1.1rem;">@totalNetSalary.ToString("N0")</h5>
+                            <small class="text-muted" style="font-size: 0.7rem;">VNĐ</small>
                         </div>
-                        <div class="p-3 rounded" style="background-color: rgba(13, 202, 240, 0.1)">
-                            <i class="fas fa-money-bill-wave fa-2x" style="color: #0dcaf0"></i>
+                        <div class="p-2 rounded" style="background-color: rgba(13, 202, 240, 0.1)">
+                            <i class="fas fa-money-bill-wave" style="color: #0dcaf0; font-size: 1.3rem;"></i>
                         </div>
                     </div>
                 </div>
@@ -160,19 +152,19 @@
         </div>
     </div>
 
-    <!-- Payment Status Cards -->
-    <div class="row g-3 mb-4">
+    <!-- PAYMENT STATUS CARDS (2 CARDS BOTTOM) -->
+    <div class="row g-2 mb-3">
         <div class="col-md-6">
             <div class="card border-0 shadow-sm" style="border-left: 4px solid #198754;">
-                <div class="card-body">
+                <div class="card-body py-2 px-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-1">Đã Thanh Toán</h6>
-                            <h3 class="mb-0 text-success fw-bold">@totalPaid</h3>
-                            <small class="text-muted">nhân viên</small>
+                            <p class="text-muted mb-0" style="font-size: 0.8rem;">Đã Thanh Toán</p>
+                            <h4 class="mb-0 text-success fw-bold" style="font-size: 1.5rem;">@totalPaid</h4>
+                            <small class="text-muted" style="font-size: 0.7rem;">nhân viên</small>
                         </div>
-                        <div class="bg-success bg-opacity-10 p-3 rounded-circle">
-                            <i class="fas fa-check-circle fa-2x text-success"></i>
+                        <div class="bg-success bg-opacity-10 p-2 rounded-circle">
+                            <i class="fas fa-check-circle text-success" style="font-size: 1.8rem;"></i>
                         </div>
                     </div>
                 </div>
@@ -180,15 +172,15 @@
         </div>
         <div class="col-md-6">
             <div class="card border-0 shadow-sm" style="border-left: 4px solid #ffc107;">
-                <div class="card-body">
+                <div class="card-body py-2 px-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-1">Chờ Thanh Toán</h6>
-                            <h3 class="mb-0 text-warning fw-bold">@totalUnpaid</h3>
-                            <small class="text-muted">nhân viên</small>
+                            <p class="text-muted mb-0" style="font-size: 0.8rem;">Chờ Thanh Toán</p>
+                            <h4 class="mb-0 text-warning fw-bold" style="font-size: 1.5rem;">@totalUnpaid</h4>
+                            <small class="text-muted" style="font-size: 0.7rem;">nhân viên</small>
                         </div>
-                        <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
-                            <i class="fas fa-clock fa-2x text-warning"></i>
+                        <div class="bg-warning bg-opacity-10 p-2 rounded-circle">
+                            <i class="fas fa-clock text-warning" style="font-size: 1.8rem;"></i>
                         </div>
                     </div>
                 </div>
@@ -197,18 +189,17 @@
     </div>
 }
 
-<!-- TOOLBAR: FILTER & ACTIONS -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
+<!-- TOOLBAR -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body py-2 px-3">
         <form asp-action="Index" method="get" id="filterForm">
-            <input type="hidden" name="page" id="pageInput" value="1" />
-            <div class="row g-3 align-items-end">
-                <!-- Month Filter -->
+            <input type="hidden" name="page" value="1" />
+            <div class="row g-2 align-items-end">
                 <div class="col-md-3">
-                    <label class="form-label fw-semibold">
+                    <label class="form-label mb-1" style="font-size: 0.85rem;">
                         <i class="far fa-calendar me-1"></i> Tháng
                     </label>
-                    <select name="month" id="monthSelect" class="form-select">
+                    <select name="month" id="monthSelect" class="form-select form-select-sm">
                         @for (int m = 1; m <= 12; m++)
                         {
                             <option value="@m" selected="@(m == currentMonth)">Tháng @m</option>
@@ -216,12 +207,11 @@
                     </select>
                 </div>
 
-                <!-- Year Filter -->
                 <div class="col-md-3">
-                    <label class="form-label fw-semibold">
+                    <label class="form-label mb-1" style="font-size: 0.85rem;">
                         <i class="far fa-calendar-alt me-1"></i> Năm
                     </label>
-                    <select name="year" id="yearSelect" class="form-select">
+                    <select name="year" id="yearSelect" class="form-select form-select-sm">
                         @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 5; y--)
                         {
                             <option value="@y" selected="@(y == currentYear)">Năm @y</option>
@@ -229,16 +219,14 @@
                     </select>
                 </div>
 
-                <!-- Filter Button -->
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary w-100">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">
                         <i class="fas fa-filter me-1"></i> Lọc
                     </button>
                 </div>
 
-                <!-- Process Salary Button -->
                 <div class="col-md-3">
-                    <button type="button" class="btn btn-warning w-100" onclick="processSalary()">
+                    <button type="button" class="btn btn-warning btn-sm w-100" onclick="processSalary()">
                         <i class="fas fa-calculator me-1"></i> Xử Lý Bảng Lương
                     </button>
                 </div>
@@ -247,21 +235,21 @@
     </div>
 </div>
 
-<!-- SALARY TABLE -->
+<!-- TABLE -->
 <div class="card border-0 shadow-sm">
-    <div class="card-header bg-white border-bottom">
+    <div class="card-header bg-white border-bottom py-2">
         <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold">
+            <h6 class="mb-0 fw-bold">
                 <i class="fas fa-list me-2"></i>
                 Bảng Lương
                 @if (totalSalaries > 0)
                 {
-                    <span class="badge bg-primary">@totalSalaries</span>
+                    <span class="badge bg-primary" style="font-size: 0.7rem;">@totalSalaries</span>
                 }
-            </h5>
+            </h6>
             @if (totalSalaries > 0)
             {
-                <span class="text-muted small">
+                <span class="text-muted" style="font-size: 0.8rem;">
                     Trang @currentPage / @totalPages
                 </span>
             }
@@ -270,12 +258,10 @@
     <div class="card-body p-0">
         @if (Model == null || !Model.Any())
         {
-            <div class="text-center py-5">
-                <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
-                <p class="text-muted mb-0">
-                    Không có dữ liệu lương cho tháng <strong>@currentMonth/@currentYear</strong>
-                </p>
-                <button type="button" class="btn btn-warning mt-3" onclick="processSalary()">
+            <div class="text-center py-4">
+                <i class="fas fa-inbox fa-3x text-muted mb-2"></i>
+                <p class="text-muted mb-0">Không có dữ liệu lương cho tháng <strong>@currentMonth/@currentYear</strong></p>
+                <button type="button" class="btn btn-warning btn-sm mt-2" onclick="processSalary()">
                     <i class="fas fa-calculator me-1"></i> Xử Lý Bảng Lương Ngay
                 </button>
             </div>
@@ -283,17 +269,17 @@
         else
         {
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
                     <thead class="table-light">
                         <tr>
-                            <th class="ps-4" style="width: 80px;">ID</th>
-                            <th style="width: 200px;">Nhân Viên</th>
-                            <th class="text-end" style="width: 140px;">Lương Cơ Bản</th>
-                            <th class="text-end" style="width: 120px;">Thưởng</th>
-                            <th class="text-end" style="width: 120px;">Khấu Trừ</th>
-                            <th class="text-end" style="width: 150px;">Lương NET</th>
-                            <th class="text-center" style="width: 150px;">Trạng Thái</th>
-                            <th class="pe-4 text-center" style="width: 180px;">Thao Tác</th>
+                            <th class="ps-3" style="width: 60px;">ID</th>
+                            <th style="width: 180px;">Nhân Viên</th>
+                            <th class="text-end" style="width: 120px;">Lương CB</th>
+                            <th class="text-end" style="width: 100px;">Thưởng</th>
+                            <th class="text-end" style="width: 100px;">Khấu Trừ</th>
+                            <th class="text-end" style="width: 130px;">Lương NET</th>
+                            <th class="text-center" style="width: 130px;">Trạng Thái</th>
+                            <th class="pe-3 text-center" style="width: 140px;">Thao Tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -307,73 +293,64 @@
                             var totalNet = item.Amount ?? 0;
 
                             <tr class="@(item.Status == 1 ? "table-success bg-opacity-10" : "")">
-                                <td class="ps-4">
-                                    <span class="badge bg-secondary">#@displayIndex</span>
+                                <td class="ps-3">
+                                    <span class="badge bg-secondary" style="font-size: 0.7rem;">#@displayIndex</span>
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
-                                            <i class="fas fa-user text-primary"></i>
+                                        <div class="bg-primary bg-opacity-10 rounded-circle p-1 me-2">
+                                            <i class="fas fa-user text-primary" style="font-size: 0.8rem;"></i>
                                         </div>
-                                        <strong>@(item.Staff?.StaffName ?? "N/A")</strong>
+                                        <strong style="font-size: 0.85rem;">@(item.Staff?.StaffName ?? "N/A")</strong>
                                     </div>
                                 </td>
                                 <td class="text-end">
                                     <span class="text-muted">@baseSalary.ToString("N0")</span>
-                                    <small class="text-muted d-block">VNĐ</small>
                                 </td>
                                 <td class="text-end">
                                     <span class="text-success fw-semibold">
-                                        <i class="fas fa-plus-circle fa-xs me-1"></i>@(item.Bonus?.ToString("N0") ?? "0")
+                                        <i class="fas fa-plus-circle" style="font-size: 0.65rem;"></i>
+                                        @(item.Bonus?.ToString("N0") ?? "0")
                                     </span>
                                 </td>
                                 <td class="text-end">
                                     <span class="text-danger fw-semibold">
-                                        <i class="fas fa-minus-circle fa-xs me-1"></i>@(item.Deduction?.ToString("N0") ?? "0")
+                                        <i class="fas fa-minus-circle" style="font-size: 0.65rem;"></i>
+                                        @(item.Deduction?.ToString("N0") ?? "0")
                                     </span>
                                 </td>
                                 <td class="text-end">
-                                    <span class="fw-bold text-primary fs-6">@totalNet.ToString("N0")</span>
-                                    <small class="text-muted d-block">VNĐ</small>
+                                    <span class="fw-bold text-primary">@totalNet.ToString("N0")</span>
                                 </td>
                                 <td class="text-center">
                                     @if (item.Status == 1)
                                     {
-                                        <span class="badge bg-success px-3 py-2">
-                                            <i class="fas fa-check-circle me-1"></i> Đã TT
-                                            <small class="d-block mt-1">(@item.DayPayment/@currentMonth)</small>
+                                        <span class="badge bg-success" style="font-size: 0.7rem;">
+                                            <i class="fas fa-check-circle me-1"></i>Đã TT
                                         </span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-warning text-dark px-3 py-2">
-                                            <i class="fas fa-hourglass-half me-1"></i> Chờ TT
+                                        <span class="badge bg-warning text-dark" style="font-size: 0.7rem;">
+                                            <i class="fas fa-hourglass-half me-1"></i>Chờ TT
                                         </span>
                                     }
                                 </td>
-                                <td class="pe-4 text-center">
+                                <td class="pe-3 text-center">
                                     @if (item.Status == 0)
                                     {
                                         <div class="d-flex justify-content-center gap-1">
-                                            
-                                            <!-- ✏️ SỬA -->
-                                            <a asp-action="Adjust"
-                                               asp-route-salaryId="@item.SalaryId"
-                                               class="btn btn-sm btn-outline-warning px-2 py-1"
-                                               title="Điều Chỉnh">
-                                                <i class="fas fa-edit" style="font-size: 13px;"></i>
+                                            <a asp-action="Adjust" asp-route-salaryId="@item.SalaryId"
+                                               class="btn btn-sm btn-outline-warning px-2 py-1" title="Điều Chỉnh">
+                                                <i class="fas fa-edit" style="font-size: 0.8rem;"></i>
                                             </a>
-
-                                            <!-- 💰 THANH TOÁN -->
                                             <form asp-action="Pay" method="post" class="d-inline">
                                                 <input type="hidden" name="salaryId" value="@item.SalaryId" />
                                                 <input type="hidden" name="month" value="@currentMonth" />
                                                 <input type="hidden" name="year" value="@currentYear" />
-                                                <button type="submit"
-                                                        class="btn btn-sm btn-outline-success px-2 py-1"
-                                                        title="Thanh Toán"
-                                                        onclick="return confirm('💰 XÁC NHẬN THANH TOÁN LƯƠNG\n\n👤 Nhân viên: @item.Staff?.StaffName\n💵 Số tiền: @totalNet.ToString("N0") VNĐ\n📅 Tháng: @currentMonth/@currentYear\n\n✅ Bạn có chắc chắn muốn thanh toán?')">
-                                                    <i class="fas fa-dollar-sign" style="font-size: 13px;"></i>
+                                                <button type="submit" class="btn btn-sm btn-outline-success px-2 py-1" title="Thanh Toán"
+                                                        onclick="return confirm('💰 XÁC NHẬN THANH TOÁN\n\n👤 NV: @item.Staff?.StaffName\n💵 Số tiền: @totalNet.ToString("N0") VNĐ\n\n✅ Xác nhận?')">
+                                                    <i class="fas fa-dollar-sign" style="font-size: 0.8rem;"></i>
                                                 </button>
                                             </form>
                                         </div>
@@ -381,14 +358,13 @@
                                     else
                                     {
                                         <div class="text-center">
-                                            <i class="fas fa-check-circle text-success completed-badge" style="font-size: 24px;"></i>
-                                            <div class="small text-success fw-bold mt-1">Đã TT</div>
-                                            <small class="text-muted">@item.DayPayment/@currentMonth/@currentYear</small>
+                                            <i class="fas fa-check-circle text-success" style="font-size: 1.2rem;"></i>
+                                            <div style="font-size: 0.7rem;" class="text-success fw-bold mt-1">Đã TT</div>
+                                            <small class="text-muted" style="font-size: 0.65rem;">@item.DayPayment/@currentMonth</small>
                                         </div>
                                     }
                                 </td>
                             </tr>
-
                             displayIndex++;
                         }
                     </tbody>
@@ -398,22 +374,18 @@
             <!-- PAGINATION -->
             @if (totalPages > 1)
             {
-                <div class="card-footer bg-white border-top">
+                <div class="card-footer bg-white border-top py-2">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div class="text-muted small">
-                            Hiển thị <strong>@((currentPage - 1) * 10 + 1)</strong> - <strong>@Math.Min(currentPage * 10, totalSalaries)</strong>
-                            trong tổng số <strong>@totalSalaries</strong> nhân viên
+                        <div class="text-muted" style="font-size: 0.8rem;">
+                            <strong>@((currentPage - 1) * 10 + 1)</strong> - <strong>@Math.Min(currentPage * 10, totalSalaries)</strong> / <strong>@totalSalaries</strong>
                         </div>
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination mb-0">
-                                <!-- First Page -->
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0">
                                 <li class="page-item @(currentPage == 1 ? "disabled" : "")">
                                     <a class="page-link" href="@Url.Action("Index", new { month = currentMonth, year = currentYear, page = 1 })">
                                         <i class="fas fa-angles-left"></i>
                                     </a>
                                 </li>
-
-                                <!-- Previous Page -->
                                 <li class="page-item @(currentPage == 1 ? "disabled" : "")">
                                     <a class="page-link" href="@Url.Action("Index", new { month = currentMonth, year = currentYear, page = currentPage - 1 })">
                                         <i class="fas fa-angle-left"></i>
@@ -425,17 +397,6 @@
                                     int endPage = Math.Min(totalPages, currentPage + 2);
                                 }
 
-                                @if (startPage > 1)
-                                {
-                                    <li class="page-item">
-                                        <a class="page-link" href="@Url.Action("Index", new { month = currentMonth, year = currentYear, page = 1 })">1</a>
-                                    </li>
-                                    @if (startPage > 2)
-                                    {
-                                        <li class="page-item disabled"><span class="page-link">...</span></li>
-                                    }
-                                }
-
                                 @for (int i = startPage; i <= endPage; i++)
                                 {
                                     <li class="page-item @(i == currentPage ? "active" : "")">
@@ -443,25 +404,11 @@
                                     </li>
                                 }
 
-                                @if (endPage < totalPages)
-                                {
-                                    @if (endPage < totalPages - 1)
-                                    {
-                                        <li class="page-item disabled"><span class="page-link">...</span></li>
-                                    }
-                                    <li class="page-item">
-                                        <a class="page-link" href="@Url.Action("Index", new { month = currentMonth, year = currentYear, page = totalPages })">@totalPages</a>
-                                    </li>
-                                }
-
-                                <!-- Next Page -->
                                 <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
                                     <a class="page-link" href="@Url.Action("Index", new { month = currentMonth, year = currentYear, page = currentPage + 1 })">
                                         <i class="fas fa-angle-right"></i>
                                     </a>
                                 </li>
-
-                                <!-- Last Page -->
                                 <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
                                     <a class="page-link" href="@Url.Action("Index", new { month = currentMonth, year = currentYear, page = totalPages })">
                                         <i class="fas fa-angles-right"></i>
@@ -476,44 +423,33 @@
     </div>
 </div>
 
-<!-- JAVASCRIPT -->
 <script>
     function processSalary() {
         const month = document.getElementById('monthSelect').value;
         const year = document.getElementById('yearSelect').value;
 
-        if (confirm(`🧮 XỬ LÝ BẢNG LƯƠNG\n\n📅 Tháng: ${month}/${year}\n\n⚡ Hệ thống sẽ tính toán lương cho tất cả nhân viên.\n\n✅ Bạn có chắc chắn muốn tiếp tục?`)) {
+        if (confirm(`🧮 XỬ LÝ BẢNG LƯƠNG\n\n📅 Tháng: ${month}/${year}\n\n✅ Tiếp tục?`)) {
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = '@Url.Action("Process", "Salary")';
 
-            // Add antiforgery token
             const token = document.querySelector('input[name="__RequestVerificationToken"]');
             if (token) {
-                const tokenInput = document.createElement('input');
-                tokenInput.type = 'hidden';
-                tokenInput.name = '__RequestVerificationToken';
-                tokenInput.value = token.value;
-                form.appendChild(tokenInput);
+                form.appendChild(token.cloneNode());
             }
 
-            const monthInput = document.createElement('input');
-            monthInput.type = 'hidden';
-            monthInput.name = 'month';
-            monthInput.value = month;
+            ['month', 'year'].forEach(name => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = name;
+                input.value = name === 'month' ? month : year;
+                form.appendChild(input);
+            });
 
-            const yearInput = document.createElement('input');
-            yearInput.type = 'hidden';
-            yearInput.name = 'year';
-            yearInput.value = year;
-
-            form.appendChild(monthInput);
-            form.appendChild(yearInput);
             document.body.appendChild(form);
             form.submit();
         }
     }
 </script>
 
-@* Add antiforgery token for AJAX *@
 @Html.AntiForgeryToken()

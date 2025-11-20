@@ -81,25 +81,44 @@ namespace RetailXMVC.Controllers
         // POST: /Salary/Adjust
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Adjust(Salary model, decimal bonus, decimal deduction)
+        public IActionResult Adjust(int salaryId, decimal bonus, decimal deduction)
         {
-            bool success = _salaryRepository.UpdateBonusDeduction(
-                model.StaffId,
-                model.Month,
-                model.Year,
-                bonus,
-                deduction
-            );
-
-            if (success)
+            try
             {
-                _salaryRepository.ProcessMonthlySalaries(model.Month, model.Year);
-                TempData["SuccessMessage"] = $"Đã điều chỉnh lương thành công.";
-                return RedirectToAction(nameof(Index), new { month = model.Month, year = model.Year });
-            }
+                
+                var salary = _salaryRepository.GetSalaryById(salaryId);
 
-            TempData["ErrorMessage"] = "Lỗi khi điều chỉnh lương.";
-            return View(model);
+                if (salary == null)
+                {
+                    TempData["ErrorMessage"] = "❌ Không tìm thấy bản ghi lương.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                
+                bool success = _salaryRepository.UpdateBonusDeduction(
+                    salary.StaffId,  
+                    salary.Month,         
+                    salary.Year,          
+                    bonus,              
+                    deduction           
+                );
+
+                if (success)
+                {
+                    TempData["SuccessMessage"] = $"✅ Đã điều chỉnh lương cho {salary.Staff?.StaffName} thành công!";
+                    return RedirectToAction(nameof(Index), new { month = salary.Month, year = salary.Year });
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "❌ Lỗi khi cập nhật lương vào database.";
+                    return View(salary);
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "❌ Lỗi: " + ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         // --- 4. Xác nhận Thanh toán 
