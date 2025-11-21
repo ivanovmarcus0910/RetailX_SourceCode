@@ -388,6 +388,31 @@ namespace RetailXMVC.Controllers
 
             return View("Profile", user);
         }
+        [Authorize]
+        public async Task<IActionResult> RefreshClaims()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var user = _userRepository.GetUserById(userId);
+
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Name, user.Email),
+        new Claim(ClaimTypes.Role, user.GlobalRole),
+        new Claim("FullName", user.FullName ?? user.Email),
+        new Claim("GlobalRole", user.GlobalRole ?? "User"),
+        new Claim("TenantId", user.TenantId?.ToString() ?? ""),
+        new Claim("StaffId", user.StaffId?.ToString() ?? ""),
+    };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+            return RedirectToAction("Index", "Home");
+        }
 
     }
 }

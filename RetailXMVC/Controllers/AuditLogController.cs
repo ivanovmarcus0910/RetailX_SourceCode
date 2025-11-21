@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace RetailXMVC.Controllers
 {
-    // [Authorize(Roles = "Owner")]
+    [Authorize(Roles = "Owner")]
     public class AuditLogController : Controller
     {
         private readonly ILogRepository _logRepo;

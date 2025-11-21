@@ -17,6 +17,12 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
+        connection.on("OnJoinRequestApproved", function (companyName) {
+            alert(`Chúc mừng! Bạn đã được duyệt vào công ty ${companyName}. Hệ thống sẽ cập nhật ngay lập tức.`);
+
+            window.location.href = "/Auth/RefreshClaims";
+        });
+
         connection.start().then(function () {
             console.log("SignalR Connected Successfully!");
 
