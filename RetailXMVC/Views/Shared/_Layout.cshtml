@@ -44,41 +44,50 @@
                                     @fullName
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-controller="Auth" asp-action="Profile">
+                                            Profile
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+
                                     @if (User.IsInRole("Admin"))
                                     {
                                         <li>
                                             <a class="dropdown-item" asp-area="" asp-controller="AdminRetailX" asp-action="System">
-                                                System Manage
+                                                System Dashboard
                                             </a>
                                         </li>
                                         <li><hr class="dropdown-divider" /></li>
                                     }
-                                    else
-                                    {
-                                        <li>
-                                            <a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Profile">
-                                                Profile
-                                            </a>
-                                        </li>
-                                        <li><hr class="dropdown-divider" /></li>
-                                    }
+                                    
                                     @if (User.IsInRole("Owner"))
                                     {
+                                        
                                         <li>
                                             <a class="dropdown-item" asp-area="" asp-controller="Tenant" asp-action="TenantProfile">
                                                 Tenant Manage
                                             </a>
                                         </li>
                                         <li><hr class="dropdown-divider" /></li>
-                                    }
-                                    @if (User.IsInRole("User") && !string.IsNullOrEmpty(User.FindFirst("StaffId")?.Value))
-                                    {
                                         <li>
-                                            <a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Profile">
-                                                Tenant
+                                            <a class="dropdown-item" asp-area="" asp-controller="Tenant" asp-action="LoginTenant">
+                                                Store
                                             </a>
                                         </li>
                                         <li><hr class="dropdown-divider" /></li>
+
+                                    }
+                                    @if (User.IsInRole("User") && !string.IsNullOrEmpty(User.FindFirst("StaffId")?.Value))
+                                    {
+                                        
+                                        <li>
+                                            <a class="dropdown-item" asp-area="" asp-controller="Tenant" asp-action="LoginTenant">
+                                                Store
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+
                                     }
                                     <li>
                                         <a class="dropdown-item text-danger" asp-area="" asp-controller="Auth" asp-action="Logout">

@@ -7,6 +7,37 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/RetailXMVC.styles.css" asp-append-version="true" />
+    <style>
+        .navbar .nav-link {
+            transition: background-color .2s ease, color .2s ease, box-shadow .2s ease, transform .15s ease;
+            border-radius: .375rem;
+        }
+
+            .navbar .nav-link:hover,
+            .navbar .nav-link:focus {
+                background-color: #000 !important;
+                color: #fff !important;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.6) !important; 
+                transform: translateY(-1px);
+            }
+
+        .navbar .btn.btn-primary {
+            background-color: #000;
+            border-color: #000;
+            color: #fff;
+            border-radius: 999px;
+            transition: background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .15s ease;
+        }
+
+            .navbar .btn.btn-primary:hover,
+            .navbar .btn.btn-primary:focus {
+                background-color: #000;
+                border-color: #000;
+                color: #fff !important;
+                box-shadow: 0 0 12px rgba(0, 0, 0, .7);
+                transform: translateY(-1px);
+            }
+    </style>
 </head>
 <body>
     <header>
@@ -54,7 +85,7 @@
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                     <li>
                                         <a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Index">
-                                            Dashboard
+                                            Home
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider" /></li>
@@ -85,6 +116,8 @@
             </div>
         </nav>
     </header>
+    
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
