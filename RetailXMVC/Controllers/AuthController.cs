@@ -90,6 +90,14 @@ namespace RetailXMVC.Controllers
                 ViewBag.Email = email;
                 return View();
             }
+            if (user.IsActive == false)
+            {
+                fieldErrors["Password"] = "Tài khoản này đã bị khóa.";
+
+                ViewBag.FieldErrors = fieldErrors;
+                ViewBag.Email = email;
+                return View();
+            }
 
             // ✅ Lấy user + tạo claims
             

@@ -152,52 +152,76 @@
 }
 
 <style>
-    /* style đen trắng giống login/signup */
-
+    /* Wrapper */
     .auth-wrapper {
         min-height: 80vh;
     }
 
+    /* Box trắng, viền đen, shadow đen + hover */
     .auth-card {
-        background-color: #000;
-        border: 1px solid #333;
+        background-color: #fff;
+        border: 1px solid #000;
         border-radius: 16px;
         padding: 32px;
-        box-shadow: 0 0 40px rgba(0,0,0,0.7);
-        color: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        color: #000;
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
     }
 
+        .auth-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            transform: translateY(-4px);
+        }
+
         .auth-card .form-label {
-            color: #f5f5f5;
+            color: #000;
         }
 
         .auth-card .form-control {
-            background-color: #000;
-            border: 1px solid #333;
-            color: #fff;
+            background-color: #fff;
+            border: 1px solid #000;
+            color: #000;
         }
 
             .auth-card .form-control:focus {
-                border-color: #fff;
+                border-color: #000;
                 box-shadow: none;
             }
 
+        /* Button đen, chữ trắng */
         .auth-card .btn-primary {
-            background-color: #fff;
-            color: #000;
-            border: none;
+            background-color: #000;
+            color: #fff;
+            border: 1px solid #000;
             font-weight: 600;
             border-radius: 999px;
+            transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
         }
 
             .auth-card .btn-primary:hover {
-                background-color: #e6e6e6;
+                background-color: #222;
+                color: #fff;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+                transform: translateY(-1px);
             }
 
+        /* Nút toggle “Hiện / Ẩn form” */
         .auth-card .btn-outline-light {
             border-radius: 999px;
             border-width: 1px;
             font-size: 0.85rem;
             padding: 4px 12px;
+            border-color: #000;
+            color: #000;
+            background-color: #fff;
+            transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
         }
+
+            .auth-card .btn-outline-light:hover {
+                background-color: #000;
+                color: #fff;
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+                transform: translateY(-1px);
+            }
 </style>
+

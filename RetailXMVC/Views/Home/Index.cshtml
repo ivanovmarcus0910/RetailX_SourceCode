@@ -21,15 +21,15 @@
                 giảm thất thoát, tối ưu tồn kho và kiểm soát hiệu quả làm việc của nhân viên –
                 mà không cần phải giỏi công nghệ.
             </p>
-            <a asp-controller="Auth" asp-action="SignUp" class="btn btn-primary btn-lg me-2">
+            <a asp-controller="Auth" asp-action="SignUpAccount" class="btn btn-rx-primary btn-lg me-2">
                 Bắt đầu dùng thử RetailX
             </a>
-            <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-secondary btn-lg">
+            <a asp-controller="Auth" asp-action="Login" class="btn btn-rx-secondary btn-lg">
                 Đăng nhập hệ thống
             </a>
         </div>
         <div class="col-md-5 mt-4 mt-md-0">
-            <div class="card shadow-sm border-0">
+            <div class="card rx-card">
                 <div class="card-body">
                     <h5 class="card-title fw-bold mb-3">RetailX phù hợp với ai?</h5>
                     <ul class="mb-0">
@@ -55,7 +55,7 @@
 
     <div class="row g-4">
         <div class="col-md-3">
-            <div class="card h-100 shadow-sm border-0">
+            <div class="card rx-card h-100">
                 <div class="card-body">
                     <h5 class="card-title fw-bold">Nhập – xuất – tồn kho</h5>
                     <p class="card-text">
@@ -66,7 +66,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card h-100 shadow-sm border-0">
+            <div class="card rx-card h-100">
                 <div class="card-body">
                     <h5 class="card-title fw-bold">Bán hàng tại quầy</h5>
                     <p class="card-text">
@@ -77,7 +77,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card h-100 shadow-sm border-0">
+            <div class="card rx-card h-100">
                 <div class="card-body">
                     <h5 class="card-title fw-bold">Thống kê & báo cáo</h5>
                     <p class="card-text">
@@ -88,7 +88,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card h-100 shadow-sm border-0">
+            <div class="card rx-card h-100">
                 <div class="card-body">
                     <h5 class="card-title fw-bold">Quản lý nhân sự</h5>
                     <p class="card-text">
@@ -99,6 +99,74 @@
             </div>
         </div>
     </div>
+    <!-- Feedback khách hàng -->
+    <div class="row mt-5">
+        <div class="col text-center mb-4">
+            <h2 class="fw-bold">Khách hàng nói gì về RetailX?</h2>
+            <p class="text-muted">
+                Một vài chia sẻ từ các chủ shop đã sử dụng hệ thống RetailX trong vận hành hằng ngày.
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="rx-card rx-testimonial-card h-100">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rx-avatar me-3">
+                        <span>H</span>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Huyền Trần</div>
+                        <div class="text-muted small">Chủ shop thời trang nữ, Đà Nẵng</div>
+                    </div>
+                </div>
+                <p class="rx-quote mb-3">
+                    “Trước đây mình quản lý tồn kho bằng Excel rất dễ nhầm.
+                    Dùng RetailX rồi thì chỉ cần mở dashboard là biết ngay hôm nay bán được gì, tồn kho ra sao.”
+                </p>
+                <div class="text-muted small">Đang vận hành 2 chi nhánh</div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="rx-card rx-testimonial-card h-100">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rx-avatar me-3">
+                        <span>Q</span>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Quốc Anh</div>
+                        <div class="text-muted small">Chuỗi cửa hàng phụ kiện điện thoại</div>
+                    </div>
+                </div>
+                <p class="rx-quote mb-3">
+                    “Điều mình thích nhất là phân quyền nhân viên rất rõ ràng.
+                    Bạn thu ngân chỉ thấy màn hình bán hàng, quản lý thì xem được báo cáo chi tiết.”
+                </p>
+                <div class="text-muted small">Giảm 30% thời gian tổng hợp báo cáo cuối ngày</div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="rx-card rx-testimonial-card h-100">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rx-avatar me-3">
+                        <span>M</span>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Minh Khoa</div>
+                        <div class="text-muted small">Mini mart & tạp hóa, TP.HCM</div>
+                    </div>
+                </div>
+                <p class="rx-quote mb-3">
+                    “RetailX giúp mình kiểm soát hàng cận date và hàng bán chậm tốt hơn,
+                    hạn chế được thất thoát và hết hàng đột ngột vào cuối tuần.”
+                </p>
+                <div class="text-muted small">Sử dụng RetailX hơn 8 tháng</div>
+            </div>
+        </div>
+    </div>
 
     <div class="row mt-5">
         <div class="col text-center">
@@ -106,29 +174,27 @@
             <p class="text-muted mb-4">
                 Hướng tới một hệ thống đơn giản, trực quan nhưng đủ mạnh để đồng hành cùng cửa hàng trên hành trình phát triển lâu dài.
             </p>
-            @if (isLoggedIn) {
-                if ( string.IsNullOrEmpty(tenantId))
-                    {
-                    <a asp-controller="Tenant" asp-action="SignUpTenant" class="btn btn-primary btn-lg">
+            @if (isLoggedIn)
+            {
+                if (string.IsNullOrEmpty(tenantId))
+                {
+                    <a asp-controller="Tenant" asp-action="SignUpTenant" class="btn btn-rx-primary btn-lg">
                         Đăng ký cửa hàng ngay để trải nghiệm
                     </a>
                 }
                 else
                 {
-                    <a asp-controller="Tenant" asp-action="LoginTenant" class="btn btn-primary btn-lg">
+                    <a asp-controller="Tenant" asp-action="LoginTenant" class="btn btn-rx-primary btn-lg">
                         Truy cập cửa hàng của bạn
                     </a>
                 }
             }
             else
             {
-            <a asp-controller="Auth" asp-action="SignUpAccount" class="btn btn-primary btn-lg">
-                Đăng ký tài khoản ngay để trải nghiệm
-            </a>
+                <a asp-controller="Auth" asp-action="SignUpAccount" class="btn btn-rx-primary btn-lg">
+                    Đăng ký tài khoản ngay để trải nghiệm
+                </a>
             }
-
-            
-            
         </div>
     </div>
 </div>
