@@ -1,100 +1,158 @@
 ﻿@model BusinessObject.Models.PurchaseOrder
 @{
     Layout = "_InventoryLayout";
-}
-@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
     var details = ViewBag.Details as List<BusinessObject.Models.PurchaseOrderDetail>;
 }
 
-<!-- Header -->
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-        <h2 class="mb-1">PO #@Model.PurchaseOrderId</h2>
-        <div class="text-muted">
-            <span><strong>Supplier:</strong> @Model.Supplier?.SupplierName</span> |
-            <span><strong>Date:</strong> @Model.CreateDate.ToShortDateString()</span> |
-            <span><strong>Status:</strong> @(Model.Status == 2 ? "Pending" : Model.Status == 3 ? "Confirmed" : "Unknown")</span>
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">📄 Chi tiết Đơn hàng #@Model.PurchaseOrderId</h2>
+            <p class="text-muted mb-0">Xem và quản lý các sản phẩm trong đơn nhập.</p>
+        </div>
+        <a asp-controller="PurchaseOrders" asp-action="Index" class="btn btn-light border text-secondary fw-bold shadow-sm">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                <div class="col-md-3 border-end">
+                    <label class="small text-muted text-uppercase fw-bold">Nhà cung cấp</label>
+                    <div class="fs-5 fw-bold text-primary">
+                        <i class="bi bi-truck me-2"></i>@(Model.Supplier?.SupplierName ?? "N/A")
+                    </div>
+                </div>
+                <div class="col-md-3 border-end">
+                    <label class="small text-muted text-uppercase fw-bold">Ngày tạo đơn</label>
+                    <div class="fs-5 fw-bold text-dark">
+                        <i class="bi bi-calendar-event me-2"></i>@Model.CreateDate.ToString("dd/MM/yyyy")
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="small text-muted text-uppercase fw-bold">Trạng thái</label>
+                    <div>
+                        @if (Model.Status == 2)
+                        {
+                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning rounded-pill px-3 py-2">
+                                <i class="bi bi-hourglass-split me-1"></i> Chờ xử lý
+                            </span>
+                        }
+                        else if (Model.Status == 3)
+                        {
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3 py-2">
+                                <i class="bi bi-check-circle me-1"></i> Đã xác nhận
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary rounded-pill px-3 py-2">
+                                Không rõ
+                            </span>
+                        }
+                    </div>
+                </div>
+                
+                <div class="col-md-3 text-end">
+                    @if (Model.Status != 3)
+                    {
+                        <form asp-action="Approve" method="post" class="m-0" onsubmit="return confirm('Xác nhận đơn hàng này? Kho sẽ được cập nhật.');">
+                            <input type="hidden" name="id" value="@Model.PurchaseOrderId" />
+                            <button class="btn btn-success fw-bold shadow-sm px-4 py-2">
+                                <i class="bi bi-check2-circle me-1"></i> Xác nhận nhập kho
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
         </div>
     </div>
-    <div class="d-flex gap-2">
-        @if (Model.Status != 3)
-        {
-            <form asp-action="Approve" method="post" class="m-0">
-                <input type="hidden" name="id" value="@Model.PurchaseOrderId" />
-                <button class="btn btn-success">Confirm</button>
-            </form>
-        }
-        <a asp-controller="PurchaseOrders" asp-action="Index" class="btn btn-secondary">Back to List</a>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold text-dark m-0"><i class="bi bi-list-ul me-2"></i>Danh sách sản phẩm</h5>
+            
+            @if (Model.Status != 3)
+            {
+                <button class="btn btn-create fw-bold shadow-sm" id="btnAddProduct">
+                    <i class="bi bi-plus-lg me-1"></i> Thêm Sản phẩm
+                </button>
+            }
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-secondary">
+                        <tr>
+                            <th class="py-3 ps-4">Sản phẩm</th>
+                            <th class="py-3 text-center">Số lượng</th>
+                            <th class="py-3 text-end">Đơn giá</th>
+                            <th class="py-3 text-end">Thành tiền</th>
+                            <th class="py-3 text-end pe-4">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="poDetailsBody">
+                        @if (details != null && details.Any())
+                        {
+                            decimal grandTotal = 0;
+                            foreach (var d in details)
+                            {
+                                var lineTotal = (d.Quantity ?? 0) * (d.Price ?? 0);
+                                grandTotal += lineTotal;
+                                <tr data-detail-id="@d.PurchaseOrderDetailId">
+                                    <td class="ps-4 fw-semibold">@d.Product?.ProductName</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border px-3">@(d.Quantity ?? 0)</span>
+                                    </td>
+                                    <td class="text-end text-muted">@String.Format("{0:N0} ₫", d.Price ?? 0)</td>
+                                    <td class="text-end fw-bold text-primary">@String.Format("{0:N0} ₫", lineTotal)</td>
+                                    <td class="text-end pe-4">
+                                        @if (Model.Status != 3)
+                                        {
+                                            <button class="btn btn-warning btn-sm me-1 btn-action btn-edit" data-id="@d.PurchaseOrderDetailId" title="Sửa">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-sm btn-action btn-delete" data-id="@d.PurchaseOrderDetailId" title="Xóa">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small"><i class="bi bi-lock"></i> Đã khóa</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                            <tr class="bg-light">
+                                <td colspan="3" class="text-end fw-bold py-3">Tổng cộng:</td>
+                                <td class="text-end fw-bold text-danger fs-5 py-3">@String.Format("{0:N0} ₫", grandTotal)</td>
+                                <td></td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="bi bi-cart-x fs-1 d-block mb-2"></i>
+                                    Chưa có sản phẩm nào trong đơn hàng này.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
-<hr />
-
-<!-- Order Items -->
-<h3 class="mb-2">Order Items</h3>
-
-@if (Model.Status != 3)
-{
-    <button class="btn btn-create mb-2" id="btnAddProduct">Add Product</button>
-}
-
-<!-- Modal -->
 <div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" id="productModalContent"></div>
     </div>
 </div>
-
-<!-- Table -->
-<table class="table mt-3 table-hover">
-    <thead>
-        <tr>
-            <th>Product</th>
-            <th>Quantity</th>
-            <th>Price</th>
-            <th>Total</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody id="poDetailsBody">
-        @foreach (var d in details)
-        {
-            <tr data-detail-id="@d.PurchaseOrderDetailId">
-                <td>@d.Product?.ProductName</td>
-                <td>@(d.Quantity ?? 0)</td>
-                <td>@(d.Price ?? 0)</td>
-                <td>@((d.Quantity ?? 0) * (d.Price ?? 0))</td>
-                <td>
-                    @if (Model.Status != 3)
-                    {
-                        <button class="btn btn-info btn-sm btn-edit" data-id="@d.PurchaseOrderDetailId">Edit</button>
-                        <button class="btn btn-danger btn-sm btn-delete" data-id="@d.PurchaseOrderDetailId">Delete</button>
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<style>
-/* Header & buttons */
-.btn-create { background-color: #3C5EC0; color: white; border-radius: 8px; padding: 6px 14px; }
-.btn-create:hover { background-color: #2A4A99; }
-
-.btn-info { background-color: #17A2B8; color: white; border-radius: 6px; padding: 4px 10px; }
-.btn-info:hover { background-color: #138496; }
-
-.btn-danger { background-color: #E03131; color: white; border-radius: 6px; padding: 4px 10px; }
-.btn-danger:hover { background-color: #C92A2A; }
-
-.btn-success { background-color: #37B24D; color: white; border-radius: 6px; padding: 6px 14px; }
-.btn-success:hover { background-color: #2F9E44; }
-
-.btn-secondary { background-color: #868E96; color: white; border-radius: 6px; padding: 6px 14px; }
-.btn-secondary:hover { background-color: #6C757D; }
-
-.table-hover tbody tr:hover { background-color: #f1f1f1; }
-</style>
 
 @section Scripts {
 <script>
@@ -149,7 +207,7 @@ $(document).ready(function(){
     });
 
     // --- Submit Edit Product ---
-    $(document).on("submit", "#productForm", function(e){ // Edit form id
+    $(document).on("submit", "#editDetailForm", function(e){ // Cần đảm bảo ID form trong Partial View Edit khớp
         e.preventDefault();
         var form = $(this);
         $.ajax({
@@ -168,7 +226,7 @@ $(document).ready(function(){
     });
 
     // --- Submit Delete ---
-    $(document).on("submit", "#deleteForm", function(e){
+    $(document).on("submit", "#deleteDetailForm", function(e){ // Cần đảm bảo ID form trong Partial View Delete khớp
         e.preventDefault();
         var form = $(this);
         $.ajax({
@@ -183,7 +241,65 @@ $(document).ready(function(){
             }
         });
     });
-
 });
 </script>
 }
+
+<style>
+    /* Styles đồng bộ */
+    .btn-create, .btn-success, .btn-warning, .btn-danger, .btn-action {
+        border-radius: 8px;
+        transition: all 0.2s;
+        border: none;
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border-radius: 6px;
+    }
+
+    /* Create Button */
+    .btn-create {
+        background-color: #339AF0;
+        padding: 6px 16px;
+    }
+    .btn-create:hover {
+        background-color: #2A4A99;
+        color: white;
+    }
+
+    /* Success Button */
+    .btn-success {
+        background-color: #37B24D;
+    }
+    .btn-success:hover {
+        background-color: #2b8a3e;
+    }
+
+    /* Warning/Edit Button */
+    .btn-warning {
+        background-color: #f0ad4e;
+    }
+    .btn-warning:hover {
+        background-color: #ec9d4a;
+    }
+
+    /* Danger/Delete Button */
+    .btn-danger {
+        background-color: #E03131;
+    }
+    .btn-danger:hover {
+        background-color: #C92A2A;
+    }
+
+    /* Table Hover */
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+</style>

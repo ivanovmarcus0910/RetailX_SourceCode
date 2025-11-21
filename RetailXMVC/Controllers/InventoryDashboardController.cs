@@ -24,11 +24,12 @@ namespace RetailXMVC.Controllers
             ViewBag.TotalProducts = _repo.GetTotalProducts();
             ViewBag.TotalCategories = _repo.GetTotalCategories();
             ViewBag.TotalSuppliers = _repo.GetTotalSuppliers();
-            ViewBag.TotalCustomers = _repo.GetTotalCustomers();
-
             ViewBag.InventoryValue = _repo.GetInventoryValue();
-            ViewBag.LowStock = _repo.GetLowStock();
             ViewBag.MonthlyImport = _repo.GetMonthlyImport();
+            ViewBag.LowStock = _repo.GetLowStock();
+
+            // NEW: Category Stock Distribution
+            ViewBag.CategoryStock = _repo.GetCategoryStockDistribution();
 
             return View();
         }
