@@ -48,6 +48,8 @@ namespace Repositories
         public List<Product> GetLowStock()
         {
             return _context.Products
+                .Include(p => p.Category)
+        .Include(p => p.Supplier)
                 .Where(p => p.Quantity  <= 5)
                 .ToList();
         }
@@ -130,6 +132,31 @@ namespace Repositories
 
             return result;
         }
+        public List<dynamic> GetCategoryStockDistribution()
+        {
+            var data = _context.Products
+                .Include(p => p.Category)
+                .GroupBy(p => p.Category.CategoryName)
+                .Select(g => new
+                {
+                    CategoryName = g.Key,
+                    TotalQty = g.Sum(x => x.Quantity)
+                })
+                .ToList();
+
+            var list = new List<dynamic>();
+
+            foreach (var item in data)
+            {
+                dynamic obj = new System.Dynamic.ExpandoObject();
+                obj.CategoryName = item.CategoryName;
+                obj.TotalQty = item.TotalQty;
+                list.Add(obj);
+            }
+
+            return list;
+        }
+
 
 
     }

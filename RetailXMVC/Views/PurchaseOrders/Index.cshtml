@@ -1,119 +1,185 @@
 ﻿@model IEnumerable<BusinessObject.Models.PurchaseOrder>
 @{
     Layout = "_InventoryLayout";
+    ViewData["Title"] = "Purchase Order";
 }
-<h2 class="mb-4">Purchase Orders</h2>
 
-<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-    <a asp-action="Create" class="btn btn-create">+ Create PO</a>
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Quản lý Đơn nhập hàng</h2>
+            <p class="text-muted mb-0">Theo dõi và quản lý các đơn đặt hàng từ nhà cung cấp.</p>
+        </div>
+    </div>
 
-    <form method="get" class="d-flex gap-2 flex-wrap">
-         <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control" style="width:160px;" />
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
 
-        <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control" style="width:160px;" />
-        <input type="text" name="searchSupplier" value="@ViewBag.SearchSupplier" class="form-control" style="width:200px;" placeholder="Supplier name" />
+            <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+                
+                <form method="get" class="d-flex gap-2 flex-wrap align-items-center">
+                    
+                    <div class="input-group" style="width: 160px;">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-event"></i></span>
+                        <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control border-start-0 ps-0" title="Từ ngày" />
+                    </div>
+                    <span class="text-muted">-</span>
+                    <div class="input-group" style="width: 160px;">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-check"></i></span>
+                        <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control border-start-0 ps-0" title="Đến ngày" />
+                    </div>
 
-        <select name="statusFilter" class="form-select" style="width:150px;" asp-items="ViewBag.StatusList"></select>
+                    <div class="input-group" style="width: 200px;">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                        <input type="text" name="searchSupplier" value="@ViewBag.SearchSupplier" class="form-control border-start-0 ps-0" placeholder="Tên NCC..." />
+                    </div>
 
-        <button type="submit" class="btn btn-search">Search</button>
-    </form>
+                    <div class="input-group" style="width: 180px;">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-funnel"></i></span>
+                        <select name="statusFilter" class="form-select border-start-0 ps-0" asp-items="ViewBag.StatusList"></select>
+                    </div>
+
+                    <button type="submit" class="btn btn-search fw-bold">
+                        Lọc
+                    </button>
+                </form>
+
+                <a asp-action="Create" class="btn btn-create fw-bold shadow-sm">
+                    <i class="bi bi-plus-lg me-1"></i> Tạo Đơn nhập
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-secondary">
+                        <tr>
+                            <th scope="col" class="py-3 ps-3">Nhà cung cấp</th>
+                            <th scope="col" class="py-3">Ngày tạo</th>
+                            <th scope="col" class="py-3 text-center">Trạng thái</th>
+                            <th scope="col" class="py-3 text-end pe-3">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-3 fw-semibold text-dark">
+                                        <i class="bi bi-truck text-muted me-2"></i>
+                                        @(item.Supplier?.SupplierName ?? "N/A")
+                                    </td>
+                                    <td>@item.CreateDate.ToString("dd/MM/yyyy")</td>
+                                    <td class="text-center">
+                                        @if(item.Status == 2)
+                                        {
+                                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning rounded-pill px-3 py-2">
+                                                <i class="bi bi-hourglass-split me-1"></i> Chờ xử lý
+                                            </span>
+                                        }
+                                        else if(item.Status == 3)
+                                        {
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3 py-2">
+                                                <i class="bi bi-check-circle me-1"></i> Đã xác nhận
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary rounded-pill px-3 py-2">
+                                                Không rõ
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <a asp-action="Details" asp-route-id="@item.PurchaseOrderId" 
+                                           class="btn btn-info btn-sm me-1 btn-action text-white" title="Chi tiết">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+
+                                        @if (item.Status != 3)
+                                        {
+                                            <form asp-action="Delete" asp-route-id="@item.PurchaseOrderId" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa đơn nhập hàng này không?');">
+                                                <button type="submit" class="btn btn-danger btn-sm btn-action" title="Xóa">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="bi bi-clipboard-x fs-1 d-block mb-2"></i>
+                                        <span>Không tìm thấy đơn nhập hàng nào.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
 </div>
 
-<table class="table table-hover align-middle">
-    <thead class="table-light">
-        <tr>
-            <th scope="col">Supplier</th>
-            <th scope="col">Date</th>
-            <th scope="col">Status</th>
-            <th scope="col" class="text-end">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-    @if (Model != null && Model.Any())
-    {
-        foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.Supplier?.SupplierName</td>
-                <td>@item.CreateDate.ToShortDateString()</td>
-                <td>
-                    @if(item.Status == 2)
-                    {
-                        <span class="badge bg-warning text-dark">Pending</span>
-                    }
-                    else if(item.Status == 3)
-                    {
-                        <span class="badge bg-success">Confirmed</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Unknown</span>
-                    }
-                </td>
-                <td class="text-end">
-                    <a asp-action="Details" asp-route-id="@item.PurchaseOrderId" class="btn btn-info btn-sm me-1">Details</a>
-
-                    @if (item.Status != 3)
-                    {
-                        <form asp-action="Delete" asp-route-id="@item.PurchaseOrderId" method="post" class="d-inline"
-                              onsubmit="return confirm('Are you sure you want to delete this Purchase Order?');">
-                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                        </form>
-                    }
-                </td>
-            </tr>
-        }
-    }
-    else
-    {
-        <tr>
-            <td colspan="5" class="text-center text-muted">No purchase orders found</td>
-        </tr>
-    }
-    </tbody>
-</table>
 <style>
+    /* Đồng bộ CSS */
     .btn-create, .btn-search, .btn-info, .btn-danger {
         border-radius: 8px;
-        padding: 6px 14px;
-        font-size: 0.875rem;
+        padding: 8px 16px;
+        font-size: 0.9rem;
         transition: all 0.2s;
         border: none;
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .btn-create {
-        background-color: #339AF0; /* xanh dương đậm hơn */
-        color: white;
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border-radius: 6px;
     }
-    .btn-create:hover {
+
+    /* Blue Buttons (Create, Search, Details) */
+    .btn-create, .btn-search, .btn-info {
+        background-color: #339AF0;
+    }
+    .btn-create:hover, .btn-search:hover, .btn-info:hover {
         background-color: #2A4A99;
-    }
-
-    .btn-search {
-        background-color: #339AF0; /* xanh dương đậm hơn */
         color: white;
-    }
-    .btn-search:hover {
-        background-color: #1C7ED6;
+        box-shadow: 0 4px 6px rgba(51, 154, 240, 0.25);
     }
 
-    .btn-info {
-        background-color: #339AF0; /* xanh dương đậm hơn */
-        color: white;
-    }
-    .btn-info:hover {
-        background-color: #138496;
-    }
-
+    /* Danger Button */
     .btn-danger {
-        background-color: #E03131; /* đỏ đậm hơn */
-        color: white;
+        background-color: #E03131;
     }
     .btn-danger:hover {
         background-color: #C92A2A;
+        color: white;
     }
 
+    /* Input Styles */
+    .form-control:focus, .form-select:focus {
+        box-shadow: none;
+        border-color: #dee2e6;
+        background-color: #fff !important;
+    }
+    .input-group-text {
+        background-color: #f8f9fa;
+    }
+    
+    /* Table Hover */
     .table-hover tbody tr:hover {
-        background-color: #f1f1f1;
+        background-color: #f8f9fa;
     }
 </style>

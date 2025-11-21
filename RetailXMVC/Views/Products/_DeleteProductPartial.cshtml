@@ -3,38 +3,46 @@
     Layout = null;
 }
 
-<p>Are you sure you want to delete <strong>@Model.ProductName</strong>?</p>
+<div class="modal-header">
+    <h5 class="modal-title">Xóa sản phẩm</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
 
 <form id="deleteProductForm" method="post" action="@Url.Action("DeleteConfirmed","Products")">
     @Html.AntiForgeryToken()
     <input type="hidden" name="id" value="@Model.ProductId" />
-    <div class="text-end">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="submit" class="btn btn-danger">Delete</button>
+
+    <div class="modal-body">
+        <p>Bạn có muốn xóa: <strong>@Model.ProductName</strong>?</p>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button type="submit" class="btn btn-danger">Xóa</button>
     </div>
 </form>
 
-@section Scripts {
 <script>
-$(document).on("submit", "#deleteProductForm", function(e){
-    e.preventDefault();
-    var form = $(this);
-    $.ajax({
-        type: "POST",
-        url: form.attr("action"),
-        data: form.serialize(),
-        success: function(response){
-            if(response.success){
-                $('#deleteModal').modal('hide');
-                location.reload();
-            } else {
-                alert("Delete failed!");
+    // Hủy sự kiện cũ để tránh bị double submit nếu mở modal nhiều lần
+    $(document).off("submit", "#deleteProductForm").on("submit", "#deleteProductForm", function (e) {
+        e.preventDefault();
+        var form = $(this);
+        
+        $.ajax({
+            type: "POST",
+            url: form.attr("action"),
+            data: form.serialize(),
+            success: function (response) {
+                if (response.success) {
+                    $('#deleteModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert("Delete failed!");
+                }
+            },
+            error: function () {
+                alert("Error during delete request!");
             }
-        },
-        error: function(){
-            alert("Error during delete request!");
-        }
+        });
     });
-});
 </script>
-}

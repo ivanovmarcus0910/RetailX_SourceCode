@@ -5,134 +5,154 @@
     Layout = "_InventoryLayout";
 }
 
-<h2 class="mb-4">Products</h2>
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1"> Quản lý Sản phẩm</h2>
+            <p class="text-muted mb-0">Theo dõi thông tin, giá cả và số lượng tồn kho.</p>
+        </div>
+    </div>
 
-<div class="mb-3 d-flex justify-content-between align-items-center flex-wrap">
-    <!-- Search + Filter Form -->
-    <form method="get" class="d-flex mb-2">
-        <input type="text" name="searchString" value="@ViewBag.SearchString" class="form-control me-2" placeholder="Search product..." />
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
 
-        @Html.DropDownList(
-            "categoryId", 
-            ViewBag.Categories as SelectList, 
-            "All Categories", 
-            new { @class = "form-select me-2" }
-        )
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <form method="get" class="d-flex gap-2 align-items-center flex-wrap">
+                    
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" name="searchString" value="@ViewBag.SearchString" 
+                               class="form-control border-start-0 ps-0" style="width: 220px; background-color: #f8f9fa;" 
+                               placeholder="Tìm kiếm sản phẩm..." />
+                    </div>
 
-        <button type="submit" class="btn btn-primary rounded-pill">Filter</button>
-    </form>
+                    <div class="input-group" style="width: 200px;">
+                        <span class="input-group-text bg-light border-end-0 text-muted">
+                            <i class="bi bi-funnel"></i>
+                        </span>
+                        @Html.DropDownList(
+                            "categoryId", 
+                            ViewBag.Categories as SelectList, 
+                            "Tất cả danh mục", 
+                            new { @class = "form-select border-start-0 ps-0", @style = "background-color: #f8f9fa;" }
+                        )
+                    </div>
 
-    <!-- Create Button -->
-   <button type="button" class="btn btn-primary rounded-pill" id="btnCreateModal" data-bs-toggle="modal" data-bs-target="#createModal">
-    Add Product
-</button>
+                    <button type="submit" class="btn btn-search fw-bold">
+                        Lọc
+                    </button>
+                </form>
 
+                <button type="button" class="btn btn-create fw-bold shadow-sm" id="btnCreateModal" data-bs-toggle="modal" data-bs-target="#createModal">
+                    <i class="bi bi-plus-lg me-1"></i> Thêm sản phẩm
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-secondary">
+                        <tr>
+                            <th class="py-3 ps-3">Tên sản phẩm</th>
+                            <th class="py-3">Giá bán</th>
+                            <th class="py-3">Danh mục</th>
+                            <th class="py-3">Nhà cung cấp</th>
+                            <th class="py-3 text-center">Tồn kho</th>
+                            <th class="py-3 text-end pe-3">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-3 fw-semibold text-dark">@item.ProductName</td>
+                                    <td class="text-primary fw-bold">@String.Format("{0:N0} ₫", item.Price)</td>
+                                    <td class="text-muted">@(item.Category?.CategoryName ?? "N/A")</td>
+                                    <td class="text-muted">@(item.Supplier?.SupplierName ?? "N/A")</td>
+                                    
+                                    <td class="text-center">
+                                        @if(item.Quantity < 10)
+                                        {
+                                            <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">
+                                                @item.Quantity (Thấp)
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
+                                                @item.Quantity
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td class="text-end pe-3">
+                                        <a href="javascript:void(0)" class="btn btn-warning btn-sm me-1 btn-action btn-edit"
+                                           data-id="@item.ProductId" title="Chỉnh sửa">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        
+                                        <a href="javascript:void(0);" class="btn btn-danger btn-sm btn-action btn-delete" 
+                                           data-id="@item.ProductId" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="bi bi-box-seam fs-1 d-block mb-2"></i>
+                                        <span>Không tìm thấy sản phẩm nào.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
 </div>
 
-<div class="table-responsive">
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>@Html.DisplayNameFor(model => model.ProductName)</th>
-                <th>@Html.DisplayNameFor(model => model.Price)</th>
-                <th>@Html.DisplayNameFor(model => model.Category)</th>
-                <th>@Html.DisplayNameFor(model => model.Supplier)</th>
-                <th>@Html.DisplayNameFor(model => model.Quantity)</th>
-                <th class="text-center">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model != null && Model.Any())
-            {
-                foreach (var item in Model)
-                {
-                    <tr>
-                        <td>@item.ProductName</td>
-                        <td>@String.Format("{0:N0} ₫", item.Price)</td>
-                        <td>@item.Category.CategoryName</td>
-                        <td>@item.Supplier.SupplierName</td>
-                        <td class="@(item.Quantity < 10 ? "text-danger fw-bold" : "")">@item.Quantity</td>
-                        <td class="text-center">
-                        <a href="javascript:void(0)" class="btn btn-sm btn-warning rounded-pill me-1 btn-edit"
-                           data-id="@item.ProductId">
-                           Edit
-                        </a>                            
-                      <a href="javascript:void(0);" class="btn btn-sm btn-danger rounded-pill btn-delete" data-id="@item.ProductId">
-                            Delete
-                         </a>
-                        </td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="6" class="text-center text-muted">No products available</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
-
-<!-- Modal -->
 <div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Create Product</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="createModalContent">
-                <!-- AJAX sẽ load PartialView vào đây -->
-            </div>
-        </div>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" id="createModalContent"></div>
     </div>
 </div>
 
-<!-- Modal Edit -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Product</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="editModalContent">
-                <!-- AJAX sẽ load PartialView Edit vào đây -->
-            </div>
-        </div>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" id="editModalContent"></div>
     </div>
 </div>
 
-<!-- Delete Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="deleteModalContent">
-                <!-- Nội dung sẽ load bằng AJAX -->
-            </div>
-        </div>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" id="deleteModalContent"></div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        $(document).on("submit", "#createProductForm", function(e){
+        // Handle Create Form Submit
+        $(document).on("submit", "#createProductForm", function (e) {
             e.preventDefault();
-
             var form = $(this);
             $.ajax({
                 type: "POST",
                 url: form.attr("action"),
                 data: form.serialize(),
-                success: function(response){
-                    if(response.success){
+                success: function (response) {
+                    if (response.success) {
                         $('#createModal').modal('hide');
-                        location.reload(); // reload Index để thấy sản phẩm mới
+                        location.reload();
                     } else {
                         $("#createModalContent").html(response);
                     }
@@ -140,40 +160,95 @@
             });
         });
 
-        // load form Create vào modal khi click button
-        $("#btnCreateModal").click(function() {
-            $.get('@Url.Action("Create","Products")', function(data) {
+        // Load Create Modal
+        $("#btnCreateModal").click(function () {
+            $.get('@Url.Action("Create", "Products")', function (data) {
                 $("#createModalContent").html(data);
             });
         });
 
-        $(document).on("click", ".btn-edit", function(){
-    var id = $(this).data("id");
-    $.get('@Url.Action("Edit","Products")', { id: id }, function(data){
-        $("#editModalContent").html(data);
-        $("#editModal").modal("show");
-    });
-});
+        // Load Edit Modal
+        $(document).on("click", ".btn-edit", function () {
+            var id = $(this).data("id");
+            $.get('@Url.Action("Edit", "Products")', { id: id }, function (data) {
+                $("#editModalContent").html(data);
+                $("#editModal").modal("show");
+            });
+        });
 
-$(document).on("click", ".btn-delete", function(){
-    var id = $(this).data("id");
-    $.get('@Url.Action("Delete","Products")', { id: id }, function(data){
-        $("#deleteModalContent").html(data);
-        $("#deleteModal").modal("show");
-    });
-});
-
+        // Load Delete Modal
+        $(document).on("click", ".btn-delete", function () {
+            var id = $(this).data("id");
+            $.get('@Url.Action("Delete", "Products")', { id: id }, function (data) {
+                $("#deleteModalContent").html(data);
+                $("#deleteModal").modal("show");
+            });
+        });
     </script>
 }
 
 <style>
-    table.table-hover tbody tr:hover { background-color: #f2f2f2; }
-    table td.text-center { vertical-align: middle; }
-    .btn-warning { background-color: #f0ad4e; border-color: #f0ad4e; color: white; transition: all 0.2s; }
-    .btn-warning:hover { background-color: #ec9d4a; border-color: #ec9d4a; color: white; }
-    .btn-danger { background-color: #d9534f; border-color: #d9534f; color: white; transition: all 0.2s; }
-    .btn-danger:hover { background-color: #c9302c; border-color: #c9302c; color: white; }
-    .btn-primary { background-color: #4e73df; border-color: #4e73df; color: white; transition: all 0.2s; }
-    .btn-primary:hover { background-color: #3c5ec0; border-color: #3c5ec0; color: white; }
+    /* CSS Styles đồng bộ */
+    .btn-create, .btn-search, .btn-warning, .btn-danger {
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        border: none;
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
 
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border-radius: 6px;
+    }
+
+    /* Blue Buttons */
+    .btn-create, .btn-search {
+        background-color: #339AF0;
+    }
+    .btn-create:hover, .btn-search:hover {
+        background-color: #2A4A99;
+        color: white;
+        box-shadow: 0 4px 6px rgba(51, 154, 240, 0.25);
+    }
+
+    /* Warning/Edit Button */
+    .btn-warning {
+        background-color: #f0ad4e;
+        color: white;
+    }
+    .btn-warning:hover {
+        background-color: #ec9d4a;
+        color: white;
+    }
+
+    /* Danger/Delete Button */
+    .btn-danger {
+        background-color: #E03131;
+    }
+    .btn-danger:hover {
+        background-color: #C92A2A;
+        color: white;
+    }
+
+    /* Input Styles */
+    .form-control:focus, .form-select:focus {
+        box-shadow: none;
+        border-color: #dee2e6;
+        background-color: #fff !important;
+    }
+    .input-group-text {
+        background-color: #f8f9fa;
+    }
+
+    /* Table Hover */
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
 </style>
