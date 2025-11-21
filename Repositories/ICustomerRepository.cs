@@ -16,5 +16,8 @@ namespace Repositories
         void Delete(int id);
         Customer? GetByPhone(string phone);
         Customer? GetByEmail(string email);
+        // Trả về Tuple (Danh sách khách, Tổng số khách)
+        (List<Customer>, int) GetCustomers(string name, string phone, string status, int page, int size);
     }
 }
+

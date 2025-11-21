@@ -16,10 +16,12 @@
         :root {
             /* Định nghĩa màu sắc */
             --primary-color: #3b82f6; /* Blue (Màu nhấn chính) */
-            --secondary-color: #1f2937; /* Dark Slate (Sidebar background) */
+            --secondary-color: #000000; /* Đen tuyền hoàn toàn */
             --text-color: #374151; /* Dark Gray (Text color) */
             --light-gray: #e5e7eb; /* Light Gray (Border/Divider) */
             --background-color: #f9fafb; /* Lighter Background */
+            /* 👇 THAY ĐỔI Ở ĐÂY: Định nghĩa độ rộng sidebar để dễ quản lý */
+            --sidebar-width: 300px;
         }
 
         body {
@@ -35,10 +37,11 @@
         }
 
         /* =========================
-                   1. Sidebar Nâng Cấp
-                   ========================= */
+                           1. Sidebar Nâng Cấp
+                           ========================= */
         .sidebar {
-            width: 240px;
+            /* 👇 THAY ĐỔI: Sử dụng biến độ rộng mới */
+            width: var(--sidebar-width);
             height: 100vh;
             position: fixed;
             left: 0;
@@ -46,60 +49,64 @@
             background: var(--secondary-color);
             color: white;
             padding-top: 20px;
-            box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1); /* Thêm bóng đổ dọc */
+            /* 👇 THAY ĐỔI: Loại bỏ hoàn toàn box-shadow */
+            box-shadow: none;
+            /* Thêm border phải mỏng để phân cách nhẹ nhàng nếu muốn, hoặc bỏ đi cũng được */
+            border-right: 1px solid #333;
         }
 
             .sidebar .brand {
                 font-size: 24px;
-                font-weight: 800; /* Dày hơn */
+                font-weight: 800;
                 color: white;
                 text-align: center;
-                margin-bottom: 40px; /* Tăng khoảng cách */
+                margin-bottom: 40px;
                 padding: 0 20px;
+                letter-spacing: 1px;
             }
 
             .sidebar a {
-                color: #d1d5db;
-                padding: 14px 25px; /* Tăng padding */
-                display: flex; /* Dùng flex cho icon và text */
+                color: #9ca3af;
+                padding: 14px 25px;
+                display: flex;
                 align-items: center;
                 font-size: 15px;
                 font-weight: 500;
                 border-left: 4px solid transparent;
-                margin: 5px 0; /* Khoảng cách giữa các mục menu */
+                margin: 5px 0;
             }
 
                 .sidebar a:hover {
-                    background: rgba(255, 255, 255, 0.1); /* Hiệu ứng sáng mờ */
+                    background: #1a1a1a;
                     color: white;
                     border-left-color: var(--primary-color);
                 }
 
                 .sidebar a.active {
-                    background: #374151;
+                    background: #262626;
                     color: white;
-                    border-left-color: var(--primary-color); /* Màu nhấn chính */
+                    border-left-color: var(--primary-color);
                 }
 
-                /* Khoảng cách cho icon trong menu */
                 .sidebar a i {
                     margin-right: 12px;
                     font-size: 18px;
                 }
 
         /* =========================
-                   2. Content & Header
-                   ========================= */
+                           2. Content & Header
+                           ========================= */
         .main-content {
-            margin-left: 240px;
-            padding: 30px; /* Tăng padding */
+            /* 👇 THAY ĐỔI: Cập nhật margin-left theo độ rộng sidebar mới */
+            margin-left: var(--sidebar-width);
+            padding: 30px;
         }
 
         .topbar {
             background: white;
-            padding: 15px 25px; /* Tăng padding */
-            border-radius: 12px; /* Góc bo tròn hơn */
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Bóng đổ mềm mại, hiện đại hơn */
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
             margin-bottom: 30px;
         }
 
@@ -116,7 +123,7 @@
             }
 
                 .topbar .user-info .logout-btn {
-                    background-color: #ef4444; /* Red color */
+                    background-color: #ef4444;
                     border-color: #ef4444;
                     font-weight: 600;
                     transition: background-color 0.2s, border-color 0.2s;
@@ -136,15 +143,19 @@
         <div class="brand">RetailX Seller</div>
 
         <a asp-controller="Orders" asp-action="Create" class="@(ViewContext.RouteData.Values["Action"]?.ToString() == "Create" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Orders" ? "active" : "")">
-            <i>➕</i> Tạo hóa đơn
+            <i class="bi bi-plus-circle"></i> Tạo hóa đơn
         </a>
 
         <a asp-controller="Customer" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Customer" ? "active" : "")">
-            <i>👥</i> Danh sách khách hàng
+            <i class="bi bi-people"></i> Danh sách khách hàng
         </a>
 
         <a asp-controller="Orders" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Orders" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">
-            <i>📄</i> Danh sách hóa đơn
+            <i class="bi bi-file-earmark-text"></i> Danh sách hóa đơn
+        </a>
+
+        <a asp-controller="SellerDashboard" asp-action="Index" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "SellerDashboard" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">
+            <i class="bi bi-file-earmark-text"></i> Thống kê doanh số 
         </a>
     </div>
 
@@ -173,6 +184,8 @@
     </div>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

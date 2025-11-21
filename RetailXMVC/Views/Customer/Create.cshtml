@@ -1,28 +1,158 @@
 ﻿@model BusinessObject.Models.Customer
 @{
     Layout = "_SellerLayout";
+    ViewData["Title"] = "Thêm khách hàng mới";
 }
 
+@* --- CSS TÙY CHỈNH (Đồng bộ) --- *@
+<style>
+    :root {
+        --gray-primary: #343a40;
+        --gray-light: #f8f9fa;
+    }
 
-<h2>Thêm khách hàng</h2>
+    .card-modern {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        background: white;
+        overflow: hidden;
+        margin-top: 20px;
+    }
 
-<form asp-action="Create" method="post">
+    .card-header-modern {
+        background-color: var(--gray-primary);
+        color: white;
+        padding: 20px 30px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.95rem;
+        text-align: center;
+    }
 
-    <div class="mb-3">
-        <label>Tên khách hàng</label>
-        <input asp-for="CustomerName" class="form-control" required />
+    .card-body-modern {
+        padding: 40px;
+    }
+
+    .form-label-modern {
+        font-weight: 700;
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+    }
+
+    .form-control-modern {
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+
+        .form-control-modern:focus {
+            border-color: var(--gray-primary);
+            box-shadow: 0 0 0 4px rgba(52, 58, 64, 0.1);
+        }
+
+    .btn-modern {
+        border-radius: 8px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.2s;
+        border: none;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+    .btn-save {
+        background-color: #343a40;
+        color: white;
+        width: 100%;
+    }
+
+        .btn-save:hover {
+            background-color: #212529;
+            color: white;
+        }
+
+    .btn-cancel {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        color: #495057;
+        width: 100%;
+        display: block;
+        text-align: center;
+    }
+
+        .btn-cancel:hover {
+            background-color: #f1f3f5;
+            color: #212529;
+        }
+</style>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+
+            <div class="card-modern">
+                <div class="card-header-modern">
+                    <i class="bi bi-person-plus-fill me-2"></i> Thêm khách hàng mới
+                </div>
+
+                <div class="card-body-modern">
+                    <form asp-action="Create" method="post">
+                        @* Tên khách hàng *@
+                        <div class="mb-4">
+                            <label class="form-label-modern">Tên khách hàng <span class="text-danger">*</span></label>
+                            <input asp-for="CustomerName" class="form-control form-control-modern" placeholder="Nhập họ và tên..." required />
+                            <span asp-validation-for="CustomerName" class="text-danger small"></span>
+                        </div>
+
+                        @* Số điện thoại *@
+                        <div class="mb-4">
+                            <label class="form-label-modern">Số điện thoại <span class="text-danger">*</span></label>
+                            <input asp-for="Phone" class="form-control form-control-modern" placeholder="Nhập số điện thoại..." required type="tel"
+                                   maxlength="11"
+                                   placeholder="09xxxxxxxx"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
+
+                        @* Email (Nếu model có) *@
+                        @if (ViewData.ModelMetadata.Properties.Any(p => p.Name == "Email"))
+                        {
+                            <div class="mb-4">
+                                <label class="form-label-modern">Email</label>
+                                <input name="Email" type="email" class="form-control form-control-modern" placeholder="example@email.com" />
+                            </div>
+                        }
+
+                        @* Địa chỉ *@
+                        <div class="mb-5">
+                            <label class="form-label-modern">Địa chỉ</label>
+                            <input asp-for="Address" class="form-control form-control-modern" placeholder="Nhập địa chỉ..." />
+                        </div>
+
+                        @* Nút bấm *@
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <a asp-action="Index" class="btn btn-modern btn-cancel">Hủy bỏ</a>
+                            </div>
+                            <div class="col-6">
+                                <button class="btn btn-modern btn-save">Lưu thông tin</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
     </div>
-
-    <div class="mb-3">
-        <label>Số điện thoại</label>
-        <input asp-for="Phone" class="form-control" required />
-    </div>
-
-    <div class="mb-3">
-        <label>Địa chỉ</label>
-        <input asp-for="Address" class="form-control" />
-    </div>
-
-    <button class="btn btn-primary">Lưu</button>
-    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
-</form>
+</div>

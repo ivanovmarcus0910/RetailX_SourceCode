@@ -1,0 +1,318 @@
+﻿@model dynamic
+@{
+    Layout = "_SellerLayout";
+    ViewData["Title"] = "Báo cáo hiệu suất";
+
+    // Lấy dữ liệu từ ViewBag ép kiểu về Dynamic List
+    var revenueData = ViewBag.ChartData as List<dynamic>;
+    var customerData = ViewBag.CustomerChart as List<dynamic>;
+    var productData = ViewBag.ProductChart as List<dynamic>;
+}
+
+@* --- CSS --- *@
+<style>
+    /* Card thống kê màu sắc */
+    .stat-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 25px 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border: 1px solid #e9ecef;
+        height: 100%;
+        transition: transform 0.3s ease;
+        position: relative;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+    .stat-label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin: 10px 0;
+    }
+
+    .stat-desc {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    /* Themes màu */
+    .theme-blue {
+        border-left: 5px solid #4e73df;
+    }
+
+        .theme-blue .stat-label {
+            color: #4e73df;
+        }
+
+        .theme-blue .stat-value {
+            color: #2e59d9;
+        }
+
+    .theme-green {
+        border-left: 5px solid #1cc88a;
+    }
+
+        .theme-green .stat-label {
+            color: #1cc88a;
+        }
+
+        .theme-green .stat-value {
+            color: #169b6b;
+        }
+
+    .theme-orange {
+        border-left: 5px solid #f6c23e;
+    }
+
+        .theme-orange .stat-label {
+            color: #f6c23e;
+        }
+
+        .theme-orange .stat-value {
+            color: #dda20a;
+        }
+
+    /* Card chứa biểu đồ */
+    .card-modern {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        background: white;
+        margin-bottom: 24px;
+    }
+
+    .card-header-modern {
+        background-color: white;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 20px;
+        font-weight: 700;
+        color: #343a40;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+
+    .pie-container {
+        position: relative;
+        height: 260px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-secondary m-0">Bảng Thành Tích Cá Nhân</h2>
+
+    @* --- FORM LỌC THÁNG/NĂM --- *@
+    <form asp-action="Index" method="get" class="d-flex gap-2 bg-white p-2 rounded shadow-sm border">
+        <select name="month" class="form-select form-select-sm border-0 bg-light fw-bold" style="width: 110px;">
+            @for (int i = 1; i <= 12; i++)
+            {
+                <option value="@i" selected="@(ViewBag.SelectedMonth == i)">Tháng @i</option>
+            }
+        </select>
+        <select name="year" class="form-select form-select-sm border-0 bg-light fw-bold" style="width: 90px;">
+            @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 2; i--)
+            {
+                <option value="@i" selected="@(ViewBag.SelectedYear == i)">@i</option>
+            }
+        </select>
+        <button type="submit" class="btn btn-sm btn-dark px-3"><i class="bi bi-funnel-fill"></i> Xem</button>
+    </form>
+</div>
+
+@* --- 1. THẺ THỐNG KÊ (3 MÀU) --- *@
+<div class="row g-4 mb-4">
+    @* Hôm nay *@
+    <div class="col-md-4">
+        <div class="stat-card theme-blue">
+            <div class="d-flex justify-content-between">
+                <div class="stat-label">Hôm Nay</div>
+                <span class="badge bg-light text-primary border">@DateTime.Now.ToString("dd/MM")</span>
+            </div>
+            <div class="stat-value">@String.Format("{0:N0}", ViewBag.DailyRevenue) ₫</div>
+            <div class="stat-desc">Đã bán: <strong>@ViewBag.DailyOrders</strong> đơn</div>
+        </div>
+    </div>
+
+    @* Tuần này *@
+    <div class="col-md-4">
+        <div class="stat-card theme-green">
+            <div class="d-flex justify-content-between">
+                <div class="stat-label">Tuần Này</div>
+                <i class="bi bi-calendar-week text-success opacity-50 fs-5"></i>
+            </div>
+            <div class="stat-value">@String.Format("{0:N0}", ViewBag.WeeklyRevenue) ₫</div>
+            <div class="stat-desc">Đã bán: <strong>@ViewBag.WeeklyOrders</strong> đơn</div>
+        </div>
+    </div>
+
+    @* Tháng này *@
+    <div class="col-md-4">
+        <div class="stat-card theme-orange">
+            <div class="d-flex justify-content-between">
+                <div class="stat-label">Tháng @ViewBag.SelectedMonth</div>
+                <i class="bi bi-bar-chart-line text-warning opacity-50 fs-5"></i>
+            </div>
+            <div class="stat-value">@String.Format("{0:N0}", ViewBag.MonthlyRevenue) ₫</div>
+            <div class="stat-desc">Tổng cộng: <strong>@ViewBag.MonthlyOrders</strong> đơn</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    @* --- CỘT TRÁI: 2 BIỂU ĐỒ --- *@
+    <div class="col-lg-8">
+
+        @* 📊 CHART 1: DOANH SỐ (LINE) *@
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <span>📈 Xu hướng doanh thu (Tháng @ViewBag.SelectedMonth)</span>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        @* 📊 CHART 2: LƯỢNG KHÁCH (BAR) *@
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <span>👥 Lượng khách mua hàng theo ngày</span>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height: 250px;">
+                    <canvas id="customerChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* --- CỘT PHẢI: TOP SẢN PHẨM --- *@
+    <div class="col-lg-4">
+        <div class="card-modern h-100">
+            <div class="card-header-modern">
+                <span>🏆 Top sản phẩm bán chạy</span>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+
+                @* 📊 CHART 3: DOUGHNUT *@
+                <div class="pie-container">
+                    <canvas id="productChart"></canvas>
+                </div>
+
+                <div class="mt-4 w-100">
+                    <p class="text-center text-muted small mb-2 fst-italic">Chi tiết số lượng bán ra:</p>
+                    <ul class="list-group list-group-flush small">
+                        @if (productData != null)
+                        {
+                            foreach (dynamic p in productData)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                    <span class="text-truncate" style="max-width: 180px;" title="@p.ProductName">@p.ProductName</span>
+                                    <span class="badge bg-secondary rounded-pill">@p.Quantity</span>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // --- DỮ LIỆU TỪ SERVER ---
+        var days = []; var revenues = []; var customers = [];
+        var pNames = []; var pQtys = [];
+
+        @if (revenueData != null)
+        {
+            foreach (dynamic x in revenueData)
+            {
+                <text>days.push("@x.Day"); revenues.push(@x.Revenue);</text>
+            }
+        }
+        @if (customerData != null)
+        {
+            foreach (dynamic x in customerData)
+            {
+                <text>customers.push(@x.CustomerCount);</text>
+            }
+        }
+        @if (productData != null)
+        {
+            foreach (dynamic x in productData)
+            {
+                <text>pNames.push("@x.ProductName"); pQtys.push(@x.Quantity);</text>
+            }
+        }
+
+        // 1. BIỂU ĐỒ DOANH THU (LINE)
+        new Chart(document.getElementById("revenueChart"), {
+            type: 'line',
+            data: {
+                labels: days,
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: revenues,
+                    borderColor: '#4e73df', backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                    borderWidth: 2, tension: 0.4, fill: true, pointRadius: 3
+                }]
+            },
+            options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: function(val) { return val.toLocaleString() + ' ₫'; } } } }, plugins: { legend: { display: false } } }
+        });
+
+        // 2. BIỂU ĐỒ LƯỢNG KHÁCH (BAR)
+        new Chart(document.getElementById("customerChart"), {
+            type: 'bar',
+            data: {
+                labels: days, // Dùng chung trục ngày
+                datasets: [{
+                    label: 'Số khách',
+                    data: customers,
+                    backgroundColor: '#1cc88a', // Màu xanh lá
+                    borderRadius: 4
+                }]
+            },
+            options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false } } }
+        });
+
+        // 3. BIỂU ĐỒ TOP SẢN PHẨM (DOUGHNUT)
+        new Chart(document.getElementById("productChart"), {
+            type: 'doughnut',
+            data: {
+                labels: pNames,
+                datasets: [{
+                    data: pQtys,
+                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'], // Bộ màu
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+                }
+            }
+        });
+    </script>
+}

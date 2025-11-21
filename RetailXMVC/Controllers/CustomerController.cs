@@ -14,19 +14,25 @@ namespace RetailXMVC.Controllers
             _orderRepo = orderRepo;
         }
 
-        // -----------------------------------------------
-        // LIST
-        // -----------------------------------------------
-        public IActionResult Index()
+        public IActionResult Index(string name, string phone, string statusFilter, int page = 1)
         {
-            var list = _customerRepo.GetAll().Where(c => c.IsActive).ToList();
-            return View(list);
+            int pageSize = 15;
+
+
+            var (customers, totalCount) = _customerRepo.GetCustomers(name, phone, statusFilter, page, pageSize);
+
+            int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+
+            ViewBag.NameFilter = name;
+            ViewBag.PhoneFilter = phone;
+            ViewBag.StatusFilter = statusFilter; 
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+
+            return View(customers);
         }
 
-
-        // -----------------------------------------------
-        // GET: Customer/Create
-        // -----------------------------------------------
         public IActionResult Create()
         {
             return View();
@@ -72,7 +78,7 @@ namespace RetailXMVC.Controllers
             ViewBag.PhoneDuplicate = null;
             ViewBag.EmailDuplicate = null;
 
-            // ========== CHECK PHONE DUPLICATE ==========
+   
             if (!string.IsNullOrWhiteSpace(cus.Phone))
             {
                 var dupPhone = _customerRepo.GetByPhone(cus.Phone);
@@ -80,11 +86,10 @@ namespace RetailXMVC.Controllers
                 if (dupPhone != null && dupPhone.CustomerId != cus.CustomerId)
                 {
                     ViewBag.PhoneDuplicate = dupPhone;
-                    return View(cus);   // ❗ QUAN TRỌNG
+                    return View(cus);  
                 }
             }
 
-            // ========== CHECK EMAIL DUPLICATE ==========
             if (!string.IsNullOrWhiteSpace(cus.Email))
             {
                 var dupEmail = _customerRepo.GetByEmail(cus.Email);
@@ -92,11 +97,10 @@ namespace RetailXMVC.Controllers
                 if (dupEmail != null && dupEmail.CustomerId != cus.CustomerId)
                 {
                     ViewBag.EmailDuplicate = dupEmail;
-                    return View(cus);   // ❗ QUAN TRỌNG
+                    return View(cus);   
                 }
             }
 
-            // ========== UPDATE ==========
             current.CustomerName = cus.CustomerName;
             current.Phone = cus.Phone;
             current.Email = cus.Email;
@@ -109,10 +113,7 @@ namespace RetailXMVC.Controllers
         }
 
 
-        // -----------------------------------------------
-        // POST: Customer/Create
-        // Tạo khách hàng từ trang riêng
-        // -----------------------------------------------
+
         [HttpPost]
         public IActionResult Create(Customer cus)
         {
@@ -132,13 +133,12 @@ namespace RetailXMVC.Controllers
 
             var byPhone = _customerRepo.GetByPhone(cus.Phone);
 
-            // Nếu phone tồn tại ACTIVE
+
             if (byPhone != null && byPhone.IsActive)
             {
                 return Json(new { success = false, message = "Số điện thoại đã được sử dụng!" });
             }
 
-            // Nếu phone tồn tại nhưng INACTIVE → không khôi phục ở popup
             if (byPhone != null && !byPhone.IsActive)
             {
                 return Json(new
@@ -148,7 +148,6 @@ namespace RetailXMVC.Controllers
                 });
             }
 
-            // Kiểm tra Email
             if (!string.IsNullOrWhiteSpace(cus.Email))
             {
                 var byEmail = _customerRepo.GetByEmail(cus.Email);
@@ -158,7 +157,6 @@ namespace RetailXMVC.Controllers
                 }
             }
 
-            // Tạo mới
             cus.IsActive = true;
             _customerRepo.Insert(cus);
 
@@ -192,27 +190,58 @@ namespace RetailXMVC.Controllers
             return RedirectToAction("Profile", new { id = id });
         }
 
-        // -----------------------------------------------
-        // AJAX: thêm khách hàng từ popup
-        // URL: /Customer/AddCustomerAjax
-        // -----------------------------------------------
+
         [HttpPost]
         public IActionResult AddCustomerAjax([FromBody] Customer cus)
         {
             if (cus == null || string.IsNullOrWhiteSpace(cus.Phone))
             {
-                return BadRequest(new { message = "Dữ liệu không hợp lệ" });
+                return Json(new { success = false, message = "Dữ liệu không hợp lệ!" });
             }
-            cus.IsActive = true;
-            _customerRepo.Insert(cus);
 
-            return Json(new
+          
+            var existingCus = _customerRepo.GetByPhone(cus.Phone);
+
+            if (existingCus != null)
             {
-                id = cus.CustomerId,
-                name = cus.CustomerName,
-                phone = cus.Phone
-            });
+              
+                return Json(new
+                {
+                    success = false,
+                    message = $"Số điện thoại {cus.Phone} đã thuộc về khách hàng: {existingCus.CustomerName}!"
+                });
+            }
+
+          
+            if (!string.IsNullOrWhiteSpace(cus.Email))
+            {
+                var existingEmail = _customerRepo.GetByEmail(cus.Email);
+                if (existingEmail != null)
+                {
+                    return Json(new { success = false, message = $"Email {cus.Email} đã được sử dụng!" });
+                }
+            }
+
+          
+            try
+            {
+                cus.IsActive = true; 
+                _customerRepo.Insert(cus);
+
+                return Json(new
+                {
+                    success = true, 
+                    id = cus.CustomerId,
+                    name = cus.CustomerName,
+                    phone = cus.Phone
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
         }
+
 
     }
 }

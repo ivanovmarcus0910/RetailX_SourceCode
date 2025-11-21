@@ -1,5 +1,7 @@
 ﻿@model BusinessObject.Models.OrderDetail
-
+@{
+    Layout = "_SellerLayout";
+}
 <h2>Thêm sản phẩm vào hóa đơn #@Model.OrderId</h2>
 
 <form asp-action="Create" method="post">

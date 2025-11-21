@@ -36,4 +36,8 @@ public class CustomerRepository : ICustomerRepository
         _dao.Delete(id);
         _dao.Save();
     }
+    public (List<Customer>, int) GetCustomers(string name, string phone, string status, int page, int size)
+    {
+        return _dao.GetCustomers(name, phone, status, page, size);
+    }
 }
