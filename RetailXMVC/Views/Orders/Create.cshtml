@@ -1,241 +1,521 @@
 ﻿@model BusinessObject.Models.Order
-
-<h2>Create Order</h2>
-
-<!-- ========================= -->
-<!-- 1) LỌC THEO CATEGORY -->
-<!-- ========================= -->
-
-
-
-<!-- ========================= -->
-<!-- 2) TÌM KHÁCH HÀNG -->
-<!-- ========================= -->
-<form asp-action="FindCustomer" method="post" class="mb-4">
-    <div class="input-group">
-        <input type="text" name="phone" class="form-control"
-               placeholder="Nhập số điện thoại..."
-               value="@ViewBag.Phone" />
-
-        <!-- Truyền categoryId giữ nguyên filter -->
-        <input type="hidden" name="categoryId" value="@ViewBag.SelectedCategory" />
-
-        <button class="btn btn-primary">Tìm khách hàng</button>
-    </div>
-</form>
-<form asp-action="Create" method="get" class="mb-4">
-    <div class="input-group">
-
-        <select name="categoryId" class="form-select">
-            <option value="">-- Chọn loại sản phẩm --</option>
-
-            @foreach (var c in ViewBag.Categories)
-            {
-                <option value="@c.CategoryId"
-                        selected="@(c.CategoryId == ViewBag.SelectedCategory)">
-                    @c.CategoryName
-                </option>
-            }
-        </select>
-
-        <button class="btn btn-secondary">Lọc</button>
-    </div>
-</form>
-
-<!-- ========================= -->
-<!-- 3) KẾT QUẢ TÌM KHÁCH -->
-<!-- ========================= -->
-@if (ViewBag.FoundCustomer != null)
-{
-    var cus = ViewBag.FoundCustomer;
-
-    if (cus.IsActive)
-    {
-        <div class="alert alert-success">
-            <strong>Khách hàng:</strong> @cus.CustomerName <br />
-            <strong>SĐT:</strong> @cus.Phone
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-warning">
-            Số điện thoại <strong>@cus.Phone</strong> thuộc khách hàng
-            <strong>@cus.CustomerName</strong> nhưng đang bị <b>vô hiệu hóa</b>.
-            <br />
-            <a asp-controller="Customer"
-               asp-action="Profile"
-               asp-route-id="@cus.CustomerId"
-               class="btn btn-warning btn-sm mt-2">
-                🔄 Xem hồ sơ để khôi phục
-            </a>
-        </div>
-    }
-}
-else if (ViewBag.Phone != null)
-{
-    <div class="alert alert-danger">
-        Không tìm thấy khách hàng với số <strong>@ViewBag.Phone</strong>.
-    </div>
-
-    <button type="button"
-            class="btn btn-success mb-3"
-            data-bs-toggle="modal"
-            data-bs-target="#addCustomerModal">
-        ➕ Thêm khách hàng mới
-    </button>
+@{
+    var currentCart = ViewBag.Cart as List<BusinessObject.Models.OrderDetail> ?? new List<BusinessObject.Models.OrderDetail>();
+    var displayProducts = ViewBag.Products as IEnumerable<BusinessObject.Models.Product>;
+    ViewData["Title"] = "Tạo hóa đơn";
 }
 
-<hr />
+@* --- PHẦN CSS TÙY CHỈNH CHO ĐẸP --- *@
+<style>
+    :root {
+        --gray-primary: #343a40; /* Xám đậm chủ đạo */
+        --gray-light: #f8f9fa; /* Xám rất nhạt cho nền */
+        --gray-border: #e9ecef; /* Màu viền nhẹ */
+    }
 
-<!-- ========================= -->
-<!-- 4) FORM TẠO HÓA ĐƠN -->
-<!-- ========================= -->
-<form id="OrderForm" asp-action="Create" method="post">
+    /* 1. Làm đẹp Card (Khung) */
+    .card-modern {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Bóng đổ nhẹ, sang trọng */
+        background: white;
+        overflow: hidden;
+        transition: transform 0.2s ease;
+        margin-bottom: 25px;
+    }
+
+    .card-header-modern {
+        background-color: var(--gray-primary);
+        color: white;
+        padding: 15px 25px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        border-bottom: none;
+    }
+
+    .card-body-modern {
+        padding: 25px;
+    }
+
+    /* 2. Làm đẹp Input và Select */
+    .form-control-modern {
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        padding: 10px 15px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+        .form-control-modern:focus {
+            border-color: var(--gray-primary);
+            box-shadow: 0 0 0 4px rgba(52, 58, 64, 0.15); /* Hiệu ứng focus màu xám */
+        }
+
+    /* 3. Làm đẹp Nút bấm */
+    .btn-modern {
+        border-radius: 8px;
+        padding: 8px 20px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+        .btn-modern:hover {
+            transform: translateY(-2px); /* Nút nổi lên khi di chuột */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+    .btn-dark-modern {
+        background-color: var(--gray-primary);
+        color: white;
+    }
+
+        .btn-dark-modern:hover {
+            background-color: #23272b;
+            color: white;
+        }
+
+    .btn-secondary-modern {
+        background-color: #6c757d;
+        color: white;
+    }
+
+        .btn-secondary-modern:hover {
+            background-color: #5a6268;
+            color: white;
+        }
+
+    /* 4. Làm đẹp Bảng */
+    .table-modern thead th {
+        background-color: #f1f3f5; /* Xám rất nhạt */
+        color: #495057;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        border-bottom: 2px solid #dee2e6;
+        padding: 12px;
+    }
+
+    .table-modern tbody td {
+        vertical-align: middle;
+        padding: 12px;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .table-modern tbody tr:hover {
+        background-color: #f8f9fa; /* Hover dòng */
+    }
+
+    /* Badge số tiền */
+    .price-badge {
+        background-color: #f8f9fa;
+        color: #c92a2a; /* Màu đỏ đậm cho tiền */
+        padding: 5px 15px;
+        border-radius: 20px;
+        border: 1px solid #e9ecef;
+        font-family: 'Consolas', monospace;
+    }
+</style>
+
+<h2 class="mb-4 fw-bold text-secondary" style="letter-spacing: -0.5px;">Tạo Đơn Hàng Mới</h2>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger shadow-sm border-0 rounded-3">@Html.ValidationSummary(false)</div>
+}
+
+<form asp-action="Create" method="post">
     @Html.AntiForgeryToken()
 
-    <!-- Hidden giữ Customer -->
-    <input type="hidden" id="CustomerIdInput" name="CustomerId"
-           value="@(ViewBag.FoundCustomer != null ? ViewBag.FoundCustomer.CustomerId : 0)" />
+    @* ============================================================ *@
+    @* 1. THÔNG TIN KHÁCH HÀNG *@
+    @* ============================================================ *@
+    <div class="card-modern">
+        <div class="card-header-modern">
+            1. Thông tin khách hàng
+        </div>
+        <div class="card-body-modern">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <input type="text" name="phone" class="form-control form-control-modern"
+                               placeholder="Nhập số điện thoại khách hàng..." value="@ViewBag.Phone" />
+                        <button type="submit" name="submitAction" value="filter" class="btn btn-modern btn-secondary-modern">
+                            Tìm Khách
+                        </button>
+                    </div>
+                </div>
+                @* Thay thế toàn bộ cái <div class="col-md-4"> cũ bằng đoạn này *@
 
-    <div class="mb-3">
-        <label>Staff ID</label>
-        <input type="number" name="StaffId" class="form-control" required />
-    </div>
+                <div class="col-md-4">
+                    <div class="d-flex flex-column align-items-end justify-content-center h-100">
+                        @* Label nhỏ màu xám *@
+                        <span class="text-secondary small fw-bold text-uppercase mb-1">
+                            Nhân viên bán hàng
+                        </span>
 
-    <h4>Danh sách sản phẩm</h4>
+                        @* Hiển thị Tên (Không cho sửa) *@
+                        <div class="d-flex align-items-center bg-light rounded-pill px-3 py-1 border border-secondary">
+                            <span class="fw-bold text-dark">
+                                @ViewBag.CurrentStaffName
+                            </span>
+                        </div>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Sản phẩm</th>
-                <th>Tồn kho</th>
-                <th>Chọn</th>
-                <th>Số lượng</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var p in ViewBag.Products)
-            {
-                <tr>
-                    <td>@p.ProductName</td>
-                    <td>@p.Quantity</td>
-
-                    <td>
-                        <input type="checkbox"
-                               class="chk-product"
-                               data-target="qty-@p.ProductId"
-                               name="productIds"
-                               value="@p.ProductId" />
-                    </td>
-
-                    <td>
-                        <input type="number"
-                               id="qty-@p.ProductId"
-                               name="quantities"
-                               class="form-control qty-input"
-                               value="0"
-                               min="0"
-                               max="@p.Quantity"
-                               disabled />
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-
-    <button type="submit" class="btn btn-primary mt-3">Tạo hóa đơn</button>
-</form>
-
-<!-- ========================= -->
-<!-- 5) POPUP THÊM KHÁCH HÀNG -->
-<!-- ========================= -->
-<div class="modal fade" id="addCustomerModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Thêm khách hàng</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        @* INPUT ẨN: Cái này mới là cái gửi ID đi (Người dùng không thấy) *@
+                        <input type="hidden" name="StaffId" value="@ViewBag.CurrentStaffId" />
+                    </div>
+                </div>
             </div>
 
-            <div class="modal-body">
+            <div class="mt-3">
+                @if (ViewBag.FoundCustomer != null)
+                {
+                    var cus = ViewBag.FoundCustomer;
+                    if (cus.IsActive)
+                    {
+                        <div class="p-3 rounded-3 border border-success bg-success-subtle text-success-emphasis d-flex align-items-center justify-content-between">
+                            <div>
+                                <span>Khách hàng:</span> <strong class="fs-5">@cus.CustomerName</strong>
+                                <span class="mx-2">|</span>
+                                <span>SĐT:</span> <strong>@cus.Phone</strong>
+                            </div>
+                            <input type="hidden" name="CustomerId" value="@cus.CustomerId" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-3 rounded-3 border border-warning bg-warning-subtle text-warning-emphasis">
+                            <strong>Cảnh báo:</strong> Khách hàng <strong>@cus.CustomerName</strong> (@cus.Phone) đang bị khóa.
+                            <div class="mt-2">
+                                <a asp-controller="Customer" asp-action="Profile" asp-route-id="@cus.CustomerId"
+                                   target="_blank" class="btn btn-sm btn-outline-dark fw-bold">
+                                    Xem hồ sơ để mở khóa
+                                </a>
+                            </div>
+                            <input type="hidden" name="CustomerId" value="0" />
+                        </div>
+                    }
+                }
+                else
+                {
+                    <input type="hidden" name="CustomerId" value="0" />
+                    <div class="d-flex justify-content-between align-items-center p-3 rounded-3 bg-light border border-dashed">
+                        <span class="text-muted fst-italic">Chưa chọn khách hàng nào...</span>
+                        <button type="button" class="btn btn-modern btn-dark-modern btn-sm" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                            + Thêm Khách Mới
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 
+    @* ============================================================ *@
+    @* 2. GIỎ HÀNG CHI TIẾT *@
+    @* ============================================================ *@
+    <div class="card-modern">
+        <div class="card-header-modern d-flex justify-content-between align-items-center">
+            <span>2. Giỏ hàng (@currentCart.Count món)</span>
+            <span class="bg-white text-dark px-3 py-1 rounded-pill fs-6 fw-bold shadow-sm">
+                TỔNG: @(ViewBag.TotalAmount != null ? ((decimal)ViewBag.TotalAmount).ToString("N0") : "0") VNĐ
+            </span>
+        </div>
+
+        <div class="p-0">
+            @if (currentCart.Count > 0)
+            {
+                <table class="table table-modern mb-0 w-100">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">Sản phẩm</th>
+                            <th style="width: 15%">Đơn giá</th>
+                            <th style="width: 15%">Số lượng</th>
+                            <th style="width: 20%">Thành tiền</th>
+                            <th style="width: 10%" class="text-center">Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in currentCart)
+                        {
+                            <tr>
+                                <td>
+                                    <strong class="text-dark">@item.Product.ProductName</strong>
+                                    <input type="hidden" name="productIds" value="@item.ProductId" />
+                                </td>
+                                <td class="text-muted">@item.Product.Price?.ToString("N0")</td>
+                                <td>
+                                    <input type="number" name="quantities"
+                                           class="form-control form-control-modern text-center fw-bold"
+                                           style="width: 80px"
+                                           value="@item.Quantity" min="1" />
+                                </td>
+                                <td>
+                                    <span class="price-badge">
+                                        @((item.Product.Price * item.Quantity)?.ToString("N0"))
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <button type="submit" name="submitAction" value="remove-@item.ProductId"
+                                            class="btn btn-sm btn-outline-danger border-0 fw-bold" title="Xóa">
+                                        X
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="p-3 text-end bg-light border-top">
+                    <button type="submit" name="submitAction" value="calculate" class="btn btn-modern btn-secondary-modern btn-sm">
+                        Cập nhật lại giá tiền
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="p-5 text-center text-muted">
+                    <div class="fs-1 text-secondary opacity-25 mb-2">🛒</div>
+                    <p class="m-0">Giỏ hàng đang trống. Vui lòng chọn sản phẩm bên dưới.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    @* ============================================================ *@
+    @* 3. BỘ LỌC & DANH SÁCH SẢN PHẨM *@
+    @* ============================================================ *@
+    <div class="d-flex align-items-center justify-content-between mb-3 mt-5">
+        <h5 class="m-0 fw-bold text-secondary text-uppercase">3. Chọn thêm sản phẩm</h5>
+    </div>
+
+    <div class="card-modern p-3 bg-light mb-3">
+        <div class="input-group">
+            <label class="input-group-text bg-white border-0 fw-bold text-secondary">Danh mục:</label>
+            <select name="filterCategoryId" class="form-select form-control-modern border-0">
+                <option value="">-- Tất cả sản phẩm --</option>
+                @foreach (var c in ViewBag.Categories)
+                {
+                    <option value="@c.CategoryId" selected="@(c.CategoryId == ViewBag.SelectedCategory)">
+                        @c.CategoryName
+                    </option>
+                }
+            </select>
+            <button type="submit" name="submitAction" value="filter" class="btn btn-modern btn-dark-modern">
+                Lọc Dữ Liệu
+            </button>
+        </div>
+    </div>
+
+    <div class="card-modern">
+        <table class="table table-modern mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 40%">Tên Sản phẩm</th>
+                    <th>Giá bán</th>
+                    <th>Tồn kho</th>
+                    <th class="text-center">Chọn</th>
+                    <th style="width: 120px;">Nhập SL</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in displayProducts)
+                {
+                    bool isInCart = currentCart.Any(x => x.ProductId == p.ProductId);
+                    <tr class="@(isInCart ? "bg-light" : "")">
+                        <td>
+                            <span class="fw-bold text-dark">@p.ProductName</span>
+                            @if (isInCart)
+                            {
+                                <span class="badge bg-secondary ms-2" style="font-size: 0.7em">ĐÃ CHỌN</span>
+                            }
+                        </td>
+                        <td class="text-secondary fw-bold">@p.Price?.ToString("N0")</td>
+                        <td>
+                            <span class="@(p.Quantity < 10 ? "text-danger fw-bold" : "text-success")">
+                                @p.Quantity
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <input type="hidden" name="productIds" value="@p.ProductId" />
+                            <div class="form-check d-inline-block">
+                                <input type="checkbox" class="chk-product form-check-input"
+                                       style="cursor:pointer; transform: scale(1.3);"
+                                       onchange="toggleQty(this, @p.ProductId)" />
+                            </div>
+                        </td>
+                        <td>
+                            <input type="number" name="quantities" id="qty-@p.ProductId"
+                                   class="form-control form-control-modern"
+                                   value="0" min="0" max="@p.Quantity"
+                                   style="display:none" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @* ============================================================ *@
+    @* 4. NÚT HÀNH ĐỘNG CUỐI CÙNG *@
+    @* ============================================================ *@
+    <div class="d-flex justify-content-end gap-3 mt-5 mb-5 pb-5">
+        <button type="submit" name="submitAction" value="calculate" class="btn btn-modern btn-secondary-modern btn-lg">
+            Tính Tổng Thử
+        </button>
+
+        <button type="submit" name="submitAction" value="create" class="btn btn-modern btn-dark-modern btn-lg px-5 py-3 fs-5 shadow">
+            HOÀN TẤT ĐƠN HÀNG
+        </button>
+    </div>
+
+</form>
+
+@* ============================================================ *@
+@* MODAL: THÊM KHÁCH HÀNG NHANH *@
+@* ============================================================ *@
+<div class="modal fade" id="addCustomerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card-modern border-0">
+            <div class="modal-header card-header-modern">
+                <h5 class="modal-title m-0">Thêm khách hàng nhanh</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
                 <div id="cusError" class="alert alert-danger d-none"></div>
                 <div id="cusSuccess" class="alert alert-success d-none"></div>
 
                 <form id="AddCustomerForm">
-
-                    <div class="mb-2">
-                        <label>Tên</label>
-                        <input name="CustomerName" class="form-control" required />
+                    @* Tên *@
+                    <div class="mb-3">
+                        <label class="fw-bold text-secondary mb-1">Tên khách hàng <span class="text-danger">*</span></label>
+                        <input name="CustomerName" class="form-control form-control-modern" required />
                     </div>
 
-                    <div class="mb-2">
-                        <label>Số điện thoại</label>
-                        <input name="Phone" class="form-control" required />
+                    @* SĐT *@
+                    <div class="mb-3">
+                        <label class="fw-bold text-secondary mb-1">Số điện thoại <span class="text-danger">*</span></label>
+                        <input name="Phone" class="form-control form-control-modern" requiredtype="tel"
+                               maxlength="11"
+                               placeholder="09xxxxxxxx"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                     </div>
 
-                    <div class="mb-2">
-                        <label>Email</label>
-                        <input name="Email" class="form-control" />
+                    @* 👇 THÊM Ô EMAIL VÀO ĐÂY 👇 *@
+                    <div class="mb-3">
+                        <label class="fw-bold text-secondary mb-1">Email <span class="text-muted fw-normal">(Tùy chọn)</span></label>
+                        <input name="Email" type="email" class="form-control form-control-modern" placeholder="example@email.com" />
                     </div>
 
-                    <div class="mb-2">
-                        <label>Địa chỉ</label>
-                        <input name="Address" class="form-control" />
+                    @* Địa chỉ *@
+                    <div class="mb-4">
+                        <label class="fw-bold text-secondary mb-1">Địa chỉ</label>
+                        <input name="Address" class="form-control form-control-modern" />
                     </div>
 
-                    <button class="btn btn-primary mt-2 w-100">Lưu khách hàng</button>
+                    <button type="submit" class="btn btn-modern btn-dark-modern w-100 py-2">Lưu Thông Tin</button>
                 </form>
             </div>
-
         </div>
     </div>
 </div>
-
 @section Scripts {
     <script>
-        // Bật/tắt input số lượng khi check product
-        document.querySelectorAll(".chk-product").forEach(chk => {
-            chk.addEventListener("change", function () {
-                const input = document.getElementById(this.dataset.target);
-                input.disabled = !this.checked;
-                if (!this.checked) input.value = 0;
-            });
-        });
+        function toggleQty(chk, id) {
+            var qtyInput = document.getElementById('qty-' + id);
+            if (chk.checked) {
+                qtyInput.style.display = 'block';
+                qtyInput.value = 1;
+                qtyInput.focus();
+            } else {
+                qtyInput.style.display = 'none';
+                qtyInput.value = 0;
+            }
+        }
+               function enforceNumberOnly(input) {
+            input.value = input.value.replace(/[^0-9]/g, '');
+        }
 
-        // Thêm khách hàng bằng AJAX
+        // 2. Xử lý sự kiện Submit Form
         document.getElementById("AddCustomerForm").addEventListener("submit", function (e) {
             e.preventDefault();
-            let formData = new FormData(this);
 
-            fetch('/Customer/CreateFromOrder', {
+            // Lấy các thẻ HTML cần thiết
+            const errDiv = document.getElementById("cusError");
+            const successDiv = document.getElementById("cusSuccess");
+            const btnSubmit = this.querySelector("button[type='submit']"); // Lấy nút Lưu
+
+            // Reset trạng thái (Ẩn thông báo cũ)
+            errDiv.classList.add("d-none");
+            successDiv.classList.add("d-none");
+
+            // Lấy dữ liệu từ Form
+            let formData = new FormData(this);
+            let name = formData.get("CustomerName");
+            let phone = formData.get("Phone");
+
+         
+            if (!name || name.trim().length === 0) {
+                errDiv.innerText = "⚠️ Vui lòng nhập tên khách hàng!";
+                errDiv.classList.remove("d-none");
+                return; // Dừng lại, không gửi
+            }
+
+           
+            const phoneRegex = /^0\d{9,10}$/;
+            if (!phone || !phoneRegex.test(phone)) {
+                errDiv.innerText = "Số điện thoại không hợp lệ! (Phải bắt đầu bằng số 0 và có 10-11 chữ số)";
+                errDiv.classList.remove("d-none");
+                return; // Dừng lại
+            }
+
+          
+            const originalText = btnSubmit.innerText;
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang lưu...';
+
+            fetch('/Orders/AddCustomerAjax', {
                 method: 'POST',
-                body: formData
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(Object.fromEntries(formData))
             })
             .then(res => res.json())
             .then(data => {
-
-                const err = document.getElementById("cusError");
-                const ok = document.getElementById("cusSuccess");
-
-                err.classList.add("d-none");
-                ok.classList.add("d-none");
-
                 if (!data.success) {
-                    err.innerText = data.message;
-                    err.classList.remove("d-none");
-                    return;
+                 
+                    errDiv.innerText = "⛔ " + data.message;
+                    errDiv.classList.remove("d-none");
+                } else {
+                
+                    successDiv.innerText = "✔ Thành công! Đã thêm khách: " + data.name;
+                    successDiv.classList.remove("d-none");
+
+                    const searchInput = document.querySelector('input[name="phone"]');
+                    if(searchInput) {
+                        searchInput.value = data.phone;
+                    }
+
+                    
+                    setTimeout(() => {
+                        bootstrap.Modal.getInstance(document.getElementById("addCustomerModal")).hide();
+                        document.getElementById("AddCustomerForm").reset(); // Xóa trắng form
+                        errDiv.classList.add("d-none");
+                        successDiv.classList.add("d-none");
+                    }, 1500);
                 }
-
-                ok.innerText = "✔ Tạo/Kích hoạt khách hàng thành công!";
-                ok.classList.remove("d-none");
-
-                document.getElementById("CustomerIdInput").value = data.id;
-
-                setTimeout(() => {
-                    bootstrap.Modal.getInstance(document.getElementById("addCustomerModal")).hide();
-                    document.getElementById("AddCustomerForm").reset();
-                }, 1000);
+            })
+            .catch(error => {
+              
+                errDiv.innerText = "❌ Lỗi kết nối tới máy chủ!";
+                errDiv.classList.remove("d-none");
+                console.error(error);
+            })
+            .finally(() => {
+            
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = originalText;
             });
         });
     </script>

@@ -205,6 +205,14 @@
             <span>Biểu Đồ Thống Kê</span>
         </a>
 
+
+        <!-- AI Insights -->
+        <a href="@Url.Action("AIChat", "Report")"
+           class="finance-nav-item @(currentController == "Report" && currentAction == "AIChat" ? "active" : "")">
+            <i class="fas fa-robot"></i>
+            <span>Phân tích cùng AI</span>
+        </a>
+
         <!-- Divider -->
         <div style="height: 1px; background: rgba(255,255,255,0.08); margin: 0.8rem 0;"></div>
 

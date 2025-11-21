@@ -45,7 +45,7 @@ namespace Repositories
             if (existing == null)
                 return;
 
-            // Chỉ cập nhật đúng các trường
+      
             existing.ProductId = detail.ProductId;
             existing.Quantity = detail.Quantity;
 

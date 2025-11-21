@@ -1,56 +1,357 @@
 ﻿@model IEnumerable<BusinessObject.Models.Customer>
 @{
     Layout = "_SellerLayout";
+    ViewData["Title"] = "Danh sách khách hàng";
+
+    int currentPage = ViewBag.CurrentPage != null ? (int)ViewBag.CurrentPage : 1;
+    int totalPages = ViewBag.TotalPages != null ? (int)ViewBag.TotalPages : 1;
+    string currentName = ViewBag.NameFilter as string;
+    string currentPhone = ViewBag.PhoneFilter as string;
+    string currentStatus = ViewBag.StatusFilter as string;
 }
 
-<h2>Danh sách khách hàng</h2>
+@* --- CSS TÙY CHỈNH (Style Xám - Sang trọng) --- *@
+<style>
+    :root {
+        --primary-gray: #2c3e50;
+        --light-gray: #f8f9fa;
+        --border-color: #e9ecef;
+    }
 
-<table class="table table-bordered mt-3">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Tên</th>
-            <th>Số điện thoại</th>
-            <th>Địa chỉ</th>
-            <th>Lịch sử</th>
-            <th>Hành động</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var c in Model)
-        {
-            <tr>
-                <td>@c.CustomerId</td>
-                <td>@c.CustomerName</td>
-                <td>@c.Phone</td>
-                <td>@c.Address</td>
+    /* 1. Filter Bar & Table Card (Giữ nguyên như cũ) */
+    .filter-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px 25px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.03);
+        border: 1px solid var(--border-color);
+        margin-bottom: 25px;
+    }
 
-                <td>
-                    <a asp-controller="Customer"
-                       asp-action="History"
-                       asp-route-id="@c.CustomerId"
-                       class="btn btn-sm btn-info">
-                        📜 Xem lịch sử
-                    </a>
-                </td>
+    .table-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+    }
 
-                <td>
-                    <a asp-controller="Customer"
-                       asp-action="Edit"
-                       asp-route-id="@c.CustomerId"
-                       class="btn btn-sm btn-warning me-1">
-                        ✏ Sửa
-                    </a>
+    /* Table Styles */
+    .table-custom thead th {
+        background-color: #f8f9fa;
+        color: #7f8c8d;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        padding: 15px;
+        border-bottom: 2px solid var(--border-color);
+        white-space: nowrap;
+    }
 
-                    <a asp-controller="Customer"
-                       asp-action="Delete"
-                       asp-route-id="@c.CustomerId"
-                       class="btn btn-sm btn-danger"
-                       onclick="return confirm('Bạn có chắc muốn vô hiệu hóa khách hàng này?')">
-                        ❌ Xóa
-                    </a>
-                </td>
-            </tr>
+    .table-custom tbody td {
+        vertical-align: middle;
+        padding: 15px;
+        color: #2c3e50;
+        border-bottom: 1px solid #f1f3f5;
+        font-size: 0.9rem;
+    }
+
+    .table-custom tbody tr:hover {
+        background-color: #fafafa;
+    }
+
+    /* Input Styles */
+    .form-label-custom {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #95a5a6;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .input-custom {
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+
+        .input-custom:focus {
+            border-color: var(--primary-gray);
+            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
         }
-    </tbody>
-</table>
+
+    /* 2. Badge Trạng thái (Làm đẹp hơn) */
+    .badge-status {
+        padding: 6px 12px;
+        border-radius: 30px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-active {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #c3e6cb;
+    }
+
+    .badge-inactive {
+        background-color: #ffebee;
+        color: #c62828;
+        border: 1px solid #f5c6cb;
+    }
+
+    /* 3. Nút Hành động (Sửa đổi theo yêu cầu) */
+    .btn-icon-text {
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s;
+        text-decoration: none;
+        border: 1px solid transparent;
+    }
+
+    /* Nút Sửa (Màu xám nhẹ) */
+    .btn-edit-action {
+        background-color: #f8f9fa;
+        color: #495057;
+        border-color: #dee2e6;
+    }
+
+        .btn-edit-action:hover {
+            background-color: #e9ecef;
+            color: #212529;
+            border-color: #ced4da;
+            transform: translateY(-1px);
+        }
+
+    /* Nút Vô hiệu (Màu đỏ - Danger) */
+    .btn-disable-action {
+        background-color: #fff5f5;
+        color: #fa5252;
+        border-color: #ffc9c9;
+    }
+
+        .btn-disable-action:hover {
+            background-color: #ffc9c9;
+            color: #c92a2a;
+            border-color: #ffa8a8;
+            transform: translateY(-1px);
+        }
+
+    /* Nút Khôi phục (Màu vàng - Warning) */
+    .btn-restore-action {
+        background-color: #fff9db;
+        color: #e67700;
+        border-color: #fcc419;
+    }
+
+        .btn-restore-action:hover {
+            background-color: #ffe066;
+            color: #d9480f;
+            border-color: #fab005;
+            transform: translateY(-1px);
+        }
+
+    /* Pagination */
+    .pagination .page-link {
+        border: 1px solid var(--border-color);
+        margin: 0 3px;
+        border-radius: 6px;
+        color: #495057;
+        font-weight: 500;
+        font-size: 0.9rem;
+        padding: 6px 12px;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: var(--primary-gray);
+        border-color: var(--primary-gray);
+        color: white;
+    }
+
+    .pagination .page-link:hover:not(.active) {
+        background-color: #f1f3f5;
+        color: #212529;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark m-0" style="letter-spacing: -0.5px;">Khách Hàng</h2>
+        <p class="text-muted small m-0">Quản lý thông tin và trạng thái tài khoản</p>
+    </div>
+</div>
+
+@* --- 1. BỘ LỌC & TÌM KIẾM --- *@
+<div class="filter-card">
+    <form asp-action="Index" method="get">
+        <div class="row g-3 align-items-end">
+            @* ... (Phần Form tìm kiếm giữ nguyên như cũ) ... *@
+            <div class="col-md-3">
+                <label class="form-label-custom">Tên khách hàng</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-person"></i></span>
+                    <input type="text" name="name" value="@currentName" class="form-control input-custom border-start-0 ps-0" placeholder="Nhập tên..." />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label-custom">Số điện thoại</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-telephone"></i></span>
+                    <input type="text" name="phone" value="@currentPhone" class="form-control input-custom border-start-0 ps-0" placeholder="Nhập số..." />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label-custom">Trạng thái</label>
+                <select name="statusFilter" class="form-select input-custom">
+                    <option value="">Tất cả</option>
+                    <option value="active" selected="@(currentStatus == "active")">Hoạt động</option>
+                    <option value="inactive" selected="@(currentStatus == "inactive")">Đã khóa</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-dark px-4 fw-bold" style="border-radius: 6px; height: 38px;">Lọc</button>
+                @if (!string.IsNullOrEmpty(currentName) || !string.IsNullOrEmpty(currentPhone) || !string.IsNullOrEmpty(currentStatus))
+                {
+                    <a asp-action="Index" class="btn btn-outline-secondary px-3" style="border-radius: 6px; height: 38px; line-height: 24px;">Hủy</a>
+                }
+                <a asp-action="Create" class="btn btn-success ms-auto fw-bold shadow-sm px-3" style="border-radius: 6px; height: 38px; line-height: 24px;">+ Thêm Mới</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@* --- 2. DANH SÁCH DỮ LIỆU (PHẦN BẠN CẦN SỬA ĐÂY) --- *@
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table table-custom mb-0">
+            <thead>
+                <tr>
+                    <th class="text-center ps-4" style="width: 60px;">ID</th>
+                    <th style="width: 25%;">Khách hàng</th>
+                    <th style="width: 15%;">Điện thoại</th>
+                    <th style="width: 30%;">Địa chỉ</th>
+                    <th class="text-center" style="width: 12%;">Trạng thái</th>
+                    <th class="text-center" style="width: 18%; padding-right: 25px;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var c in Model)
+                    {
+                        <tr>
+                            <td class="text-center ps-4 text-muted fw-bold">#@c.CustomerId</td>
+
+                            <td><span class="fw-bold text-dark">@c.CustomerName</span></td>
+
+                            <td style="font-family: 'Consolas', monospace; color: #555;">@c.Phone</td>
+
+                            <td><span class="text-muted text-truncate d-inline-block" style="max-width: 250px;" title="@c.Address">@(string.IsNullOrEmpty(c.Address) ? "---" : c.Address)</span></td>
+
+                            <td class="text-center">
+                                @if (c.IsActive)
+                                {
+                                    <span class="badge-status badge-active">Hoạt động</span>
+                                }
+                                else
+                                {
+
+                                    <span class="badge-status badge-inactive">Đã khóa</span>
+                                }
+                            </td>
+
+                            <td class="text-center pe-4">
+                                @* --- CỤM NÚT HÀNH ĐỘNG --- *@
+                                <div class="d-flex justify-content-center gap-2">
+
+                                    @* 1. Nút Sửa (Luôn hiện) *@
+                                    <a asp-action="Edit" asp-route-id="@c.CustomerId" class="btn-icon-text btn-edit-action" title="Sửa thông tin">
+                                        <i class="bi bi-pencil-square"></i> Sửa
+                                    </a>
+
+                                    @* 2. Logic Nút Vô Hiệu / Khôi Phục *@
+                                    @if (c.IsActive)
+                                    {
+                                        @* Khách đang Hoạt động -> Hiện nút VÔ HIỆU (Màu đỏ) *@
+                                        <a asp-action="Delete" asp-route-id="@c.CustomerId"
+                                           class="btn-icon-text btn-disable-action"
+                                           onclick="return confirm('Bạn có chắc muốn vô hiệu hóa tài khoản này?')"
+                                           title="Khóa tài khoản">
+                                            <i class="bi bi-lock-fill"></i> Vô hiệu
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        @* Khách đã Khóa -> Hiện nút KHÔI PHỤC (Màu vàng - Link tới Profile) *@
+                                        <a asp-action="Profile" asp-route-id="@c.CustomerId"
+                                           class="btn-icon-text btn-restore-action"
+                                           title="Xem hồ sơ để mở khóa">
+                                            <i class="bi bi-arrow-counterclockwise"></i> Khôi phục
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="text-muted mb-2" style="font-size: 3rem; opacity: 0.2;">📭</div>
+                            <p class="text-muted m-0">Không tìm thấy dữ liệu phù hợp.</p>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="bg-light px-4 py-2 border-top text-end">
+            <small class="text-muted fst-italic">Hiển thị @Model.Count() kết quả</small>
+        </div>
+    }
+</div>
+
+@* --- 3. PHÂN TRANG (Giữ nguyên) --- *@
+@if (totalPages > 1)
+{
+    <nav class="mt-4 d-flex justify-content-center">
+        <ul class="pagination">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-page="@(currentPage - 1)"
+                   asp-route-name="@currentName" asp-route-phone="@currentPhone" asp-route-statusFilter="@currentStatus">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@i"
+                       asp-route-name="@currentName" asp-route-phone="@currentPhone" asp-route-statusFilter="@currentStatus">
+                        @i
+                    </a>
+                </li>
+            }
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-page="@(currentPage + 1)"
+                   asp-route-name="@currentName" asp-route-phone="@currentPhone" asp-route-statusFilter="@currentStatus">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+}

@@ -48,7 +48,6 @@ namespace Repositories
             _context.SaveChanges();
         }
 
-
         public void Delete(int orderId)
         {
             var order = _context.Orders
@@ -58,7 +57,6 @@ namespace Repositories
 
             if (order == null) return;
 
-            // Hoàn kho
             foreach (var d in order.OrderDetails)
             {
                 d.Product.Quantity += d.Quantity;
@@ -74,44 +72,21 @@ namespace Repositories
         {
 
             _orderDao.AddOrder(order);
-            _context.SaveChanges();   // để có OrderId
+            _context.SaveChanges();  
 
             _context.SaveChanges();
             return order;
         }
 
-
-     
         public Order? GetOrderById(int id) => _orderDao.GetOrderById(id);
 
         public List<Order> GetOrdersByStaff(int staffId)
             => _orderDao.GetOrdersByStaff(staffId);
 
-
-        //public void Update(Order order, List<OrderDetail> newDetails)
-        //{
-        //    var dbOrder = _context.Orders
-        //        .Include(o => o.OrderDetails)
-        //        .First(o => o.OrderId == order.OrderId);
-
-        //    // Update order info
-        //    dbOrder.CustomerId = order.CustomerId;
-        //    dbOrder.StaffId = order.StaffId;
-        //    dbOrder.Status = order.Status;
-
-        //    // Xóa toàn bộ chi tiết cũ
-        //    _context.OrderDetails.RemoveRange(dbOrder.OrderDetails);
-
-        //    // Thêm chi tiết mới
-        //    foreach (var d in newDetails)
-        //    {
-        //        d.OrderId = dbOrder.OrderId;
-        //        _context.OrderDetails.Add(d);
-        //    }
-
-        //    _context.SaveChanges();
-        //}
-
+        public (List<Order>, int) GetOrders(string keyword, DateTime? fromDate, DateTime? toDate, int page, int size)
+        {
+            return _orderDao.GetOrders(keyword, fromDate, toDate, page, size);
+        }
 
 
 
