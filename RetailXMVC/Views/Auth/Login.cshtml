@@ -1,30 +1,118 @@
 ﻿@{
     ViewData["Title"] = "Đăng nhập";
+
+    var fieldErrors = ViewBag.FieldErrors as IDictionary<string, string>;
+
+    string emailError = fieldErrors != null && fieldErrors.ContainsKey("Email")
+        ? fieldErrors["Email"] : null;
+
+    string passwordError = fieldErrors != null && fieldErrors.ContainsKey("Password")
+        ? fieldErrors["Password"] : null;
 }
 
-<h2>Đăng nhập</h2>
-@if (ViewBag.Message != null)
-{
-    <div class="text-danger">@ViewBag.Message</div>
-}
-<form asp-action="Login" method="post" class="card p-3" style="max-width:400px;">
-    <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input id="email" name="email" class="form-control" />
-    </div>
+<div class="auth-wrapper">
+    <form asp-action="Login"
+          method="post"
+          class="auth-card">
 
-    <div class="mb-3">
-        <label for="password" class="form-label">Password</label>
-        <input id="password" name="password" type="password" class="form-control" />
-    </div>
+        <h2 class="mb-3 text-center">Đăng nhập</h2>
 
-    @if (ViewBag.Error != null)
-    {
-        <div class="text-danger">@ViewBag.Error</div>
+        @if (ViewBag.Message != null)
+        {
+            <div class="alert alert-info mb-2">@ViewBag.Message</div>
+        }
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input id="email" name="email" class="form-control"
+                   value="@ViewBag.Email" />
+            @if (!string.IsNullOrEmpty(emailError))
+            {
+                <small class="text-danger">@emailError</small>
+            }
+        </div>
+
+        <div class="mb-3">
+            <label for="password" class="form-label">Mật khẩu</label>
+            <input id="password" name="password" type="password" class="form-control" />
+            @if (!string.IsNullOrEmpty(passwordError))
+            {
+                <small class="text-danger">@passwordError</small>
+            }
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+
+        <div class="mt-2 text-center">
+            <a asp-action="SignUpAccount" asp-controller="Auth">Chưa có tài khoản? Đăng ký</a>
+        </div>
+    </form>
+</div>
+
+
+<style>
+    /* Nền trắng, chữ đen */
+    body {
+        background-color: #fff;
+        color: #000;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    <button type="submit" class="btn btn-primary w-100">Login</button>
-    <div class="mt-2">
-        <a asp-action="SignUpAccount" asp-controller="Auth">Chưa có tài khoản? Đăng ký</a>
-    </div>
-</form>
+    /* Căn giữa form toàn màn hình */
+    .auth-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Card trắng, viền + shadow đen */
+    .auth-card {
+        background-color: #fff;
+        border: 1px solid #000;
+        border-radius: 16px;
+        padding: 32px;
+        width: 380px;
+        box-shadow: 0 0 40px rgba(0,0,0,0.7);
+    }
+
+        .auth-card .form-label {
+            color: #000;
+        }
+
+        /* Input nền trắng, chữ đen, viền đen */
+        .auth-card .form-control {
+            background-color: #fff;
+            border: 1px solid #000;
+            color: #000;
+        }
+
+            .auth-card .form-control:focus {
+                border-color: #000;
+                box-shadow: none;
+            }
+
+        /* Nút đen, chữ trắng */
+        .auth-card .btn-primary {
+            background-color: #000;
+            color: #fff;
+            border: none;
+            font-weight: 600;
+            border-radius: 999px;
+        }
+
+            .auth-card .btn-primary:hover {
+                background-color: #222;
+            }
+
+        /* Link đen */
+        .auth-card a {
+            color: #000;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+            .auth-card a:hover {
+                text-decoration: underline;
+            }
+</style>

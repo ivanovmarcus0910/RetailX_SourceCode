@@ -46,3 +46,39 @@ button.accept-policy {
   white-space: nowrap;
   line-height: 60px;
 }
+/* ======= NAVBAR CUSTOM ======= */
+
+/* Link trên navbar */
+.navbar .nav-link {
+    color: #000; /* chữ đen */
+    border-radius: .375rem;
+    transition: background-color .2s ease, color .2s ease, box-shadow .2s ease, transform .15s ease;
+}
+
+    /* Hover: nền đen, chữ trắng, shadow + hơi nhích lên */
+    .navbar .nav-link:hover,
+    .navbar .nav-link:focus {
+        background-color: #000;
+        color: #fff !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, .35);
+        transform: translateY(-1px);
+    }
+
+/* Nút Đăng ký trên navbar – override btn-primary chung */
+.navbar .btn.btn-primary {
+    background-color: #000;
+    border-color: #000;
+    color: #fff;
+    border-radius: 999px;
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .15s ease;
+}
+
+    /* Hover nút: vẫn đen nhưng có shadow + nhích nhẹ */
+    .navbar .btn.btn-primary:hover,
+    .navbar .btn.btn-primary:focus {
+        background-color: #000;
+        border-color: #000;
+        color: #fff !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .45);
+        transform: translateY(-1px);
+    }
