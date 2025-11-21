@@ -484,7 +484,7 @@
             `;
 
             try {
-                const response = await fetch('@Url.Action("GetAIAnalysis", "Report")', {
+                const response = await fetch('@Url.Action("GetAnalysis", "AI")', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
