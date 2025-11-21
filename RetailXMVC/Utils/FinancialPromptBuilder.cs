@@ -44,72 +44,71 @@ namespace RetailXMVC.Utils
                     trendAnalysis = "📊 Xu hướng ỔN ĐỊNH (dao động < 10%)";
             }
 
-            var prompt = $@"
-Bạn là chuyên gia phân tích tài chính cho doanh nghiệp bán lẻ RetailX tại Việt Nam.
+            var prompt = $@"Bạn là chuyên gia phân tích tài chính cho doanh nghiệp bán lẻ RetailX tại Việt Nam.
 Hãy phân tích dữ liệu kinh doanh năm {year} theo phong cách chuyên nghiệp, dễ hiểu.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 TỔNG QUAN NĂM {year}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    📊 TỔNG QUAN NĂM {year}
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-💰 Tổng doanh thu:        {totalRevenue:N0} VNĐ
-📦 Chi phí nhập hàng:     {totalCost:N0} VNĐ ({costRatio:N1}% doanh thu)
-👥 Chi phí lương:         {totalSalary:N0} VNĐ ({salaryRatio:N1}% doanh thu)
-💵 Lợi nhuận ròng:        {totalProfit:N0} VNĐ
-📈 Biên lợi nhuận:        {profitMargin:N1}%
-📅 Tháng hoạt động:       {activeMonths.Count}/12 tháng
+                    💰 Tổng doanh thu:        {totalRevenue:N0} VNĐ
+                    📦 Chi phí nhập hàng:     {totalCost:N0} VNĐ ({costRatio:N1}% doanh thu)
+                    👥 Chi phí lương:         {totalSalary:N0} VNĐ ({salaryRatio:N1}% doanh thu)
+                    💵 Lợi nhuận ròng:        {totalProfit:N0} VNĐ
+                    📈 Biên lợi nhuận:        {profitMargin:N1}%
+                    📅 Tháng hoạt động:       {activeMonths.Count}/12 tháng
 
-{trendAnalysis}
+                    {trendAnalysis}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📈 CHI TIẾT TỪNG THÁNG
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    📈 CHI TIẾT TỪNG THÁNG
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-{monthlyDetails}
+                    {monthlyDetails}
 
-{(bestMonth != null ? $"\n🏆 Tháng tốt nhất: Tháng {bestMonth.Month} (Lợi nhuận {bestMonth.Profit:N0} VNĐ)" : "")}
-{(worstMonth != null ? $"⚠️  Tháng thấp nhất: Tháng {worstMonth.Month} (Lợi nhuận {worstMonth.Profit:N0} VNĐ)" : "")}
+                    {(bestMonth != null ? $"\n🏆 Tháng tốt nhất: Tháng {bestMonth.Month} (Lợi nhuận {bestMonth.Profit:N0} VNĐ)" : "")}
+                    {(worstMonth != null ? $"⚠️  Tháng thấp nhất: Tháng {worstMonth.Month} (Lợi nhuận {worstMonth.Profit:N0} VNĐ)" : "")}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-YÊU CẦU PHÂN TÍCH (NGẮN GỌN, CỤ THỂ):
+                    YÊU CẦU PHÂN TÍCH (NGẮN GỌN, CỤ THỂ):
 
-1. **📈 Xu Hướng Kinh Doanh** (2-3 câu):
-   - Nhận xét về tăng/giảm doanh thu qua các tháng
-   - Có mùa vụ hoặc chu kỳ đặc biệt không?
-   {(inactiveMonthsCount > 0 ? $"- Tại sao có {inactiveMonthsCount} tháng không hoạt động?" : "")}
+                    1. **📈 Xu Hướng Kinh Doanh** (2-3 câu):
+                       - Nhận xét về tăng/giảm doanh thu qua các tháng
+                       - Có mùa vụ hoặc chu kỳ đặc biệt không?
+                       {(inactiveMonthsCount > 0 ? $"- Tại sao có {inactiveMonthsCount} tháng không hoạt động?" : "")}
 
-2. **💪 Điểm Mạnh** (2-3 điểm, MỖI ĐIỂM 1 DÒNG):
-   - Những thành tựu nổi bật
-   - Chỉ số tài chính tích cực
+                    2. **💪 Điểm Mạnh** (2-3 điểm, MỖI ĐIỂM 1 DÒNG):
+                       - Những thành tựu nổi bật
+                       - Chỉ số tài chính tích cực
 
-3. **⚠️ Cảnh Báo & Rủi Ro** (1-2 điểm CỤ THỂ):
-   - Vấn đề cần giải quyết NGAY
-   - Tháng/chi phí bất thường
+                    3. **⚠️ Cảnh Báo & Rủi Ro** (1-2 điểm CỤ THỂ):
+                       - Vấn đề cần giải quyết NGAY
+                       - Tháng/chi phí bất thường
 
-4. **💡 Khuyến Nghị** (3-4 hành động CỤ THỂ):
-   - Cách tăng doanh thu ngay lập tức
-   - Tối ưu chi phí ở đâu
-   - Chiến lược cho năm {year + 1}
+                    4. **💡 Khuyến Nghị** (3-4 hành động CỤ THỂ):
+                       - Cách tăng doanh thu ngay lập tức
+                       - Tối ưu chi phí ở đâu
+                       - Chiến lược cho năm {year + 1}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-QUY TẮC ĐỊNH DẠNG:
-✅ Dùng emoji (📈💰⚠️💡🎯📊🏆)
-✅ Mỗi phần 2-4 dòng, NGẮN GỌN
-✅ **In đậm** từ khóa quan trọng
-✅ KHÔNG dùng markdown heading (##, ###)
-✅ Tối đa 350 từ
-✅ Tiếng Việt, chuyên nghiệp nhưng thân thiện
-";
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    QUY TẮC ĐỊNH DẠNG:
+                    ✅ Dùng emoji (📈💰⚠️💡🎯📊🏆)
+                    ✅ Mỗi phần 2-4 dòng, NGẮN GỌN
+                    ✅ **In đậm** từ khóa quan trọng
+                    ✅ KHÔNG dùng markdown heading (##, ###)
+                    ✅ Tối đa 350 từ
+                    ✅ Tiếng Việt, chuyên nghiệp nhưng thân thiện
+                    ";
 
             return prompt;
         }
 
-        // ✅✅✅ METHOD MỚI - Chatbot tương tác ✅✅✅
+        // - Chatbot tương tác ✅✅✅
         public static string BuildChatPrompt(
-            string userQuestion,
-            int year,
-            List<MonthlyFinancialData> monthlyData)
+           string userQuestion,
+           int year,
+           List<MonthlyFinancialData> monthlyData)
         {
             var activeMonths = monthlyData.Where(m => m.Revenue > 0 || m.Cost > 0 || m.Salary > 0).ToList();
 
@@ -119,6 +118,8 @@ QUY TẮC ĐỊNH DẠNG:
             var totalProfit = monthlyData.Sum(m => m.Profit);
 
             var profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue * 100) : 0;
+            var costRatio = totalRevenue > 0 ? (totalCost / totalRevenue * 100) : 0;      // ✅ THÊM
+            var salaryRatio = totalRevenue > 0 ? (totalSalary / totalRevenue * 100) : 0;  // ✅ THÊM
 
             var monthlyDetails = string.Join("\n", activeMonths.Select(m =>
                 $"  • Tháng {m.Month}: DT {m.Revenue:N0} VNĐ | Chi phí {m.Cost:N0} VNĐ | Lương {m.Salary:N0} VNĐ | Lãi {m.Profit:N0} VNĐ"
@@ -143,78 +144,115 @@ QUY TẮC ĐỊNH DẠNG:
                     trendInfo = "📊 Xu hướng: Ổn định";
             }
 
-            var prompt = $@"
-Bạn là **AI Financial Assistant** của doanh nghiệp bán lẻ RetailX tại Việt Nam.
-Nhiệm vụ: Trả lời câu hỏi của người dùng về tài chính một cách CHÍNH XÁC, NGẮN GỌN, DỄ HIỂU.
+            var prompt = $@"Bạn là **AI Financial Assistant** thông minh của doanh nghiệp bán lẻ RetailX tại Việt Nam.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 DỮ LIỆU NĂM {year} (RetailX)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    🎯 VAI TRÒ & NĂNG LỰC:
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**TỔNG QUAN:**
-💰 Tổng doanh thu:    {totalRevenue:N0} VNĐ
-📦 Chi phí nhập:      {totalCost:N0} VNĐ
-👥 Chi phí lương:     {totalSalary:N0} VNĐ
-💵 Lợi nhuận:         {totalProfit:N0} VNĐ
-📈 Biên lợi nhuận:    {profitMargin:N1}%
-📅 Tháng hoạt động:   {activeMonths.Count}/12 tháng
+                    **1. CHUYÊN GIA RetailX:** (Ưu tiên)
+                       - Phân tích dữ liệu tài chính cụ thể của RetailX năm {year}
+                       - So sánh, đánh giá xu hướng, đưa khuyến nghị
 
-{trendInfo}
+                    **2. CỐ VẤN TÀI CHÍNH:** (Hỗ trợ thêm)
+                       - Giải thích khái niệm kinh tế, tài chính (GDP, lạm phát, ROI...)
+                       - Tư vấn chiến lược kinh doanh bán lẻ
+                       - Giải đáp về thị trường, đầu tư
 
-**CHI TIẾT TỪNG THÁNG:**
-{monthlyDetails}
+                    **3. TRỢ LÝ THÂN THIỆN:**
+                       - Trò chuyện nhẹ nhàng, chào hỏi
+                       - Giúp đỡ ngoài phạm vi tài chính (nếu phù hợp)
 
-{(bestMonth != null ? $"\n🏆 Tháng tốt nhất: T{bestMonth.Month} (Lãi {bestMonth.Profit:N0} VNĐ)" : "")}
-{(worstMonth != null ? $"🔴 Tháng thấp nhất: T{worstMonth.Month} (Lãi {worstMonth.Profit:N0} VNĐ)" : "")}
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    📊 DỮ LIỆU RETAILX NĂM {year}
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-❓ CÂU HỎI CỦA NGƯỜI DÙNG:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    **TỔNG QUAN:**
+                    💰 Tổng doanh thu:    {totalRevenue:N0} VNĐ
+                    📦 Chi phí nhập:      {totalCost:N0} VNĐ ({costRatio:N1}% doanh thu)
+                    👥 Chi phí lương:     {totalSalary:N0} VNĐ ({salaryRatio:N1}% doanh thu)
+                    💵 Lợi nhuận:         {totalProfit:N0} VNĐ
+                    📈 Biên lợi nhuận:    {profitMargin:N1}%
+                    📅 Tháng hoạt động:   {activeMonths.Count}/12 tháng
 
-""{userQuestion}""
+                    {trendInfo}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 QUY TẮC TRẢ LỜI (BẮT BUỘC):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    **CHI TIẾT TỪNG THÁNG:**
+                    {monthlyDetails}
 
-✅ **NGẮN GỌN**: Tối đa 3-5 câu (100-150 từ)
-✅ **CỤ THỂ**: Trích dẫn SỐ LIỆU từ dữ liệu trên
-✅ **DỄ HIỂU**: Giải thích đơn giản, không dùng thuật ngữ phức tạp
-✅ **EMOJI**: Dùng 📈📉💰💡⚠️🏆 để dễ đọc
-✅ **SO SÁNH**: Nếu hỏi so sánh → Nêu rõ số liệu và % chênh lệch
-✅ **KHUYẾN NGHỊ**: Nếu phù hợp → Đưa 1-2 gợi ý ngắn gọn
+                    {(bestMonth != null ? $"\n🏆 Tháng tốt nhất: T{bestMonth.Month} (Lãi {bestMonth.Profit:N0} VNĐ)" : "")}
+                    {(worstMonth != null ? $"🔴 Tháng thấp nhất: T{worstMonth.Month} (Lãi {worstMonth.Profit:N0} VNĐ)" : "")}
 
-**XỬ LÝ CÂU HỎI ĐẶC BIỆT:**
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    ❓ CÂU HỎI CỦA NGƯỜI DÙNG:
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🔹 Nếu hỏi về tháng KHÔNG CÓ DỮ LIỆU:
-   → ""Tháng X/{year} chưa có hoạt động kinh doanh (doanh thu = 0 VNĐ).""
+                    ""{userQuestion}""
 
-🔹 Nếu hỏi NGOÀI phạm vi tài chính RetailX:
-   → ""Tôi chỉ hỗ trợ phân tích tài chính RetailX năm {year}. Bạn có thể hỏi về doanh thu, chi phí, lợi nhuận, xu hướng, v.v.""
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    📋 QUY TẮC TRẢ LỜI:
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🔹 Nếu hỏi dự đoán tương lai:
-   → ""Dựa trên xu hướng hiện tại... [phân tích ngắn gọn dựa trên data]""
+                    **A. NẾU HỎI VỀ DỮ LIỆU RETAILX:**
+                       ✅ Trích dẫn SỐ LIỆU CỤ THỂ từ bảng trên
+                       ✅ So sánh, tính % chênh lệch
+                       ✅ Đưa nhận xét/khuyến nghị dựa trên data
+                       ✅ Ngắn gọn 3-5 câu (100-150 từ)
 
-🔹 Nếu hỏi khuyến nghị:
-   → Đưa 2-3 hành động CỤ THỂ, THỰC TẾ
+                    **B. NẾU HỎI VỀ KINH TẾ/TÀI CHÍNH CHUNG:**
+                       ✅ Giải thích rõ ràng, dễ hiểu
+                       ✅ Liên hệ với RetailX nếu phù hợp
+                       ✅ Đưa ví dụ thực tế
+                       ✅ Ngắn gọn 4-6 câu (150-200 từ)
 
-**VÍ DỤ TRẢ LỜI TốT:**
+                    **C. NẾU HỎI NGOÀI PHẠM VI:**
+                       ✅ Trả lời lịch sự, chân thành
+                       ✅ Gợi ý câu hỏi phù hợp hơn
+                       ✅ 2-3 câu ngắn
 
-Câu hỏi: ""Doanh thu tháng 11 bao nhiêu?""
-Trả lời: 
-""📊 **Doanh thu tháng 11/{year}: 25,365,000 VNĐ**
+                    **ĐỊNH DẠNG:**
+                    ✅ Dùng emoji (📈📉💰💡⚠️🏆🌍📚)
+                    ✅ **In đậm** từ khóa quan trọng
+                    ✅ Chia đoạn rõ ràng
+                    ✅ Phong cách thân thiện, chuyên nghiệp
 
-So với tháng 10 (50,000,000 VNĐ) → Giảm **24,635,000 VNĐ (-49.3%)** 📉
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    💡 VÍ DỤ TRẢ LỜI:
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-💡 Cần phân tích nguyên nhân giảm mạnh để điều chỉnh chiến lược kinh doanh.""
+                    **Ví dụ 1 - Câu hỏi về RetailX:**
+                    Hỏi: ""Doanh thu tháng 11 bao nhiêu?""
+                    Đáp: ""📊 **Doanh thu tháng 11/{year}: 25,365,000 VNĐ**
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    So với tháng 10 (50,000,000 VNĐ) → Giảm **24,635,000 VNĐ (-49.3%)** 📉
 
-QUAN TRỌNG: 
-- TRẢ LỜI NGAY, KHÔNG lặp lại câu hỏi
-- DÙNG SỐ LIỆU từ data trên
-- NGẮN GỌN, dễ hiểu như nói chuyện với đồng nghiệp
-";
+                    💡 Cần phân tích nguyên nhân: thiếu hàng? marketing yếu? cạnh tranh tăng?""
+
+                    **Ví dụ 2 - Câu hỏi kinh tế chung:**
+                    Hỏi: ""Lạm phát ảnh hưởng như thế nào đến bán lẻ?""
+                    Đáp: ""🌍 **Lạm phát tác động đến bán lẻ qua 3 cách chính:**
+
+                    1. **Chi phí tăng** 📦: Giá nhập hàng, lương nhân viên tăng → Lợi nhuận giảm
+                    2. **Sức mua giảm** 💰: Khách hàng thắt chặt chi tiêu → Doanh thu giảm
+                    3. **Giá cả điều chỉnh** 📈: Phải tăng giá bán → Rủi ro mất khách
+
+                    💡 **Với RetailX**: Chi phí nhập chiếm {costRatio:N1}% doanh thu, cần đàm phán giá tốt hơn với nhà cung cấp!""
+
+                    **Ví dụ 3 - Ngoài phạm vi:**
+                    Hỏi: ""Cho công thức nấu phở""
+                    Đáp: ""😊 Tôi là AI tài chính, không chuyên nấu ăn! 
+
+                    Nhưng tôi có thể giúp bạn:
+                    📊 Phân tích doanh thu quán phở
+                    💰 Tính chi phí nguyên liệu
+                    📈 Chiến lược marketing cho quán ăn
+
+                    Bạn muốn hỏi gì về tài chính RetailX không?""
+
+                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    BẮT ĐẦU TRẢ LỜI:
+                    ";
 
             return prompt;
         }
