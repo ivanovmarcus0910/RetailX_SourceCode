@@ -4,118 +4,206 @@
     Layout = "_InventoryLayout";
 }
 
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Quản lý Danh mục</h2>
+            <p class="text-muted mb-0">Phân loại và tổ chức sản phẩm trong kho.</p>
+        </div>
+    </div>
 
-<h2>Categories</h2>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <form method="get" class="d-flex gap-2 position-relative">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" name="searchString" value="@ViewBag.SearchString" 
+                               class="form-control border-start-0 ps-0" 
+                               style="width: 250px; background-color: #f8f9fa;" 
+                               placeholder="Tìm kiếm danh mục..." />
+                    </div>
+                    <button type="submit" class="btn btn-search fw-bold">
+                        Tìm kiếm
+                    </button>
+                </form>
 
-<div class="d-flex justify-content-between mb-3 flex-wrap">
-    <!-- Search -->
-    <form method="get" class="d-flex mb-2">
-        <input type="text" name="searchString" value="@ViewBag.SearchString" class="form-control me-2" placeholder="Search category..." />
-        <button type="submit" class="btn btn-primary rounded-pill">Search</button>
-    </form>
+                <button type="button" class="btn btn-create fw-bold shadow-sm" id="btnCreateCategory" data-bs-toggle="modal" data-bs-target="#categoryModal">
+                    <i class="bi bi-plus-lg me-1"></i> Thêm Danh mục
+                </button>
+            </div>
 
-    <!-- Create Button -->
-    <button type="button" class="btn btn-primary rounded-pill" id="btnCreateCategory" data-bs-toggle="modal" data-bs-target="#categoryModal">
-        Create New Category
-    </button>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-secondary">
+                        <tr>
+                            <th class="py-3 ps-3">@Html.DisplayNameFor(model => model.First().CategoryName)</th>
+                            <th class="py-3">@Html.DisplayNameFor(model => model.First().Decription)</th>
+                            <th class="py-3 text-end pe-3" style="width: 180px;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-3 fw-semibold text-dark">@item.CategoryName</td>
+                                    <td class="text-muted">@item.Decription</td>
+                                    <td class="text-end pe-3">
+                                        <a href="javascript:void(0)" class="btn btn-warning btn-sm me-1 btn-action btn-edit-category" 
+                                           data-id="@item.CategoryId" title="Chỉnh sửa">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        
+                                        <a href="javascript:void(0)" class="btn btn-danger btn-sm btn-action btn-delete-category" 
+                                           data-id="@item.CategoryId" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="3" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                        <span>Không tìm thấy danh mục nào.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
-<table class="table table-hover">
-    <thead>
-        <tr>
-            <th>@Html.DisplayNameFor(model => model.First().CategoryName)</th>
-            <th>@Html.DisplayNameFor(model => model.First().Decription)</th>
-            <th class="text-center">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model != null && Model.Any())
-        {
-            foreach (var item in Model)
-            {
-                <tr>
-                    <td>@item.CategoryName</td>
-                    <td>@item.Decription</td>
-                    <td class="text-center">
-                        <a href="javascript:void(0)" class="btn btn-sm btn-warning rounded-pill me-1 btn-edit-category" data-id="@item.CategoryId">Edit</a>
-                        <a href="javascript:void(0)" class="btn btn-sm btn-danger rounded-pill btn-delete-category" data-id="@item.CategoryId">Delete</a>
-                    </td>
-                </tr>
-            }
-        }
-        else
-        {
-            <tr>
-                <td colspan="3" class="text-center text-muted">No categories available</td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<!-- Modal -->
 <div class="modal fade" id="categoryModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" id="categoryModalContent"></div>
     </div>
 </div>
 
-
-
 @section Scripts {
-<script>
-    // Load Create Partial
-    $(document).on("click", "#btnCreateCategory", function(){
-        $.get('@Url.Action("Create","Categories")', function(data){
-            $("#categoryModalContent").html(data);
-        });
-    });
+    <script>
+        // --- LOGIC GIỮ NGUYÊN ---
 
-    // Load Edit Partial
-    $(document).on("click", ".btn-edit-category", function(){
-        var id = $(this).data("id");
-        $.get('@Url.Action("Edit","Categories")', { id: id }, function(data){
-            $("#categoryModalContent").html(data);
-            $("#categoryModal").modal("show");
+        // Load Create Partial
+        $(document).on("click", "#btnCreateCategory", function () {
+            $.get('@Url.Action("Create", "Categories")', function (data) {
+                $("#categoryModalContent").html(data);
+            });
         });
-    });
 
-    // Load Delete Partial
-    $(document).on("click", ".btn-delete-category", function(){
-        var id = $(this).data("id");
-        $.get('@Url.Action("Delete","Categories")', { id: id }, function(data){
-            $("#categoryModalContent").html(data);
-            $("#categoryModal").modal("show");
+        // Load Edit Partial
+        $(document).on("click", ".btn-edit-category", function () {
+            var id = $(this).data("id");
+            $.get('@Url.Action("Edit", "Categories")', { id: id }, function (data) {
+                $("#categoryModalContent").html(data);
+                $("#categoryModal").modal("show");
+            });
         });
-    });
 
-    // Submit form (Create/Edit/Delete)
-    $(document).on("submit", "#categoryForm", function(e){
-        e.preventDefault();
-        var form = $(this);
-        $.ajax({
-            type: "POST",
-            url: form.attr("action"),
-            data: form.serialize(),
-            success: function(response){
-                if(response.success){
-                    $('#categoryModal').modal('hide');
-                    location.reload();
-                } else {
-                    $("#categoryModalContent").html(response);
+        // Load Delete Partial
+        $(document).on("click", ".btn-delete-category", function () {
+            var id = $(this).data("id");
+            $.get('@Url.Action("Delete", "Categories")', { id: id }, function (data) {
+                $("#categoryModalContent").html(data);
+                $("#categoryModal").modal("show");
+            });
+        });
+
+        // Submit form (Create/Edit/Delete)
+        $(document).on("submit", "#categoryForm", function (e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                type: "POST",
+                url: form.attr("action"),
+                data: form.serialize(),
+                success: function (response) {
+                    if (response.success) {
+                        $('#categoryModal').modal('hide');
+                        location.reload();
+                    } else {
+                        $("#categoryModalContent").html(response);
+                    }
                 }
-            }
+            });
         });
-    });
-</script>
-<style>
-    table.table-hover tbody tr:hover { background-color: #f2f2f2; }
-    table td.text-center { vertical-align: middle; }
-    .btn-warning { background-color: #f0ad4e; border-color: #f0ad4e; color: white; transition: all 0.2s; }
-    .btn-warning:hover { background-color: #ec9d4a; border-color: #ec9d4a; color: white; }
-    .btn-danger { background-color: #d9534f; border-color: #d9534f; color: white; transition: all 0.2s; }
-    .btn-danger:hover { background-color: #c9302c; border-color: #c9302c; color: white; }
-    .btn-primary { background-color: #4e73df; border-color: #4e73df; color: white; transition: all 0.2s; }
-    .btn-primary:hover { background-color: #3c5ec0; border-color: #3c5ec0; color: white; }
-
-</style>
+    </script>
 }
+
+<style>
+    /* CSS đồng bộ với các trang khác */
+    
+    .btn-create, .btn-search, .btn-warning, .btn-danger {
+        border-radius: 8px;
+        padding: 8px 16px; /* Tăng padding một chút cho đẹp */
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        border: none;
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border-radius: 6px;
+    }
+
+    /* Blue Buttons (Create, Search) */
+    .btn-create, .btn-search {
+        background-color: #339AF0;
+    }
+    .btn-create:hover, .btn-search:hover {
+        background-color: #2A4A99;
+        color: white;
+        box-shadow: 0 4px 6px rgba(51, 154, 240, 0.25);
+    }
+
+    /* Warning/Edit Button */
+    .btn-warning {
+        background-color: #f0ad4e;
+        color: white;
+    }
+    .btn-warning:hover {
+        background-color: #ec9d4a;
+        color: white;
+    }
+
+    /* Danger/Delete Button */
+    .btn-danger {
+        background-color: #E03131;
+    }
+    .btn-danger:hover {
+        background-color: #C92A2A;
+        color: white;
+    }
+
+    /* Input Styles */
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #dee2e6;
+        background-color: #fff !important;
+    }
+    .input-group-text {
+        background-color: #f8f9fa;
+    }
+
+    /* Table Styles */
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+</style>

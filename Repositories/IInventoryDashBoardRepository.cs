@@ -17,6 +17,7 @@ namespace Repositories
         decimal GetInventoryValue();
         List<Product> GetLowStock();
         List<object> GetMonthlyImport();
+        List<dynamic> GetCategoryStockDistribution();
 
         List<dynamic> GetImportReportDetail(
         int? year = null,
