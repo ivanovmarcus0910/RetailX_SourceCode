@@ -259,7 +259,7 @@ namespace RetailXMVC.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Chart(int? year)  
+        public IActionResult Chart(int? year)  
         {
             int selectedYear = year ?? DateTime.Now.Year;
 
@@ -307,33 +307,33 @@ namespace RetailXMVC.Controllers
             availableYears = availableYears.OrderByDescending(y => y).ToList();
 
             //- GỌI GEMINI AI
-            string aiInsights = "";
-            try
-            {
-                var monthlyDataForAI = monthlyData.Select(m => new MonthlyFinancialData
-                {
-                    Month = m.Month,
-                    Revenue = m.Revenue,
-                    Cost = m.Cost,
-                    Salary = m.Salary,
-                    Profit = m.Profit
-                }).ToList();
+            //string aiInsights = "";
+            //try
+            //{
+            //    var monthlyDataForAI = monthlyData.Select(m => new MonthlyFinancialData
+            //    {
+            //        Month = m.Month,
+            //        Revenue = m.Revenue,
+            //        Cost = m.Cost,
+            //        Salary = m.Salary,
+            //        Profit = m.Profit
+            //    }).ToList();
 
-                var prompt = FinancialPromptBuilder.BuildAnalysisPrompt(
-                    selectedYear,
-                    monthlyDataForAI,
-                    totalRevenue,
-                    totalCost,
-                    totalSalary,
-                    totalProfit
-                );
+            //    var prompt = FinancialPromptBuilder.BuildAnalysisPrompt(
+            //        selectedYear,
+            //        monthlyDataForAI,
+            //        totalRevenue,
+            //        totalCost,
+            //        totalSalary,
+            //        totalProfit
+            //    );
 
-                aiInsights = await GeminiAIUtil.AnalyzeFinancialData(prompt, _configuration);
-            }
-            catch (Exception ex)
-            {
-                aiInsights = $"⚠️ Không thể tải phân tích AI: {ex.Message}";
-            }
+            //    aiInsights = await GeminiAIUtil.AnalyzeFinancialData(prompt, _configuration);
+            //}
+            //catch (Exception ex)
+            //{
+            //    aiInsights = $"⚠️ Không thể tải phân tích AI: {ex.Message}";
+            //}
           
 
             ViewBag.SelectedYear = selectedYear;
@@ -343,10 +343,68 @@ namespace RetailXMVC.Controllers
             ViewBag.TotalSalary = totalSalary;
             ViewBag.TotalProfit = totalProfit;
             ViewBag.MonthlyData = System.Text.Json.JsonSerializer.Serialize(monthlyData);
-            ViewBag.AIInsights = aiInsights;  
+            //ViewBag.AIInsights = aiInsights;  
 
             return View();
         }
+
+        [HttpPost]
+        public async Task<IActionResult> GetAIAnalysis([FromBody] AIAnalysisRequest request)
+        {
+            try
+            {
+                if (request.Year <= 0)
+                {
+                    return Json(new { success = false, message = "Năm không hợp lệ" });
+                }
+
+                DateTime startDate = new DateTime(request.Year, 1, 1);
+                DateTime endDate = new DateTime(request.Year, 12, 31);
+
+                var allReports = _reportRepository.GetRevenueReports(startDate, endDate);
+
+                var monthlyData = Enumerable.Range(1, 12).Select(month => new MonthlyFinancialData
+                {
+                    Month = month,
+                    Revenue = allReports.Where(r => r.Month == month && r.Year == request.Year)
+                                       .Sum(r => r.AmountRevenue ?? 0),
+                    Cost = allReports.Where(r => r.Month == month && r.Year == request.Year)
+                                    .Sum(r => r.AmountCost ?? 0),
+                    Salary = allReports.Where(r => r.Month == month && r.Year == request.Year)
+                                      .Sum(r => r.AmountSalary ?? 0),
+                    Profit = allReports.Where(r => r.Month == month && r.Year == request.Year)
+                                      .Sum(r => r.Profit ?? 0)
+                }).ToList();
+
+                var totalRevenue = monthlyData.Sum(m => m.Revenue);
+                var totalCost = monthlyData.Sum(m => m.Cost);
+                var totalSalary = monthlyData.Sum(m => m.Salary);
+                var totalProfit = monthlyData.Sum(m => m.Profit);
+
+                var prompt = FinancialPromptBuilder.BuildAnalysisPrompt(
+                    request.Year,
+                    monthlyData,
+                    totalRevenue,
+                    totalCost,
+                    totalSalary,
+                    totalProfit
+                );
+
+                var aiResponse = await GeminiAIUtil.AnalyzeFinancialData(prompt, _configuration);
+
+                return Json(new { success = true, analysis = aiResponse });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
+            }
+        }
+
+        public class AIAnalysisRequest
+        {
+            public int Year { get; set; }
+        }
+
 
         [HttpGet]
         public IActionResult AIChat()
