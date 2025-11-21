@@ -30,6 +30,10 @@ namespace RepositoriesRetailX
             return tenantDAO.GetAllTenant();
         }
 
+        public List<Tenant> GetAllTenantActive()
+        {
+            return tenantDAO.GetAllTenantActive();
+        }
         public Tenant? GetTenantById(int id)
         {
             return tenantDAO.GetTenantById(id);

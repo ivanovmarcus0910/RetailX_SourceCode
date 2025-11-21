@@ -18,6 +18,10 @@ namespace DataAccessObjectRetailX
         {
             return _context.Tenants.ToList();
         }
+        public List<Tenant> GetAllTenantActive()
+        {
+            return _context.Tenants.Where(t => t.IsActive == true).ToList();
+        }
         public Tenant GetTenantById(int tenantId)
         {
             return _context.Tenants.Find(tenantId);

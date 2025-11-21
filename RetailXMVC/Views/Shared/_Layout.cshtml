@@ -30,12 +30,20 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark fw-bold" asp-controller="Tenant" asp-action="ListCompany">Company</a>
+                        </li>
                     </ul>
 
                     <!-- Right menu: Login/Signup hoặc User + Logout -->
                     <ul class="navbar-nav ms-auto mb-2 mb-sm-0">
                         @if (User?.Identity != null && User.Identity.IsAuthenticated)
                         {
+                            <li class="nav-item">
+                                <a class="nav-link text-primary fw-bold me-3" asp-controller="Tenant" asp-action="MyRequests">
+                                    <i class="fa fa-paper-plane"></i> My requests
+                                </a>
+                            </li>
 
                             var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name ?? "User";
                             <li class="nav-item dropdown">
@@ -107,26 +115,13 @@
             </div>
         </nav>
     </header>
-    @if (User.Identity.IsAuthenticated && User.FindFirst("TenantId")?.Value != null) 
-    {
-        <input type="hidden" id="currentTenantId" value="@User.FindFirst("TenantId")?.Value" />
-    }
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
-      <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header bg-primary text-white">
-          <strong class="me-auto"><i class="fa fa-bell"></i> Thông báo mới</strong>
-          <small>Vừa xong</small>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body" id="toastMessage">
-          </div>
-      </div>
-    </div>
+
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2025 - RetailXMVC - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
@@ -134,8 +129,7 @@
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/lib/microsoft-signalr/signalr.js"></script> 
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <partial name="_SignalRScripts" />
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
