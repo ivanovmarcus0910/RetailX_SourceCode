@@ -233,6 +233,44 @@ END";
             cmd.ExecuteNonQuery();
         }
 
+        [HttpGet]
+        public IActionResult ListCompany(string searchString)
+        {
+            var tenants = tenantRepo.GetAllTenantActive();
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                tenants = tenants.Where(t => t.CompanyName.Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            ViewBag.CurrentFilter = searchString;
+
+            var requestedTenantIds = new List<int>();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+                requestedTenantIds = requestRepo.GetRequestsByUserId(userId)
+                                                .Select(r => r.TenantId)
+                                                .ToList();
+            }
+
+            ViewBag.RequestedTenantIds = requestedTenantIds;
+            return View(tenants);
+        }
+
+        [HttpGet]
+        public IActionResult MyRequests()
+        {
+            if (!User.Identity.IsAuthenticated) return RedirectToAction("Login", "Auth");
+
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var myRequests = requestRepo.GetRequestsByUserId(userId);
+
+            return View(myRequests);
+        }
+
         [HttpPost]
         public async Task<IActionResult> RequestJoin(int tenantId)
         {
@@ -250,35 +288,39 @@ END";
             if (user == null || user.TenantId != null)
             {
                 TempData["Error"] = "Bạn đã là thành viên hoặc tài khoản không hợp lệ.";
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction(nameof(ListCompany));
             }
 
             if (requestRepo.IsRequestPending(userId, tenantId))
             {
                 TempData["Warning"] = "Yêu cầu của bạn đang chờ duyệt. Vui lòng kiên nhẫn.";
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction(nameof(ListCompany));
+            }
+
+            int pendingCount = requestRepo.GetRequestsByUserId(userId).Count;
+            if (pendingCount >= 5)
+            {
+                TempData["Error"] = "Bạn chỉ được phép gửi tối đa 5 yêu cầu cùng lúc.";
+                return RedirectToAction(nameof(ListCompany));
             }
 
             try
             {
                 requestRepo.CreateJoinRequest(userId, tenantId);
 
-                //logRepo.WriteLog($"User {user.FullName} đã gửi yêu cầu gia nhập Tenant ID {tenantId}",
-                //                 userId,
-                //                 Repositories.Enums.LogAction.Create);
-
                 await hubContext.Clients.Group($"Tenant_{tenantId}")
                                  .SendAsync("ReceiveJoinRequest", user.FullName, user.Email);
 
                 TempData["Success"] = "Đã gửi yêu cầu gia nhập thành công. Vui lòng chờ Owner duyệt.";
+                return RedirectToAction("MyRequests");
             }
             catch (Exception ex)
             {
                 TempData["Error"] = "Lỗi khi gửi yêu cầu: " + ex.Message;
+                return RedirectToAction(nameof(ListCompany));
             }
-
-            return RedirectToAction("Index");
         }
+
         public bool AddLog(string ip, string device, int tenantId)
         {
             Console.WriteLine($"Đã vào add log : {ip} -  {device} -  {tenantId}");

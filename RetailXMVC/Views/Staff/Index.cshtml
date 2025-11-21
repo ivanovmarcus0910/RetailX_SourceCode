@@ -2,6 +2,8 @@
 
 @{
     ViewData["Title"] = "Quản lý Nhân viên";
+    Layout = "~/Views/Shared/_OwnerLayout.cshtml";
+    
     string GetRoleName(int? role) => role switch
     {
         1 => "Owner",
@@ -12,60 +14,78 @@
     };
 }
 
-<div class="container mt-4">
-    <h2>Danh sách Nhân viên</h2>
-    
-    @if(TempData["Success"] != null)
-    {
-        <div class="alert alert-success">@TempData["Success"]</div>
-    }
+<div class="container-fluid"> <div class="bg-white p-4 rounded shadow-sm">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0 text-dark fw-bold">Danh sách Nhân viên</h4>
+            
+            <a asp-action="PendingRequests" class="btn btn-dark rounded-pill px-4">
+                <i class="fa fa-user-plus"></i> Duyệt yêu cầu mới
+            </a>
+        </div>
 
-    <div class="mb-3">
-        <a asp-action="PendingRequests" class="btn btn-warning">
-            <i class="fa fa-user-plus"></i> Duyệt yêu cầu mới
-        </a>
+        <div class="d-flex gap-2 mb-3">
+            <input type="text" class="form-control" placeholder="Search staff name..." style="width: 300px;">
+            <select class="form-select" style="width: 150px;">
+                <option>All Roles</option>
+                <option>Seller</option>
+                <option>Manager</option>
+            </select>
+            <button class="btn btn-secondary">Filter</button>
+        </div>
+
+        @if(TempData["Success"] != null)
+        {
+            <div class="alert alert-success mb-3">@TempData["Success"]</div>
+        }
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="py-3">Staff Name</th>
+                        <th class="py-3">Email</th>
+                        <th class="py-3">Role</th>
+                        <th class="py-3">Salary</th>
+                        <th class="py-3">Status</th>
+                        <th class="py-3 text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold">@item.StaffName</td>
+                            <td>@item.Email</td>
+                            <td>
+                                <span class="badge bg-light text-dark border">@GetRoleName(item.Role)</span>
+                            </td>
+                            <td>@string.Format("{0:N0} đ", item.BaseSalary)</td>
+                            <td>
+                                @if(item.IsActive) 
+                                { <span class="badge bg-success-subtle text-success px-3 rounded-pill">Active</span> }
+                                else 
+                                { <span class="badge bg-danger-subtle text-danger px-3 rounded-pill">Inactive</span> }
+                            </td>
+                            <td class="text-end">
+                                @if (item.Role != 1)
+                                {
+                                    <button onclick="loadEditModal(@item.StaffId)" 
+                                            class="btn btn-sm btn-warning text-white rounded-pill px-3 me-1">
+                                        Edit
+                                    </button>
+                                    <button onclick="confirmDelete(@item.StaffId, '@item.StaffName')" 
+                                            class="btn btn-sm btn-danger rounded-pill px-3">
+                                        Delete
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
-
-    <table class="table table-bordered table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th>
-                <th>Họ tên</th>
-                <th>Email</th>
-                <th>Vai trò</th>
-                <th>Lương cơ bản</th>
-                <th>Trạng thái</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>@item.StaffId</td>
-                    <td>@item.StaffName</td>
-                    <td>@item.Email</td>
-                    <td>
-                        <span class="badge bg-info text-dark">@GetRoleName(item.Role)</span>
-                    </td>
-                    <td>@string.Format("{0:N0} VNĐ", item.BaseSalary)</td>
-                    <td>
-                        @if(item.IsActive) 
-                        { <span class="badge bg-success">Hoạt động</span> }
-                        else 
-                        { <span class="badge bg-secondary">Đã nghỉ</span> }
-                    </td>
-                    <td>
-                        @if (item.Role != 1)
-                        {
-                            <button onclick="loadEditModal(@item.StaffId)" class="btn btn-sm btn-primary">Sửa</button>
-                            <button onclick="confirmDelete(@item.StaffId, '@item.StaffName')" class="btn btn-sm btn-danger">Xóa</button>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
 </div>
 
 <div class="modal fade" id="dynamicModal" tabindex="-1">

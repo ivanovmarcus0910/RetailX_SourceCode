@@ -1,44 +1,44 @@
-﻿@using BusinessObjectRetailX.Models
-
-@model List<Request>
-
+﻿@model List<BusinessObjectRetailX.Models.Request>
 @{
-	ViewData["Title"] = "Duyệt thành viên";
+    ViewData["Title"] = "Approve Requests";
+    Layout = "~/Views/Shared/_OwnerLayout.cshtml";
 }
 
-<div class="container mt-4">
-    <h3>Danh sách người dùng đang chờ gia nhập</h3>
-    <a asp-action="Index" class="btn btn-secondary mb-3">Quay lại</a>
+<div class="bg-white p-4 rounded shadow-sm">
+    <h5 class="mb-4 text-secondary">Danh sách yêu cầu gia nhập đang chờ duyệt</h5>
 
-    <table class="table table-striped">
-        <thead>
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
             <tr>
                 <th>Request ID</th>
-                <th>User ID</th>
-                <th>Họ tên</th>
+                <th>Applicant Name</th>
                 <th>Email</th>
-                <th>Hành động</th>
+                <th>Date</th> <th class="text-end">Actions</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var request in Model) 
+            @if (Model != null && Model.Any())
             {
-                <tr>
-                    <td>@request.Id</td> <td>@request.UserId</td> <td>@request.User.FullName</td> 
-                    <td>@request.User.Email</td>
-                    
-                    <td>
-                        <form asp-action="ApproveStaff" method="post">
-                            <input type="hidden" name="requestId" value="@request.Id" /> 
-                            
-                            <button type="submit" class="btn btn-success btn-sm" 
-                                    onclick="return confirm('Bạn chắc chắn muốn duyệt người này?');">
-                                <i class="fa fa-check"></i> Chấp nhận
-                            </button>
-                            
+                @foreach (var req in Model)
+                {
+                    <tr>
+                        <td>#@req.Id</td>
+                        <td class="fw-bold">@req.User?.FullName</td>
+                        <td>@req.User?.Email</td>
+                        <td>@DateTime.Now.ToString("dd/MM/yyyy")</td> <td class="text-end">
+                            <form asp-action="ApproveStaff" asp-route-requestId="@req.Id" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-success rounded-pill px-4" onclick="return confirm('Duyệt nhân viên này?')">
+                                    <i class="fa fa-check"></i> Approve
+                                </button>
                             </form>
-                    </td>
-                </tr>
+                            <button class="btn btn-outline-danger rounded-pill px-3">Reject</button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr><td colspan="5" class="text-center text-muted py-4">Không có yêu cầu nào mới.</td></tr>
             }
         </tbody>
     </table>

@@ -10,6 +10,7 @@ namespace RepositoriesRetailX
     public interface ITenantRepository
     {
         List<Tenant> GetAllTenant();
+        List<Tenant> GetAllTenantActive();
         Tenant? GetTenantById(int id);
         Tenant? GetTenantByOwnerEmail(string email);
 

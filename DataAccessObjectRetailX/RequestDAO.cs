@@ -45,6 +45,15 @@ namespace DataAccessObjectRetailX
                 .Include(r => r.User)
                 .ToList();
         }
+        public List<Request> GetRequestsByUserId(int userId)
+        {
+            return _context.Requests
+                .Where(r => r.UserId == userId)
+                .Include(r => r.User)
+                .Include(r => r.Tenant)
+                .OrderByDescending(r => r.Id)
+                .ToList();
+        }
 
         public bool Exists(int userId, int tenantId)
         {

@@ -63,8 +63,6 @@ namespace RetailXMVC.Controllers
                 }
 
                 user.TenantId = request.TenantId;
-                _userRepo.UpdateUser(user);
-                _requestRepo.DeleteRequest(requestId);
 
                 var newStaff = new Staff
                 {
@@ -77,9 +75,14 @@ namespace RetailXMVC.Controllers
                 };
 
                 _staffRepo.CreateStaff(newStaff);
-                _logRepo.LogCreate($"Bạn đã duyệt nhân viên {user.FullName} (ID: {newStaff.StaffId})", 1);
 
+                user.StaffId = newStaff.StaffId;
+                _userRepo.UpdateUser(user);
+                _requestRepo.DeleteRequest(requestId);
+
+                _logRepo.LogCreate($"Bạn đã duyệt nhân viên {user.FullName} (ID: {newStaff.StaffId})", 1);
                 TempData["Success"] = $"Đã duyệt nhân viên {user.FullName} thành công!";
+
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)

@@ -45,6 +45,11 @@ namespace RepositoriesRetailX
             return _dao.Exists(userId, tenantId);
         }
 
+        public List<Request> GetRequestsByUserId(int userId)
+        {
+            return _dao.GetRequestsByUserId(userId);
+        }
+
         public List<Request> GetTenantPendingRequests(int tenantId)
         {
             return _dao.GetPendingByTenant(tenantId);

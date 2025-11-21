@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - RetailX Owner</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    
+    <style>
+        body { overflow-x: hidden; background-color: #f4f6f9; }
+        #wrapper { display: flex; width: 100%; height: 100vh; }
+        #sidebar-wrapper {
+            min-height: 100vh;
+            width: 250px;
+            background-color: #000;
+            color: #fff;
+            transition: margin 0.25s ease-out;
+        }
+        .sidebar-heading { padding: 1.5rem; font-size: 1.5rem; font-weight: bold; color: white; text-decoration: none; display: block; text-align: center;}
+        .list-group-item {
+            background-color: transparent;
+            color: #bbb;
+            border: none;
+            padding: 1rem 1.5rem;
+        }
+        .list-group-item:hover { background-color: #333; color: #fff; }
+        .list-group-item.active { background-color: #2c3e50; color: #fff; font-weight: bold; border-left: 4px solid #007bff; }
+        .list-group-item i { margin-right: 10px; width: 20px; text-align: center; }
+        
+        #page-content-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .top-navbar { background-color: #fff; padding: 10px 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; }
+        .content-container { padding: 20px; }
+    </style>
+</head>
+<body>
+    @if (User.Identity.IsAuthenticated) 
+    {
+        <input type="hidden" id="currentTenantId" value="@User.FindFirst("TenantId")?.Value" />
+    }
+
+    <div id="wrapper">
+        <div id="sidebar-wrapper">
+            <a class="sidebar-heading">RetailX Owner</a>
+            <div class="list-group list-group-flush mt-3">
+                <a asp-controller="Dashboard" asp-action="Index" 
+                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Dashboard" ? "active" : "")">
+                    <i class="fa fa-tachometer-alt"></i> Dashboard
+                </a>
+                
+                <a asp-controller="Staff" asp-action="Index" 
+                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Staff" ? "active" : "")">
+                    <i class="fa fa-users"></i> Manage Staff
+                </a>
+
+                <a asp-controller="Staff" asp-action="PendingRequests" 
+                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "PendingRequests" ? "active" : "")">
+                    <i class="fa fa-user-plus"></i> Approve Request
+                </a>
+
+                <a asp-controller="AuditLog" asp-action="Index" 
+                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Controller"]?.ToString() == "AuditLog" ? "active" : "")">
+                    <i class="fa fa-history"></i> Audit Log
+                </a>
+            </div>
+        </div>
+
+        <div id="page-content-wrapper">
+            <nav class="top-navbar">
+                <h4 class="m-0 fw-bold text-secondary">@ViewData["Title"]</h4>
+                <div class="d-flex align-items-center">
+                    <span class="me-3 fw-bold"><i class="fa fa-user-circle"></i> @User.Identity.Name</span>
+                    <a asp-controller="Auth" asp-action="Logout" class="btn btn-danger btn-sm">Đăng xuất</a>
+                </div>
+            </nav>
+
+            <div class="content-container">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
+      <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-primary text-white">
+          <strong class="me-auto"><i class="fa fa-bell"></i> Thông báo</strong>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body" id="toastMessage"></div>
+      </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <partial name="_SignalRScripts" />
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

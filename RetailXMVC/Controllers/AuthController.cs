@@ -76,6 +76,9 @@ namespace RetailXMVC.Controllers
             if (user.GlobalRole=="Admin")
                 return RedirectToAction("System", "AdminRetailX");
 
+            if (user.GlobalRole == "Owner")
+                return RedirectToAction("Index", "Staff");
+
             return RedirectToAction("Index", "Home");
         }
         [HttpGet]
