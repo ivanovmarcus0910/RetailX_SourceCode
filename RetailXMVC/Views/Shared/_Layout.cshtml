@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/RetailXMVC.styles.css" asp-append-version="true" />
+    <link rel="icon" type="image/png" href="~/favicon.png" asp-append-version="true" />
+
 </head>
 <body>
     <header>
@@ -30,21 +32,13 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark fw-bold" asp-controller="Tenant" asp-action="ListCompany">Company</a>
-                        </li>
                     </ul>
 
                     <!-- Right menu: Login/Signup hoặc User + Logout -->
                     <ul class="navbar-nav ms-auto mb-2 mb-sm-0">
                         @if (User?.Identity != null && User.Identity.IsAuthenticated)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-primary fw-bold me-3" asp-controller="Tenant" asp-action="MyRequests">
-                                    <i class="fa fa-paper-plane"></i> My requests
-                                </a>
-                            </li>
-
+                            
                             var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name ?? "User";
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown"
@@ -97,6 +91,22 @@
                                         <li><hr class="dropdown-divider" /></li>
 
                                     }
+                                    @if (User.IsInRole("User") && string.IsNullOrEmpty(User.FindFirst("StaffId")?.Value))
+                                    {
+
+                                        <li>
+                                            <a class="dropdown-item" asp-area="" asp-controller="Tenant" asp-action="ListCompany">
+                                                List Company
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li>
+                                            <a class="dropdown-item" asp-area="" asp-controller="Tenant" asp-action="MyRequests">
+                                                My Requesting
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                    }
                                     <li>
                                         <a class="dropdown-item text-danger" asp-area="" asp-controller="Auth" asp-action="Logout">
                                             Đăng xuất
@@ -112,12 +122,14 @@
                                     Đăng nhập
                                 </a>
                             </li>
+                          
                             <li class="nav-item">
-                                <a class="nav-link btn btn-primary text-white px-3 ms-2"
+                                <a class="nav-link btn btn-signup px-3 ms-2"
                                    asp-area="" asp-controller="Auth" asp-action="SignUpAccount">
                                     Đăng ký
                                 </a>
                             </li>
+
                         }
                     </ul>
                 </div>
