@@ -1,50 +1,192 @@
 ﻿@model IEnumerable<BusinessObject.Models.Order>
 @{
     Layout = "_SellerLayout";
+    ViewData["Title"] = "Lịch sử mua hàng";
+
+    // Lấy tên khách hàng từ đơn đầu tiên (nếu có) để hiển thị lên tiêu đề cho đẹp
+    string customerName = Model.FirstOrDefault()?.Customer?.CustomerName ?? "Khách hàng";
 }
 
-<h2>Lịch sử mua hàng</h2>
+@* --- CSS TÙY CHỈNH (Đồng bộ) --- *@
+<style>
+    :root {
+        --gray-primary: #343a40;
+        --gray-light: #f8f9fa;
+    }
 
-<table class="table table-striped mt-3">
-    <thead>
-        <tr>
-            <th>Mã đơn</th>
-            <th>Ngày tạo</th>
-            <th>Nhân viên</th>
-            <th>Tổng tiền</th>
-            <th>Chi tiết</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var o in Model)
-        {
-            <tr>
-                <td>@o.OrderId</td>
-                <td>@o.CreateDate</td>
-                <td>@o.Staff?.StaffName</td>
+    /* Khung Card */
+    .card-modern {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        background: white;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
 
-                <td>
-                    @{
-                        decimal total = o.OrderDetails.Sum(d =>
-                        (decimal)d.Quantity * (d.Product?.Price ?? 0)
-                        );
+    /* Bảng hiện đại */
+    .table-modern thead th {
+        background-color: #f8f9fa;
+        color: #495057;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        border-bottom: 2px solid #dee2e6;
+        padding: 15px;
+        white-space: nowrap;
+    }
 
-                    }
+    .table-modern tbody td {
+        vertical-align: middle;
+        padding: 15px;
+        border-bottom: 1px solid #f1f3f5;
+        color: #343a40;
+    }
 
-                    @String.Format("{0:N0} đ", total)
-                </td>
+    .table-modern tbody tr:hover {
+        background-color: #f8f9fa;
+    }
 
-                <td>
-                    <a asp-controller="OrderDetail"
-                       asp-action="Detail"
-                       asp-route-id="@o.OrderId"
-                       class="btn btn-sm btn-primary">
-                        Xem chi tiết
-                    </a>
-                </td>
-            </tr>
+    /* Nút bấm */
+    .btn-modern {
+        border-radius: 6px;
+        padding: 6px 16px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+        border: none;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn-modern:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-    </tbody>
-</table>
 
-<a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+    .btn-view {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        color: #495057;
+    }
+
+        .btn-view:hover {
+            background-color: #343a40;
+            color: white;
+            border-color: #343a40;
+        }
+
+    .btn-back {
+        background-color: #6c757d;
+        color: white;
+    }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+            color: white;
+        }
+
+    /* Badge & Text Styles */
+    .id-text {
+        font-family: 'Consolas', monospace;
+        color: #868e96;
+        font-weight: bold;
+    }
+
+    .money-text {
+        font-family: 'Consolas', monospace;
+        color: #343a40;
+        font-weight: 700;
+    }
+
+    .date-text {
+        color: #495057;
+        font-size: 0.9rem;
+    }
+</style>
+
+@* --- HEADER --- *@
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-secondary m-0" style="letter-spacing: -0.5px;">Lịch sử mua hàng</h2>
+        @if (Model.Any())
+        {
+            <p class="text-muted m-0 small mt-1">Khách hàng: <strong>@customerName</strong> | Tổng số đơn: <strong>@Model.Count()</strong></p>
+        }
+    </div>
+
+    <a asp-action="Index" class="btn-modern btn-back shadow-sm">
+        <i class="bi bi-arrow-left"></i> Quay lại danh sách
+    </a>
+</div>
+
+@* --- BẢNG DỮ LIỆU --- *@
+<div class="card-modern">
+    <div class="table-responsive">
+        <table class="table table-modern mb-0">
+            <thead>
+                <tr>
+                    <th class="text-center" style="width: 100px;">Mã đơn</th>
+                    <th>Ngày tạo</th>
+                    <th>Nhân viên bán</th>
+                    <th class="text-end">Tổng tiền</th>
+                    <th class="text-center" style="width: 120px;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var o in Model.OrderByDescending(x => x.CreateDate)) // Sắp xếp mới nhất lên đầu
+                    {
+                        <tr>
+                            <td class="text-center">
+                                <span class="id-text">#@o.OrderId</span>
+                            </td>
+
+                            <td>
+                                <span class="date-text">@o.CreateDate.ToString("dd/MM/yyyy HH:mm")</span>
+                            </td>
+
+                            <td>
+                                @if (o.Staff != null)
+                                {
+                                    <span class="fw-bold text-dark">@o.Staff.StaffName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted fst-italic">Unknown</span>
+                                }
+                            </td>
+
+                            <td class="text-end">
+                                @{
+                                    // Tính tổng tiền
+                                    decimal total = o.OrderDetails.Sum(d => (decimal)d.Quantity * (d.Product?.Price ?? 0));
+                                }
+                                <span class="money-text">@String.Format("{0:N0} đ", total)</span>
+                            </td>
+
+                            <td class="text-center">
+                                <a asp-controller="OrderDetail"
+                                   asp-action="Detail"
+                                   asp-route-id="@o.OrderId"
+                                   class="btn-modern btn-view btn-sm">
+                                    Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <div class="fs-1 opacity-25 mb-2">🛒</div>
+                            <p class="m-0">Khách hàng này chưa có đơn hàng nào.</p>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

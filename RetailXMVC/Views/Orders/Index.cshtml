@@ -1,34 +1,245 @@
-﻿@model List<BusinessObject.Models.Order>
+﻿@model IEnumerable<BusinessObject.Models.Order>
+@{
+    Layout = "_SellerLayout";
+    ViewData["Title"] = "Quản lý hóa đơn";
 
-<h2>Danh sách hóa đơn</h2>
+    int currentPage = ViewBag.CurrentPage != null ? (int)ViewBag.CurrentPage : 1;
+    int totalPages = ViewBag.TotalPages != null ? (int)ViewBag.TotalPages : 1;
+    int totalCount = ViewBag.TotalCount != null ? (int)ViewBag.TotalCount : 0;
+}
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Khách hàng</th>
-            <th>Nhân viên</th>
-            <th>Ngày tạo</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var o in Model)
-        {
-            <tr>
-                <td>@o.OrderId</td>
-                <td>@o.Customer.CustomerName</td>
-                <td>@o.Staff.StaffName</td>
-                <td>@o.CreateDate</td>
-                <td>
-                    <a asp-controller="OrderDetail" asp-action="Detail" asp-route-id="@o.OrderId"
-                       class="btn btn-info btn-sm">Xem</a>
+@* --- CSS TÙY CHỈNH --- *@
+<style>
+    :root {
+        --gray-primary: #343a40;
+        --gray-light: #f8f9fa;
+        --gray-border: #e9ecef;
+    }
 
-                    <a asp-action="Delete" asp-route-id="@o.OrderId" class="btn btn-danger btn-sm">Xóa</a>
-                </td>
-            </tr>
+    /* Card & Filter */
+    .card-modern {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        background: white;
+        margin-bottom: 20px;
+    }
+
+    .filter-card {
+        padding: 20px;
+        border: 1px solid var(--gray-border);
+    }
+
+    /* Input */
+    .form-label-custom {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #6c757d;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+
+    .input-custom {
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        font-size: 0.9rem;
+        padding: 8px 12px;
+    }
+
+        .input-custom:focus {
+            border-color: var(--gray-primary);
+            box-shadow: 0 0 0 3px rgba(52, 58, 64, 0.1);
         }
-    </tbody>
-</table>
 
-<a asp-action="Create" class="btn btn-primary">Tạo hóa đơn mới</a>
+    /* Table */
+    .table-modern thead th {
+        background: #f8f9fa;
+        color: #495057;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        padding: 15px;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .table-modern tbody td {
+        padding: 15px;
+        vertical-align: middle;
+        color: #343a40;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    /* Button */
+    .btn-dark-modern {
+        background-color: var(--gray-primary);
+        color: white;
+        border-radius: 6px;
+        font-weight: 600;
+        border: none;
+    }
+
+        .btn-dark-modern:hover {
+            background-color: #23272b;
+            transform: translateY(-1px);
+        }
+
+    /* Pagination */
+    .pagination .page-link {
+        color: #343a40;
+        border-radius: 6px;
+        margin: 0 2px;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: var(--gray-primary);
+        border-color: var(--gray-primary);
+        color: white;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-secondary m-0">Quản lý Hóa Đơn</h2>
+        <p class="text-muted small m-0">Tổng số: <strong>@totalCount</strong> đơn hàng</p>
+    </div>
+    <a asp-action="Create" class="btn btn-dark-modern shadow-sm py-2 px-3">
+        + Tạo hóa đơn mới
+    </a>
+</div>
+
+@* --- 1. THANH LỌC & TÌM KIẾM --- *@
+<div class="card-modern filter-card">
+    <form asp-action="Index" method="get">
+        <div class="row g-3 align-items-end">
+
+            @* Từ khóa *@
+            @* Tìm trong View Index.cshtml, đoạn ô input tìm kiếm *@
+
+            <div class="col-md-4">
+                <label class="form-label-custom">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+
+                    @* 👇 Sửa placeholder ở đây *@
+                    <input type="text" name="keyword" value="@ViewBag.Keyword"
+                           class="form-control input-custom border-start-0 ps-0"
+                           placeholder="Nhập Mã đơn / Tên khách / SĐT..." />
+                </div>
+            </div>
+
+            @* Từ ngày *@
+            <div class="col-md-3">
+                <label class="form-label-custom">Từ ngày</label>
+                <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control input-custom" />
+            </div>
+
+            @* Đến ngày *@
+            <div class="col-md-3">
+                <label class="form-label-custom">Đến ngày</label>
+                <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control input-custom" />
+            </div>
+
+            @* Nút lọc *@
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-dark-modern w-100" style="height: 38px;">Lọc</button>
+                @if (ViewBag.Keyword != null || ViewBag.FromDate != null)
+                {
+                    <a asp-action="Index" class="btn btn-outline-secondary d-flex align-items-center" title="Xóa lọc">✕</a>
+                }
+            </div>
+        </div>
+    </form>
+</div>
+
+@* --- 2. DANH SÁCH HÓA ĐƠN --- *@
+<div class="card-modern">
+    <div class="table-responsive">
+        <table class="table table-modern mb-0">
+            <thead>
+                <tr>
+                    <th class="text-center" style="width: 80px;">Mã Đơn</th>
+                    <th style="width: 25%;">Khách hàng</th>
+                    <th style="width: 20%;">Nhân viên bán</th>
+                    <th style="width: 20%;">Ngày tạo</th>
+                    <th class="text-center" style="width: 100px;">Chi tiết</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var o in Model)
+                    {
+                        <tr>
+                            <td class="text-center">
+                                <span class="badge bg-light text-secondary border">#@o.OrderId</span>
+                            </td>
+
+                            <td><span class="fw-bold text-dark">@o.Customer?.CustomerName</span></td>
+
+                            <td class="text-muted small">@o.Staff?.StaffName</td>
+
+                            <td class="text-secondary" style="font-family: Consolas;">
+                                @o.CreateDate.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+
+                            <td class="text-center">
+                                <a asp-controller="OrderDetail" asp-action="Detail" asp-route-id="@o.OrderId"
+                                   class="btn btn-sm btn-outline-secondary border-0 fw-bold">
+                                    Xem <i class="bi bi-chevron-right" style="font-size: 0.8rem;"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            Không tìm thấy đơn hàng nào phù hợp.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@* --- 3. PHÂN TRANG --- *@
+@if (totalPages > 1)
+{
+    <nav class="mt-4 d-flex justify-content-center">
+        <ul class="pagination">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="Index"
+                   asp-route-page="@(currentPage - 1)"
+                   asp-route-keyword="@ViewBag.Keyword"
+                   asp-route-fromDate="@ViewBag.FromDate"
+                   asp-route-toDate="@ViewBag.ToDate">
+                    &laquo;
+                </a>
+            </li>
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <a class="page-link" asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-keyword="@ViewBag.Keyword"
+                       asp-route-fromDate="@ViewBag.FromDate"
+                       asp-route-toDate="@ViewBag.ToDate">
+                        @i
+                    </a>
+                </li>
+            }
+
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" asp-action="Index"
+                   asp-route-page="@(currentPage + 1)"
+                   asp-route-keyword="@ViewBag.Keyword"
+                   asp-route-fromDate="@ViewBag.FromDate"
+                   asp-route-toDate="@ViewBag.ToDate">
+                    &raquo;
+                </a>
+            </li>
+        </ul>
+    </nav>
+}

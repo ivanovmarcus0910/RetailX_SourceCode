@@ -52,12 +52,47 @@ public class CustomerDAO
         var cus = GetById(id);
         if (cus != null)
         {
-            cus.IsActive = false; // Soft delete
+            cus.IsActive = false; 
         }
     }
 
     public void Save()
     {
         _context.SaveChanges();
+    }
+   
+
+
+    public (List<Customer>, int) GetCustomers(string name, string phone, string status, int pageIndex, int pageSize)
+    {
+        var query = _context.Customers.AsQueryable();
+
+
+        if (!string.IsNullOrEmpty(status))
+        {
+            if (status == "active") query = query.Where(c => c.IsActive);
+            else if (status == "inactive") query = query.Where(c => !c.IsActive);
+        }
+
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            string n = name.ToLower().Trim();
+            query = query.Where(c => c.CustomerName.ToLower().Contains(n));
+        }
+
+        if (!string.IsNullOrWhiteSpace(phone))
+        {
+            string p = phone.Trim();
+            query = query.Where(c => c.Phone.Contains(p));
+        }
+
+        int totalCount = query.Count();
+
+        var list = query.OrderByDescending(c => c.CustomerId)
+                        .Skip((pageIndex - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToList();
+
+        return (list, totalCount);
     }
 }

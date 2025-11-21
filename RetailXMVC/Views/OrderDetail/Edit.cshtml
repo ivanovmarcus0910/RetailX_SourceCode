@@ -1,19 +1,139 @@
 ﻿@model BusinessObject.Models.OrderDetail
+@{
+    Layout = "_SellerLayout";
+    ViewData["Title"] = "Sửa sản phẩm";
+}
 
-<h2>Sửa sản phẩm trong hóa đơn</h2>
+@* --- 1. CSS TÙY CHỈNH (Đồng bộ) --- *@
+<style>
+    :root {
+        --gray-primary: #343a40;
+        --gray-light: #f8f9fa;
+    }
 
-<form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="OrderDetailId" />
-    <input type="hidden" asp-for="OrderId" />
+    .card-modern {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Bóng đổ sâu hơn cho form chính */
+        background: white;
+        overflow: hidden;
+    }
 
-    <label>Sản phẩm</label>
-    <select asp-for="ProductId"
-            asp-items="@(new SelectList(ViewBag.Products, "ProductId", "ProductName"))"
-            class="form-control">
-    </select>
+    .card-header-modern {
+        background-color: var(--gray-primary);
+        color: white;
+        padding: 20px 30px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.95rem;
+    }
 
-    <label>Số lượng</label>
-    <input asp-for="Quantity" class="form-control" min="0" />
+    .card-body-modern {
+        padding: 40px;
+    }
 
-    <button class="btn btn-primary mt-3">Lưu</button>
-</form>
+    .form-label-modern {
+        font-weight: 700;
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+    }
+
+    .form-control-modern {
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+
+        .form-control-modern:focus {
+            border-color: var(--gray-primary);
+            box-shadow: 0 0 0 4px rgba(52, 58, 64, 0.1);
+        }
+
+    .btn-modern {
+        border-radius: 8px;
+        padding: 10px 30px;
+        font-weight: 600;
+        transition: all 0.2s;
+        border: none;
+    }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+    .btn-save {
+        background-color: #343a40;
+        color: white;
+    }
+
+        .btn-save:hover {
+            background-color: #212529;
+            color: white;
+        }
+
+    .btn-cancel {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        color: #495057;
+    }
+
+        .btn-cancel:hover {
+            background-color: #f1f3f5;
+            color: #212529;
+        }
+</style>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+
+            <div class="card-modern">
+                <div class="card-header-modern text-center">
+                    <i class="bi bi-pencil-square me-2"></i> Cập nhật số lượng
+                </div>
+
+                <div class="card-body-modern">
+                    <form asp-action="Edit" method="post">
+                        @* Giữ nguyên các input ẩn *@
+                        <input type="hidden" asp-for="OrderDetailId" />
+                        <input type="hidden" asp-for="OrderId" />
+
+                        @* 1. Chọn Sản Phẩm *@
+                        <div class="mb-4">
+                            <label class="form-label-modern">Sản phẩm</label>
+                            @* Dùng select disabled nếu không muốn cho đổi tên SP, hoặc để thường nếu cho phép *@
+                            <select asp-for="ProductId"
+                                    asp-items="@(new SelectList(ViewBag.Products, "ProductId", "ProductName"))"
+                                    class="form-select form-control-modern">
+                            </select>
+                        </div>
+
+                        @* 2. Nhập Số Lượng *@
+                        <div class="mb-4">
+                            <label class="form-label-modern">Số lượng mới</label>
+                            <input asp-for="Quantity" type="number" class="form-control form-control-modern text-center fw-bold fs-5" min="1" required />
+                        </div>
+
+                        @* 3. Nút Hành Động *@
+                        <div class="d-flex justify-content-between align-items-center mt-5">
+                            <a asp-controller="OrderDetail" asp-action="Detail" asp-route-id="@Model.OrderId" class="btn btn-modern btn-cancel text-decoration-none">
+                                Hủy bỏ
+                            </a>
+
+                            <button type="submit" class="btn btn-modern btn-save">
+                                Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

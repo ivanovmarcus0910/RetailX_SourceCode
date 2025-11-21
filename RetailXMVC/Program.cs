@@ -76,13 +76,14 @@ namespace RetailXMVC
             builder.Services.AddScoped<OrderDAO>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
-            builder.Services.AddScoped<OrderDetailDAO>();
-
             builder.Services.AddScoped<CustomerDAO>();
             builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 
             builder.Services.AddScoped<OrderDetailDAO>();
             builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
+
+            builder.Services.AddScoped <SellerDashboardDAO>();
+            builder.Services.AddScoped<ISellerDashboardRepository,SellerDashboardRepository>();
 
             builder.Services.AddScoped<StatisticDAO>();
             builder.Services.AddScoped<IStatisticRepository, StatisticRepository>();
