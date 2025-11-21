@@ -1,0 +1,203 @@
+﻿@using BusinessObjectRetailX.Models
+@model User
+
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+
+    var profileErrors = ViewBag.ProfileErrors as IDictionary<string, string>;
+    var passwordErrors = ViewBag.PasswordErrors as IDictionary<string, string>;
+
+    string fullNameError = profileErrors != null && profileErrors.ContainsKey("FullName")
+        ? profileErrors["FullName"] : null;
+
+    string phoneError = profileErrors != null && profileErrors.ContainsKey("Phone")
+        ? profileErrors["Phone"] : null;
+
+    string currentPassError = passwordErrors != null && passwordErrors.ContainsKey("CurrentPassword")
+        ? passwordErrors["CurrentPassword"] : null;
+
+    string newPassError = passwordErrors != null && passwordErrors.ContainsKey("NewPassword")
+        ? passwordErrors["NewPassword"] : null;
+
+    string confirmPassError = passwordErrors != null && passwordErrors.ContainsKey("ConfirmPassword")
+        ? passwordErrors["ConfirmPassword"] : null;
+}
+
+<div class="auth-wrapper d-flex justify-content-center align-items-center">
+    <div class="auth-card" style="max-width: 600px; width: 100%;">
+        <h2 class="mb-3 text-center">Hồ sơ cá nhân</h2>
+
+        @* Thông báo chung *@
+        @if (ViewBag.ProfileErrorMessage != null)
+        {
+            <div class="alert alert-danger mb-2">@ViewBag.ProfileErrorMessage</div>
+        }
+        @if (ViewBag.ProfileSuccessMessage != null)
+        {
+            <div class="alert alert-success mb-2">@ViewBag.ProfileSuccessMessage</div>
+        }
+        @if (ViewBag.PasswordErrorMessage != null)
+        {
+            <div class="alert alert-danger mb-2">@ViewBag.PasswordErrorMessage</div>
+        }
+        @if (ViewBag.PasswordSuccessMessage != null)
+        {
+            <div class="alert alert-success mb-2">@ViewBag.PasswordSuccessMessage</div>
+        }
+
+        <!-- Thông tin tài khoản -->
+        <h5 class="mt-3 mb-3">Thông tin tài khoản</h5>
+        <form asp-action="UpdateProfile" asp-controller="Auth" method="post" class="mb-3">
+            <div class="mb-3">
+                <label class="form-label">Họ và tên</label>
+                <input name="fullName" class="form-control"
+                       value="@Model.FullName" />
+                @if (!string.IsNullOrEmpty(fullNameError))
+                {
+                    <small class="text-danger">@fullNameError</small>
+                }
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input class="form-control" value="@Model.Email" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Số điện thoại</label>
+                <input name="phone" class="form-control"
+                       value="@Model.Phone" />
+                @if (!string.IsNullOrEmpty(phoneError))
+                {
+                    <small class="text-danger">@phoneError</small>
+                }
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Vai trò</label>
+                <input class="form-control" value="@Model.GlobalRole" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">TenantId</label>
+                <input class="form-control" value="@Model.TenantId" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Ngày tạo</label>
+                <input class="form-control" value="@Model.CreatedDate" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Trạng thái</label>
+                <input class="form-control" value="@(Model.IsActive == true ? "Active" : "Inactive")" readonly />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Lưu thông tin</button>
+        </form>
+
+        <hr class="my-4" />
+
+        <!-- Đổi mật khẩu -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">Đổi mật khẩu</h5>
+            <button type="button" class="btn btn-sm btn-outline-light"
+                    onclick="togglePasswordForm()">
+                Hiện / Ẩn form
+            </button>
+        </div>
+
+        <div id="passwordSection" class="mt-2 d-none">
+            <form asp-action="ChangePassword" asp-controller="Auth" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Mật khẩu hiện tại</label>
+                    <input name="currentPassword" type="password" class="form-control" />
+                    @if (!string.IsNullOrEmpty(currentPassError))
+                    {
+                        <small class="text-danger">@currentPassError</small>
+                    }
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Mật khẩu mới</label>
+                    <input name="newPassword" type="password" class="form-control" />
+                    @if (!string.IsNullOrEmpty(newPassError))
+                    {
+                        <small class="text-danger">@newPassError</small>
+                    }
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Nhập lại mật khẩu mới</label>
+                    <input name="confirmPassword" type="password" class="form-control" />
+                    @if (!string.IsNullOrEmpty(confirmPassError))
+                    {
+                        <small class="text-danger">@confirmPassError</small>
+                    }
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Lưu mật khẩu mới</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function togglePasswordForm() {
+            const section = document.getElementById("passwordSection");
+            section.classList.toggle("d-none");
+        }
+    </script>
+}
+
+<style>
+    /* style đen trắng giống login/signup */
+
+    .auth-wrapper {
+        min-height: 80vh;
+    }
+
+    .auth-card {
+        background-color: #000;
+        border: 1px solid #333;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 0 40px rgba(0,0,0,0.7);
+        color: #fff;
+    }
+
+        .auth-card .form-label {
+            color: #f5f5f5;
+        }
+
+        .auth-card .form-control {
+            background-color: #000;
+            border: 1px solid #333;
+            color: #fff;
+        }
+
+            .auth-card .form-control:focus {
+                border-color: #fff;
+                box-shadow: none;
+            }
+
+        .auth-card .btn-primary {
+            background-color: #fff;
+            color: #000;
+            border: none;
+            font-weight: 600;
+            border-radius: 999px;
+        }
+
+            .auth-card .btn-primary:hover {
+                background-color: #e6e6e6;
+            }
+
+        .auth-card .btn-outline-light {
+            border-radius: 999px;
+            border-width: 1px;
+            font-size: 0.85rem;
+            padding: 4px 12px;
+        }
+</style>

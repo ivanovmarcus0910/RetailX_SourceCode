@@ -25,7 +25,6 @@
             box-shadow: 0 6px 12px rgba(0,0,0,0.15);
         }
 
-    /* ✅ GIẢM CHIỀU CAO BIỂU ĐỒ CHÍNH: 450px → 320px */
     .chart-container-main {
         position: relative;
         height: 320px;
@@ -40,14 +39,14 @@
     }
 
     .metric-tab {
-        padding: 0.6rem 1.2rem; /* ✅ GIẢM PADDING TAB: 0.8rem → 0.6rem */
+        padding: 0.6rem 1.2rem;
         background: #f8f9fa;
         border: none;
         border-radius: 8px 8px 0 0;
         cursor: pointer;
         transition: all 0.3s;
         font-weight: 500;
-        font-size: 0.85rem; /* ✅ GIẢM FONT: 0.9rem → 0.85rem */
+        font-size: 0.85rem;
         position: relative;
         bottom: -2px;
     }
@@ -125,7 +124,6 @@
                 <i class="fas fa-chevron-left"></i>
             </button>
 
-            <!-- ✅ FIX: Tự động chọn đúng năm -->
             <select class="form-select form-select-sm" style="width: 120px;" onchange="changeYear(this.value)" id="yearDropdown">
                 @foreach (var y in availableYears)
                 {
@@ -251,7 +249,6 @@
             <canvas id="mainChart"></canvas>
         </div>
 
-        <!-- ✅ GIẢM PADDING INSIGHT: p-3 → p-2 -->
         <div id="chartInsights" class="mt-2 p-2 rounded" style="background: #f8f9fa;">
             <div class="d-flex align-items-center">
                 <i class="fas fa-lightbulb text-warning me-2" style="font-size: 1rem;"></i>
@@ -263,42 +260,38 @@
     </div>
 </div>
 
-<!-- ✅✅✅ THÊM PHẦN NÀY - AI INSIGHTS ✅✅✅ -->
+<!-- AI INSIGHTS - CÓ NÚT PHÂN TÍCH -->
 <div class="card border-0 shadow-sm mt-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-    <div class="card-header bg-transparent border-0 py-2">
+    <div class="card-header bg-transparent border-0 py-2 d-flex justify-content-between align-items-center">
         <h6 class="mb-0 fw-bold text-white">
             <i class="fas fa-robot me-2"></i>
-            AI Insights - Phân Tích Thông Minh bởi Gemini
+            AI Insights - Phân Tích Thông Minh bởi AI RetailX
         </h6>
+        <button class="btn btn-light btn-sm" onclick="getAIAnalysis()" id="btnAnalyze">
+            <i class="fas fa-magic me-1"></i>
+            Phân Tích
+        </button>
     </div>
     <div class="card-body text-white">
-        @if (!string.IsNullOrEmpty(ViewBag.AIInsights))
-        {
-            <div id="aiInsightsContent" style="font-size: 0.9rem; line-height: 1.7; white-space: pre-wrap;">@ViewBag.AIInsights</div>
-        }
-        else
-        {
+        <div id="aiInsightsContent" style="font-size: 0.9rem; line-height: 1.7;">
             <div class="text-center py-4">
-                <div class="spinner-border text-light mb-3" role="status">
-                    <span class="visually-hidden">Đang phân tích...</span>
-                </div>
-                <p class="mb-0">🤖 AI đang phân tích dữ liệu tài chính năm @selectedYear...</p>
+                <i class="fas fa-robot fa-3x mb-3" style="opacity: 0.5;"></i>
+                <p class="mb-0">
+                    💡 Nhấn nút <strong>"Phân Tích"</strong> để AI phân tích dữ liệu tài chính năm @selectedYear
+                </p>
             </div>
-        }
+        </div>
     </div>
     <div class="card-footer bg-transparent border-0 text-white-50 d-flex justify-content-between align-items-center" style="font-size: 0.75rem;">
         <div>
             <i class="fas fa-info-circle me-1"></i>
-            Phân tích được tạo tự động bởi Google Gemini AI
+            Phân tích được tạo bởi AI ReTailX
         </div>
-        <div>
-            <i class="fas fa-clock me-1"></i>
-            @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
-        </div>
+        <div id="analysisTime"></div>
     </div>
 </div>
 
-<!-- SO SÁNH - ✅ GIẢM CHIỀU CAO: 350px → 280px -->
+<!-- SO SÁNH -->
 <div class="row g-3 mt-3">
     <div class="col-lg-8">
         <div class="card border-0 shadow-sm">
@@ -392,11 +385,11 @@
                         data: config.data,
                         borderColor: config.color,
                         backgroundColor: config.bgColor,
-                        borderWidth: 2.5,  // ✅ GIẢM: 3 → 2.5
+                        borderWidth: 2.5,
                         fill: true,
                         tension: 0.4,
-                        pointRadius: 4,  // ✅ GIẢM: 5 → 4
-                        pointHoverRadius: 6,  // ✅ GIẢM: 7 → 6
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
                         pointBackgroundColor: config.color,
                         pointBorderColor: '#fff',
                         pointBorderWidth: 2
@@ -410,8 +403,8 @@
                             display: true,
                             position: 'top',
                             labels: {
-                                font: { size: 12, weight: 'bold' },  // ✅ GIẢM: 14 → 12
-                                padding: 12  // ✅ GIẢM: 20 → 12
+                                font: { size: 12, weight: 'bold' },
+                                padding: 12
                             }
                         },
                         tooltip: {
@@ -428,12 +421,12 @@
                                     if (value >= 1000000) return (value / 1000000).toFixed(0) + 'M';
                                     return value.toLocaleString('vi-VN');
                                 },
-                                font: { size: 11 }  // ✅ GIẢM: 12 → 11
+                                font: { size: 11 }
                             }
                         },
                         x: {
                             ticks: {
-                                font: { size: 11 }  // ✅ GIẢM: 12 → 11
+                                font: { size: 11 }
                             }
                         }
                     }
@@ -469,9 +462,69 @@
             `;
         }
 
+        // ✅ FUNCTION GỌI AI ANALYSIS
+        async function getAIAnalysis() {
+            const btnAnalyze = document.getElementById('btnAnalyze');
+            const aiContent = document.getElementById('aiInsightsContent');
+            const analysisTime = document.getElementById('analysisTime');
+
+            // Disable button
+            btnAnalyze.disabled = true;
+            btnAnalyze.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang phân tích...';
+
+            // Show loading
+            aiContent.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-light mb-3" role="status">
+                        <span class="visually-hidden">Đang phân tích...</span>
+                    </div>
+                    <p class="mb-0">🤖 AI đang phân tích dữ liệu tài chính năm @selectedYear...</p>
+                    <small class="text-white-50 d-block mt-2">Vui lòng chờ 3-5 giây...</small>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('@Url.Action("GetAIAnalysis", "Report")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ year: @selectedYear })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    aiContent.innerHTML = `<div style="white-space: pre-wrap;">${data.analysis}</div>`;
+
+                    // Update time
+                    const now = new Date();
+                    analysisTime.innerHTML = `<i class="fas fa-clock me-1"></i>${now.toLocaleDateString('vi-VN')} ${now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`;
+                } else {
+                    aiContent.innerHTML = `
+                        <div class="alert alert-warning mb-0" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white;">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            ${data.message || 'Không thể phân tích. Vui lòng thử lại.'}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                aiContent.innerHTML = `
+                    <div class="alert alert-danger mb-0" style="background: rgba(220,53,69,0.3); border: 1px solid rgba(220,53,69,0.5); color: white;">
+                        <i class="fas fa-times-circle me-2"></i>
+                        Lỗi kết nối: ${error.message}
+                    </div>
+                `;
+            } finally {
+                // Re-enable button
+                btnAnalyze.disabled = false;
+                btnAnalyze.innerHTML = '<i class="fas fa-magic me-1"></i> Phân Tích Lại';
+            }
+        }
+
         showChart('revenue');
 
-        // Comparison
+        // Comparison Chart
         new Chart(document.getElementById('comparisonChart'), {
             type: 'bar',
             data: {
@@ -506,7 +559,7 @@
                 plugins: {
                     legend: {
                         position: 'top',
-                        labels: { font: { size: 11 } }  // ✅ GIẢM FONT
+                        labels: { font: { size: 11 } }
                     },
                     tooltip: {
                         callbacks: {
@@ -522,17 +575,17 @@
                                 if (value >= 1000000) return (value / 1000000).toFixed(0) + 'M';
                                 return value.toLocaleString('vi-VN');
                             },
-                            font: { size: 10 }  // ✅ GIẢM FONT
+                            font: { size: 10 }
                         }
                     },
                     x: {
-                        ticks: { font: { size: 10 } }  // ✅ GIẢM FONT
+                        ticks: { font: { size: 10 } }
                     }
                 }
             }
         });
 
-        // Pie
+        // Pie Chart
         const totalCost = costs.reduce((a, b) => a + b, 0);
         const totalSalary = salaries.reduce((a, b) => a + b, 0);
 
@@ -553,7 +606,7 @@
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { font: { size: 10 }, padding: 10 }  // ✅ GIẢM FONT & PADDING
+                        labels: { font: { size: 10 }, padding: 10 }
                     },
                     tooltip: {
                         callbacks: {
@@ -575,8 +628,8 @@
 
         window.showChart = showChart;
         window.changeYear = changeYear;
+        window.getAIAnalysis = getAIAnalysis;
 
-        // ✅ FIX: Đảm bảo dropdown chọn đúng năm khi load trang
         window.addEventListener('DOMContentLoaded', function() {
             document.getElementById('yearDropdown').value = @selectedYear;
         });

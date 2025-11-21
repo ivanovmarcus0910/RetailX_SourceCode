@@ -38,14 +38,16 @@ namespace RepositoriesRetailX
             {
                 return false;
             }
-            return user.PasswordHash == password;
+            return BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
         }
         public bool SignUpUser(string email, string password, string fullname)
         {
+            string passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
+
             var newUser = new User
             {
                 Email = email,
-                PasswordHash = password, 
+                PasswordHash = passwordHash, 
                 FullName = fullname,
                 IsActive = true,
                 CreatedDate = DateTime.Now,
