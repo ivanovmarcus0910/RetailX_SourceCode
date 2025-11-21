@@ -44,9 +44,9 @@
         <div id="sidebar-wrapper">
             <a class="sidebar-heading">RetailX Owner</a>
             <div class="list-group list-group-flush mt-3">
-                <a asp-controller="Dashboard" asp-action="Index" 
-                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Dashboard" ? "active" : "")">
-                    <i class="fa fa-tachometer-alt"></i> Dashboard
+                <a asp-controller="Report" asp-action="Index" 
+                    class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Report" ? "active" : "")">
+                    <i class="fa fa-chart-pie"></i> Financial Report
                 </a>
                 
                 <a asp-controller="Staff" asp-action="Index" 

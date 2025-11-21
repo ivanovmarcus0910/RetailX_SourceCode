@@ -2,28 +2,34 @@
 using BusinessObject.Models;
 using BusinessObjectRetailX.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
 using RepositoriesRetailX;
+using RetailXMVC.SignalR;
 
 namespace RetailXMVC.Controllers
 {
-    //[Authorize(Roles = "Owner")]
+    [Authorize(Roles = "Owner, Accountant")]
     public class StaffController : Controller
     {
         private readonly IStaffRepository _staffRepo;
         private readonly IUserRepository _userRepo;
         private readonly IRequestRepository _requestRepo;
         private readonly ILogRepository _logRepo;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public StaffController(IStaffRepository staffRepo, IUserRepository userRepo, IRequestRepository requestRepo, ILogRepository logRepo)
+        public StaffController(IStaffRepository staffRepo, IUserRepository userRepo, 
+            IRequestRepository requestRepo, ILogRepository logRepo, IHubContext<NotificationHub> hubContext)
         {
             _staffRepo = staffRepo;
             _userRepo = userRepo;
             _requestRepo = requestRepo;
             _logRepo = logRepo;
+            _hubContext = hubContext;
         }
 
         public IActionResult Index()
@@ -32,6 +38,7 @@ namespace RetailXMVC.Controllers
             return View(staffList);
         }
         [HttpGet]
+        [Authorize(Roles = "Owner")]
         public IActionResult PendingRequests()
         {
             var ownerTenantIdString = User.FindFirst("TenantId")?.Value;
@@ -43,7 +50,8 @@ namespace RetailXMVC.Controllers
         }
 
         [HttpPost]
-        public IActionResult ApproveStaff(int requestId)
+        [Authorize(Roles = "Owner")]
+        public async Task<IActionResult> ApproveStaff(int requestId)
         {
             if (requestId <= 0)
             {
@@ -81,6 +89,8 @@ namespace RetailXMVC.Controllers
                 _requestRepo.DeleteRequest(requestId);
 
                 _logRepo.LogCreate($"Bạn đã duyệt nhân viên {user.FullName} (ID: {newStaff.StaffId})", 1);
+                await _hubContext.Clients.User(request.UserId.ToString())
+                         .SendAsync("OnJoinRequestApproved", request.Tenant.CompanyName);
                 TempData["Success"] = $"Đã duyệt nhân viên {user.FullName} thành công!";
 
                 return RedirectToAction(nameof(Index));
@@ -93,6 +103,7 @@ namespace RetailXMVC.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Owner")]
         public IActionResult GetEditPartial(int id)
         {
             var staff = _staffRepo.GetStaffDetail(id);
@@ -109,6 +120,7 @@ namespace RetailXMVC.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Owner")]
         public IActionResult Edit(Staff model)
         {
             if (model.Role == 1)
@@ -132,6 +144,8 @@ namespace RetailXMVC.Controllers
             }
             return RedirectToAction("Index");
         }
+
+        [Authorize(Roles = "Owner")]
         public IActionResult Delete(int id)
         {
             try
