@@ -263,6 +263,41 @@
     </div>
 </div>
 
+<!-- ✅✅✅ THÊM PHẦN NÀY - AI INSIGHTS ✅✅✅ -->
+<div class="card border-0 shadow-sm mt-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="card-header bg-transparent border-0 py-2">
+        <h6 class="mb-0 fw-bold text-white">
+            <i class="fas fa-robot me-2"></i>
+            AI Insights - Phân Tích Thông Minh bởi Gemini
+        </h6>
+    </div>
+    <div class="card-body text-white">
+        @if (!string.IsNullOrEmpty(ViewBag.AIInsights))
+        {
+            <div id="aiInsightsContent" style="font-size: 0.9rem; line-height: 1.7; white-space: pre-wrap;">@ViewBag.AIInsights</div>
+        }
+        else
+        {
+            <div class="text-center py-4">
+                <div class="spinner-border text-light mb-3" role="status">
+                    <span class="visually-hidden">Đang phân tích...</span>
+                </div>
+                <p class="mb-0">🤖 AI đang phân tích dữ liệu tài chính năm @selectedYear...</p>
+            </div>
+        }
+    </div>
+    <div class="card-footer bg-transparent border-0 text-white-50 d-flex justify-content-between align-items-center" style="font-size: 0.75rem;">
+        <div>
+            <i class="fas fa-info-circle me-1"></i>
+            Phân tích được tạo tự động bởi Google Gemini AI
+        </div>
+        <div>
+            <i class="fas fa-clock me-1"></i>
+            @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+        </div>
+    </div>
+</div>
+
 <!-- SO SÁNH - ✅ GIẢM CHIỀU CAO: 350px → 280px -->
 <div class="row g-3 mt-3">
     <div class="col-lg-8">
