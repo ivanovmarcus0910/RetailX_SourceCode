@@ -21,11 +21,11 @@ namespace RetailXMVC.Controllers
         }
         public IActionResult Create(int orderId)
         {
-            // Lấy order để xác định nó có tồn tại không
+            
             var order = _orderRepo.GetById(orderId);
             if (order == null) return NotFound();
 
-            // Lấy list sản phẩm
+      
             ViewBag.Products = _productRepo.GetAll();
 
             // Tạo model “trống” nhưng có OrderId
@@ -37,9 +37,7 @@ namespace RetailXMVC.Controllers
 
             return View(detail);
         }
-        // ------------------------
-        //    XEM CHI TIẾT ORDER
-        // ------------------------
+        
         public IActionResult Detail(int id)
         {
             var order = _orderRepo.GetById(id);
@@ -47,22 +45,20 @@ namespace RetailXMVC.Controllers
             if (order == null)
                 return NotFound();
 
-            return View(order);  // OrderDetail/Detail.cshtml
+            return View(order);  
         }
 
 
-        // ------------------------
-        //    FORM SỬA MỘT DÒNG
-        // ------------------------
+      
         public IActionResult Edit(int id)
         {
             var detail = _orderDetailRepo.GetById(id);
             if (detail == null) return NotFound();
 
-            // Gửi list sản phẩm để chọn lại Product nếu muốn
+           
             ViewBag.Products = _productRepo.GetAll();
 
-            return View(detail);   // View: OrderDetail/Edit.cshtml
+            return View(detail);  
         }
         public IActionResult Delete(int id)
         {
@@ -70,6 +66,19 @@ namespace RetailXMVC.Controllers
             if (detail == null) return NotFound();
 
             int orderId = detail.OrderId;
+            int quantityToRestore = detail.Quantity;
+            int productId = detail.ProductId;
+
+            var product = _productRepo.GetById(productId);
+
+            if (product == null)
+            {
+                _orderDetailRepo.Delete(id);
+                return RedirectToAction("Detail", new { id = orderId });
+            }
+
+            product.Quantity += quantityToRestore;
+            _productRepo.Update(product);
 
             _orderDetailRepo.Delete(id);
 
@@ -78,9 +87,6 @@ namespace RetailXMVC.Controllers
 
 
 
-        // ------------------------
-        //    LƯU KẾT QUẢ SỬA
-        // ------------------------
         [HttpPost]
         public IActionResult Edit(int id, OrderDetail detail)
         {
@@ -98,15 +104,9 @@ namespace RetailXMVC.Controllers
             if (oldProduct == null || newProduct == null)
                 return BadRequest();
 
-            // ==============================
-            // 1️⃣ Hoàn kho SP cũ (bất kể đổi hay không)
-            // ==============================
             oldProduct.Quantity += oldDetail.Quantity;
             _productRepo.Update(oldProduct);
 
-            // ==============================
-            // 2️⃣ Trừ kho SP mới
-            // ==============================
             if (detail.Quantity > newProduct.Quantity)
             {
                 ModelState.AddModelError("",
@@ -119,9 +119,7 @@ namespace RetailXMVC.Controllers
             newProduct.Quantity -= detail.Quantity;
             _productRepo.Update(newProduct);
 
-            // ==============================
-            // 3️⃣ Lưu OrderDetail
-            // ==============================
+          
             _orderDetailRepo.Update(detail);
 
             return RedirectToAction("Detail", "OrderDetail",

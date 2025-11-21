@@ -1,6 +1,7 @@
 ﻿using BusinessObject.Models;
 using Microsoft.AspNetCore.Mvc;
 using Repositories;
+using RepositoriesRetailX;
 
 namespace RetailXMVC.Controllers
 {
@@ -11,19 +12,41 @@ namespace RetailXMVC.Controllers
         private readonly ICustomerRepository _customerRepo;
         private readonly ICategoryRepository _categoryRepo;
         private readonly IStaffRepository _staffRepo;
-        public OrdersController(IOrderRepository orderRepo, IProductRepository productRepo, ICustomerRepository customerRepo, ICategoryRepository categoryRepo, IStaffRepository staffRepo  )
+        private readonly IUserRepository _userRepo;
+        public OrdersController(IOrderRepository orderRepo, IProductRepository productRepo, ICustomerRepository customerRepo, ICategoryRepository categoryRepo, IStaffRepository staffRepo , IUserRepository userRepo)
         {
             _orderRepo = orderRepo;
             _productRepo = productRepo;
             _customerRepo = customerRepo;
             _categoryRepo = categoryRepo;
             _staffRepo = staffRepo;
+            _userRepo = userRepo;
         }
 
+        private bool HasStaffRole(int role)
+        {
+            // Lấy StaffId từ claims
+            var staffIdStr = User.FindFirst("StaffId")?.Value;
+            if (string.IsNullOrEmpty(staffIdStr))
+                return false;
 
+            if (!int.TryParse(staffIdStr, out int staffId))
+                return false;
+
+            // Lấy staff từ repo
+            var staff = _staffRepo.GetStaffDetail(staffId); // đổi tên hàm đúng với repo của m
+            if (staff == null)
+                return false;
+
+            // So sánh role (ignore hoa/thường)
+            return staff.Role==role;
+        }
         [HttpGet]
         public IActionResult Create()
         {
+            if (!HasStaffRole(3))
+                return RedirectToAction("AccessDenied", "Auth");
+
             var userEmail = User.Identity?.Name; 
 
             int currentStaffId = 0;
